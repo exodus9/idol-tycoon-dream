@@ -1414,7 +1414,8 @@ const Game = {
     const {base} = talentOf(idol.spec);
     this.st = {idol, ...base, cond:100, fans:0, week:1, busy:false, log:[], mode, trainCount:{}};   // mode=full(24턴)/quick(12턴 간이) · trainCount=영역별 훈련 횟수
     DG.applyEquipped(this.st);   // 드림그룹: 장착한 육성카드 시작 보정
-    { const _e=DG.effOf(DG.equipped); this.st.cardGrowth=1+(_e.growth||0); this.st.cardGate=1+(_e.gate||0); }   // 특수효과: 성장률·관문파워 배수 (SSR/UR 카드)
+    { const _e=DG.effOf(DG.equipped); this.st.cardGrowth=1+(_e.growth||0); this.st.cardGate=1+(_e.gate||0);
+      this.st.condSave=_e.condSave||0; this.st.mentalSave=_e.mentalSave||0; this.st.earlyGrow=_e.earlyGrow||0; }   // 특수효과: SSR/UR 배수 + N 성향(개근/긍정/근성)
     // 학원마스식 성장 비포/애프터: 첫날 스탯 스냅샷(카드 보정 포함) → 결과 레이더에 회색 고스트로 "첫날의 너 vs 지금"
     this.st.day1={}; STATS.forEach(st=>this.st.day1[st.k]=Math.round(this.st[st.k]));
     DG.consumeEquipped();        // 카드 소모형: 장착 카드 1장씩 소모(지속 플레이 유인)
@@ -1562,13 +1563,18 @@ const Game = {
     const talent = kind===s.idol.spec ? 1.22 : (kind===keys[(si+3)%keys.length] ? 1.1 : 1.0);
     // ⑭ 재능 개화: 특기 훈련 + 성공 계열 판정(실패/대실패 제외)이면 18% 확률로 성장 ×1.6 ⚠️수치 임시
     const bloom = kind===s.idol.spec && j!=='fail' && j!=='dbad' && J.mult>0 && Math.random()<0.18;
-    let gain = J.mult>0 ? Math.round(baseGain*J.mult*growthMult(s[kind])*talent*(s.cardGrowth||1)*(bloom?1.6:1))
+    // 🌿잡초근성: 육성 전반부(절반 이전)에 성장 부스트
+    const early = (s.earlyGrow>0 && s.week<=this.sch().total/2) ? (1+s.earlyGrow) : 1;
+    let gain = J.mult>0 ? Math.round(baseGain*J.mult*growthMult(s[kind])*talent*(s.cardGrowth||1)*(bloom?1.6:1)*early)
                         : Math.round(baseGain*J.mult);
     const oldV=Math.round(s[kind]), oldG=grade(oldV), oldL=levelOf(oldV);
     s[kind]=Math.max(0,Math.min(800,s[kind]+gain));   // 스탯 상한 800(=SS 만점). 넘겨도 캡
     if(!s.trainCount)s.trainCount={}; s.trainCount[kind]=(s.trainCount[kind]||0)+1;   // 최다 훈련 영역 추적(카드 기본)
-    s.cond=Math.max(0,s.cond+J.cond);
-    s.mental=Math.max(0,Math.min(100,s.mental+(MENTAL_DELTA[j]||0)));  // 판정 연동 멘탈(비대칭)
+    // 📅개근왕: 컨디션 감소 완화 / 🙂긍정왕: 멘탈 하락 완화 (감소일 때만)
+    const condD = J.cond<0 ? Math.round(J.cond*(1-(s.condSave||0))) : J.cond;
+    const mentD0 = MENTAL_DELTA[j]||0, mentD = mentD0<0 ? Math.round(mentD0*(1-(s.mentalSave||0))) : mentD0;
+    s.cond=Math.max(0,s.cond+condD);
+    s.mental=Math.max(0,Math.min(100,s.mental+mentD));  // 판정 연동 멘탈(비대칭)
     const fanGain=Math.round((30+s[kind]*0.6)*J.fanMult);
     s.fans+=fanGain;
     const newV=Math.round(s[kind]), newG=grade(newV), newL=levelOf(newV);
@@ -1583,7 +1589,7 @@ const Game = {
     const say=t("say_"+j);
     const bloomLine = bloom ? `<div class="bloom-line">⭐ 재능 개화! 타고난 특기가 만개했다</div>` : '';   // ⑭ 크리 연출
     this.trainReveal(s.idol, kind, j, J,
-      bloomLine + t("train_delta",{ico:stat.ico,stat:t("st_"+kind),sign,gain,fans:fmt(fanGain),cond:J.cond}) + comboLine,
+      bloomLine + t("train_delta",{ico:stat.ico,stat:t("st_"+kind),sign,gain,fans:fmt(fanGain),cond:condD}) + comboLine,
       say,
       ()=>{ this.render(); this.bumpStat(kind, oldV, newV, oldG, newG);
             setTimeout(()=>this.afterTurn(), 900); });
@@ -3325,10 +3331,10 @@ window.addEventListener("popstate", ()=>{
   // ⚠️이모지는 카드마다 고유(중복 금지) — 재율애비 지적. N/R/SR/SSR/UR 전 카드 유일 이모지 원칙.
   //   N(rr0)=저티어 만능 보조 4종(전 재능 소폭). 서로 다른 N 2장 합성 → 랜덤 R 진입 경로.
   const CARDS = {
-    effort:  {nm:'노력파',   em:'🔥', rr:0, eff:{all:15}},
-    attend:  {nm:'개근왕',   em:'📅', rr:0, eff:{all:12}},
-    positive:{nm:'긍정왕',   em:'🙂', rr:0, eff:{all:11}},
-    grit:    {nm:'잡초근성', em:'🌿', rr:0, eff:{all:10}},
+    effort:  {nm:'노력파',   em:'🔥', rr:0, eff:{all:15}},                    // 만능 스타터(전 재능 시작치)
+    attend:  {nm:'개근왕',   em:'📅', rr:0, eff:{all:6, condSave:0.30}},        // 꾸준함 = 컨디션 덜 닳음
+    positive:{nm:'긍정왕',   em:'🙂', rr:0, eff:{all:6, mentalSave:0.30}},      // 긍정 = 멘탈 덜 깎임
+    grit:    {nm:'잡초근성', em:'🌿', rr:0, eff:{all:6, earlyGrow:0.20}},       // 근성 = 초반(절반) 성장 부스트
     vocalC:  {nm:'황금성대', em:'🎙️', rr:1, eff:{stat:{vocal:55}}},
     danceC:  {nm:'무한체력', em:'💪', rr:1, eff:{stat:{dance:55}}},
     visualC: {nm:'스타일신', em:'✨', rr:1, eff:{stat:{visual:55}}},
@@ -3598,11 +3604,17 @@ window.addEventListener("popstate", ()=>{
       const sp=[];   // 특수효과(별배수 미적용, 지속효과)
       if(c.eff.growth) sp.push(`성장률 +${Math.round(c.eff.growth*100)}%`);
       if(c.eff.gate) sp.push(`관문 파워 +${Math.round(c.eff.gate*100)}%`);
+      if(c.eff.condSave) sp.push(`컨디션 소모 -${Math.round(c.eff.condSave*100)}%`);
+      if(c.eff.mentalSave) sp.push(`멘탈 하락 -${Math.round(c.eff.mentalSave*100)}%`);
+      if(c.eff.earlyGrow) sp.push(`초반 성장 +${Math.round(c.eff.earlyGrow*100)}%`);
       if(sp.length) s += (s?' · ':'')+sp.join(' · ');
       return s; },
-    effOf(types){ const e={stat:{},all:0,growth:0,gate:0}; (types||[]).forEach(id=>{ const c=CARDS[id]; if(!c)return; const m=STAR_MULT[Math.max(1,this.bestStar(id))-1]||1; const x=c.eff;
+    effOf(types){ const e={stat:{},all:0,growth:0,gate:0,condSave:0,mentalSave:0,earlyGrow:0}; (types||[]).forEach(id=>{ const c=CARDS[id]; if(!c)return; const m=STAR_MULT[Math.max(1,this.bestStar(id))-1]||1; const x=c.eff;
       if(x.all)e.all+=x.all*m; if(x.stat)for(const k in x.stat)e.stat[k]=(e.stat[k]||0)+x.stat[k]*m;
-      if(x.growth)e.growth+=x.growth; if(x.gate)e.gate+=x.gate; }); return e; },
+      if(x.growth)e.growth+=x.growth; if(x.gate)e.gate+=x.gate;
+      if(x.condSave)e.condSave+=x.condSave; if(x.mentalSave)e.mentalSave+=x.mentalSave; if(x.earlyGrow)e.earlyGrow+=x.earlyGrow; }); // N 성향(별 배수 미적용, 지속효과)
+      e.condSave=Math.min(0.6,e.condSave); e.mentalSave=Math.min(0.6,e.mentalSave); e.earlyGrow=Math.min(0.4,e.earlyGrow);   // 2장 겹쳐도 상한
+      return e; },
     applyEquipped(st){ if(!this.equipped||!this.equipped.length) return; const e=this.effOf(this.equipped);
       ORDER.forEach(k=>{ st[k]=Math.min(800,Math.round((st[k]||0)+(e.all||0)+(e.stat[k]||0))); }); },
     consumeEquipped(){   // ⑮ 내구도형: 장착한 카드는 육성 1회당 내구도 1 소모(최저 별 스택부터). 3번 쓰면 그 장 소멸.
@@ -4373,7 +4385,7 @@ window.addEventListener("popstate", ()=>{
         <div class="fb-rows" style="margin-top:7px">
           <div class="fb-sub" style="margin:0 0 3px">⚡ 효과</div>
           <div style="font-size:12.5px;line-height:1.5">${esc(this.cardDesc(type, owned?bs:1))}</div>
-          ${c.eff&&(c.eff.growth||c.eff.gate)?`<div class="fb-sub" style="margin:9px 0 3px">✨ 특수</div><div style="font-size:12px;color:#c3b6dd">${c.eff.growth?`육성 성장률 +${Math.round(c.eff.growth*100)}% `:''}${c.eff.gate?`관문 파워 +${Math.round(c.eff.gate*100)}%`:''}</div>`:''}
+          ${c.eff&&(c.eff.growth||c.eff.gate||c.eff.condSave||c.eff.mentalSave||c.eff.earlyGrow)?`<div class="fb-sub" style="margin:9px 0 3px">✨ 특수</div><div style="font-size:12px;color:#c3b6dd;line-height:1.5">${c.eff.growth?`육성 성장률 +${Math.round(c.eff.growth*100)}%<br>`:''}${c.eff.gate?`관문 파워 +${Math.round(c.eff.gate*100)}%<br>`:''}${c.eff.condSave?`컨디션 소모 -${Math.round(c.eff.condSave*100)}% (지쳐도 오래 버텨)<br>`:''}${c.eff.mentalSave?`멘탈 하락 -${Math.round(c.eff.mentalSave*100)}% (실패해도 덜 흔들려)<br>`:''}${c.eff.earlyGrow?`초반 성장 +${Math.round(c.eff.earlyGrow*100)}% (전반부에 확 큼)`:''}</div>`:''}
           <div class="fb-sub" style="margin:9px 0 3px">📥 획득 방법</div>
           <div style="font-size:12px;color:#c3b6dd;line-height:1.55">${this.cardOrigin(type)}</div>
           ${owned&&stars.length?`<div class="fb-sub" style="margin:9px 0 3px">🎴 보유</div><div style="font-size:12.5px;line-height:1.7">${stars.join(' · ')}</div>`:''}
@@ -4693,7 +4705,8 @@ window.addEventListener("popstate", ()=>{
     // ③ 육성카드 렌더 = card-demo '때깔' 컴포넌트. o={star,meta,foot,tag,cls,attr,locked,noStars}
     tcardCat(id){ const c=CARDS[id]; if(!c) return '';
       if(c.hyb) return '하이브리드';
-      if(c.eff&&c.eff.stat){ const k=Object.keys(c.eff.stat)[0]; return STATNM[k]||''; }
+      if(c.eff){ if(c.eff.condSave) return '컨디션형'; if(c.eff.mentalSave) return '멘탈형'; if(c.eff.earlyGrow) return '근성형';
+        if(c.eff.stat){ const k=Object.keys(c.eff.stat)[0]; return STATNM[k]||''; } }
       return c.rr>=3?'스페셜':'올라운드'; },
     tcardHTML(id, o){ o=o||{}; const c=CARDS[id]; if(!c) return '';
       const cls=['n','r','sr','ssr','ur'][c.rr]||'n';
