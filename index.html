@@ -5011,15 +5011,23 @@ window.addEventListener("popstate", ()=>{
       }catch(e){}
       this._leagueServer=false; return null;
     },
-    submitGroup(g){   // 서버 공유(fire&forget): leaderboard에 ending='GRP:n' 마커 + fans=점수로 저장(규칙이 이 스키마만 허용).
+    // 고정 문서ID = 기획사명+그룹명 해시 → 재제출/재데뷔 때 같은 문서를 덮어써 중복 누적 방지(옛 create POST는 매번 새 문서라 무한 누적됐음)
+    grpDocId(player, name){
+      const s=(player||'')+'|'+(name||''); let h=5381;
+      for(let i=0;i<s.length;i++){ h=((h<<5)+h+s.charCodeAt(i))>>>0; }
+      return 'grp_'+h.toString(36);
+    },
+    submitGroup(g){   // 서버 공유(fire&forget): leaderboard에 ending='GRP:n:pts' 마커 + fans=점수. 고정ID PATCH(upsert)로 중복 누적 방지.
       if(!g) return;
       try{
         const sc=Math.max(0,Math.min(5000000,this.groupScore(g)));
-        const body={fields:{player:fsStr((this.agency&&this.agency().name)||''), name:fsStr(g.name),
+        const player=(this.agency&&this.agency().name)||'';
+        const body={fields:{player:fsStr(player), name:fsStr(g.name),
           ending:fsStr('GRP:'+(g.n||0)+':'+(this.battleSeason().pts||0)), emoji:fsStr(g.logo||'🎤'),
           fans:{integerValue:String(sc)}, lang:fsStr(window.LANG||'ko')}};
-        fetch(`${FS_BASE}/leaderboard?key=${FB_KEY}`,
-          {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}).catch(()=>{});
+        const id=this.grpDocId(player, g.name);
+        fetch(`${FS_BASE}/leaderboard/${id}?key=${FB_KEY}`,
+          {method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}).catch(()=>{});
       }catch(e){}
     },
     showLeague(){ this.load(); if(!this._rankTab)this._rankTab='group'; if(!this._leagueSub)this._leagueSub='season';
