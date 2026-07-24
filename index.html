@@ -861,7 +861,7 @@
 </div>
 
 <!-- 콘텐츠(다국어·아이돌DB) 갱신 시 v= 날짜를 올려 캐시 무효화 → 재방문 유저에게도 반영 -->
-<script src="i18n.js?v=20260723a"></script>
+<script src="i18n.js?v=20260724a"></script>
 <script src="idols.js?v=20260715d"></script>
 <script>
 // 검색용 아이돌: idols.js의 window.IDOL_DB (최애돌 실데이터 상위 250명). 로드 실패 시 빈 배열.
@@ -1000,8 +1000,8 @@ const EVENTS = [
   // ── 분기형 (도전·리스크) ──
   {id:"talent", emoji:"📺", title:"예능 대박 각?", text:"인기 예능 고정 자리가 걸린 파일럿. 잘 살리면 화제성 폭발, 삐끗하면 편집 굴욕.",
    choices:[
-     {t:"끼 발산하며 올인", odds:s=>0.38+s.charm/1400+s.cond/500,
-       win:{label:"예능 캐 각인!",emoji:"🤩",desc:"끼 <b>+32</b> · 팬 <b>대폭↑↑</b> · 컨디션 <b>-10</b>",
+     {t:"입담으로 정면 승부", odds:s=>0.38+s.charm/1400+s.cond/500,
+       win:{label:"예능 캐 각인!",emoji:"🤩",desc:"화술 <b>+32</b> · 팬 <b>대폭↑↑</b> · 컨디션 <b>-10</b>",
             fx:s=>{s.charm+=32;s.fans+=Math.round(2000+s.charm*5);s.cond-=10;}},
        lose:{label:"통편집·굴욕짤",emoji:"✂️",desc:"멘탈 <b>-15</b> · 컨디션 <b>-14</b> · 팬 <b>↓↓</b>",
             fx:s=>{s.mental-=15;s.cond-=14;s.fans=Math.round(s.fans*0.88);}}},
@@ -1010,43 +1010,43 @@ const EVENTS = [
   {id:"drama", emoji:"🎤", title:"힙합 사이퍼 섭외", text:"실력파로 눈도장 찍을 기회. 근데 삑사리 나면 이미지 타격이 커.",
    choices:[
      {t:"사이퍼 도전", odds:s=>0.34+s.acting/1100+s.mental/500,
-       win:{label:"인생 벌스!",emoji:"🎤",desc:"랩 <b>+40</b> · 팬 <b>↑↑↑</b> · 컨디션 <b>-12</b>",
+       win:{label:"인생 벌스!",emoji:"🎤",desc:"리듬감 <b>+40</b> · 팬 <b>↑↑↑</b> · 컨디션 <b>-12</b>",
             fx:s=>{s.acting+=40;s.fans+=Math.round(2100);s.cond-=12;}},
-       lose:{label:"가사 실수 논란",emoji:"😬",desc:"랩 <b>+6</b> · 멘탈 <b>-14</b> · 팬 <b>↓↓</b>",
+       lose:{label:"가사 실수 논란",emoji:"😬",desc:"리듬감 <b>+6</b> · 멘탈 <b>-14</b> · 팬 <b>↓↓</b>",
             fx:s=>{s.acting+=6;s.mental-=14;s.fans=Math.round(s.fans*0.85);}}},
-     {t:"음악에 집중 (보컬 +14)", fx:s=>{s.vocal+=14;}},
+     {t:"음악에 집중 (발성 +14)", fx:s=>{s.vocal+=14;}},
    ]},
   {id:"live", emoji:"📹", title:"편집 없는 生라이브", text:"실시간 소통 라이브 제안. 날것 그대로라 리스크가 커.",
    choices:[
      {t:"생방송 강행", odds:s=>0.44+s.charm/1300+s.mental/500,
-       win:{label:"라이브 레전드!",emoji:"🎥",desc:"끼 <b>+28</b> · 팬 <b>대폭↑↑</b>",
+       win:{label:"라이브 레전드!",emoji:"🎥",desc:"화술 <b>+28</b> · 팬 <b>대폭↑↑</b>",
             fx:s=>{s.charm+=28;s.fans+=Math.round(1800+s.charm*4);s.cond-=6;}},
        lose:{label:"방송사고·박제",emoji:"📵",desc:"멘탈 <b>-16</b> · 컨디션 <b>-13</b> · 팬 <b>↓</b>",
             fx:s=>{s.mental-=16;s.cond-=13;s.fans=Math.round(s.fans*0.92);}}},
-     {t:"녹화로 안전하게 (끼 +12)", fx:s=>{s.charm+=12;}},
+     {t:"녹화로 안전하게 (화술 +12)", fx:s=>{s.charm+=12;}},
    ]},
   {id:"chal", emoji:"🕺", title:"챌린지 열풍", text:"네 안무 클립이 SNS에서 도는 중. 챌린지 유행을 노려볼까?",
    choices:[
      {t:"댄스 챌린지 점화", odds:s=>0.40+s.dance/1300+s.visual/2000,
-       win:{label:"떡상 챌린지!",emoji:"🔥",desc:"댄스 <b>+36</b> · 팬 <b>폭발↑↑</b>",
+       win:{label:"떡상 챌린지!",emoji:"🔥",desc:"체력 <b>+36</b> · 팬 <b>폭발↑↑</b>",
             fx:s=>{s.dance+=36;s.fans+=Math.round(2600+s.dance*5);}},
-       lose:{label:"조롱 밈으로 소비",emoji:"🥲",desc:"댄스 <b>+4</b> · 멘탈 <b>-10</b> · 팬 <b>↓</b>",
+       lose:{label:"조롱 밈으로 소비",emoji:"🥲",desc:"체력 <b>+4</b> · 멘탈 <b>-10</b> · 팬 <b>↓</b>",
             fx:s=>{s.dance+=4;s.mental-=10;s.fans=Math.round(s.fans*0.93);}}},
-     {t:"완성도 더 높이기 (댄스 +14)", fx:s=>{s.dance+=14;}},
+     {t:"완성도 더 높이기 (체력 +14)", fx:s=>{s.dance+=14;}},
    ]},
   {id:"cf", emoji:"💄", title:"명품 브랜드 CF", text:"글로벌 브랜드 광고 제안. 비주얼 승부라 부담도 커.",
    choices:[
      {t:"메인 모델 도전", odds:s=>0.36+s.visual/1200+s.charm/2000,
-       win:{label:"브랜드 뮤즈!",emoji:"👑",desc:"비주얼 <b>+36</b> · 팬 <b>↑↑↑</b>",
+       win:{label:"브랜드 뮤즈!",emoji:"👑",desc:"스타일 <b>+36</b> · 팬 <b>↑↑↑</b>",
             fx:s=>{s.visual+=36;s.fans+=Math.round(2300);}},
-       lose:{label:"혹평·계약 무산",emoji:"🫤",desc:"비주얼 <b>+5</b> · 멘탈 <b>-12</b> · 팬 <b>↓</b>",
+       lose:{label:"혹평·계약 무산",emoji:"🫤",desc:"스타일 <b>+5</b> · 멘탈 <b>-12</b> · 팬 <b>↓</b>",
             fx:s=>{s.visual+=5;s.mental-=12;s.fans=Math.round(s.fans*0.93);}}},
-     {t:"내실부터 다지기 (비주얼 +12)", fx:s=>{s.visual+=12;}},
+     {t:"내실부터 다지기 (스타일 +12)", fx:s=>{s.visual+=12;}},
    ]},
   {id:"surv", emoji:"🎙️", title:"서바이벌 프로 출연", text:"경연 프로에서 실력 검증 무대. 이기면 급상승, 지면 굴욕.",
    choices:[
      {t:"경연 참가", odds:s=>0.28+(s.vocal+s.dance)/2600+s.cond/500,
-       win:{label:"올킬 무대!",emoji:"🏅",desc:"보컬·댄스 <b>+24</b> · 팬 <b>대폭↑↑</b>",
+       win:{label:"올킬 무대!",emoji:"🏅",desc:"보컬·체력 <b>+24</b> · 팬 <b>대폭↑↑</b>",
             fx:s=>{s.vocal+=24;s.dance+=24;s.fans+=Math.round(2800);s.cond-=10;}},
        lose:{label:"광탈·악편 논란",emoji:"💧",desc:"멘탈 <b>-18</b> · 컨디션 <b>-14</b> · 팬 <b>↓↓</b>",
             fx:s=>{s.mental-=18;s.cond-=14;s.fans=Math.round(s.fans*0.9);}}},
@@ -1068,13 +1068,13 @@ const EVENTS = [
    ]},
   {id:"selfwrite", emoji:"🎼", title:"자작곡 떡밥", text:"작업하던 데모 반응이 좋아. 자컨·자작곡 아티스트로?",
    choices:[
-     {t:"공개한다 (크리에이티브 +24, 팬 ↑)", fx:s=>{s.creative+=24;s.fans+=Math.round(900);}},
+     {t:"공개한다 (창조 +24, 팬 ↑)", fx:s=>{s.creative+=24;s.fans+=Math.round(900);}},
      {t:"더 다듬는다 (멘탈 +6)", fx:s=>{s.mental+=6;}},
    ]},
   {id:"injury", emoji:"🤕", title:"연습 중 부상", text:"무리한 안무로 발목을 삐끗했어.",
    choices:[
      {t:"쉬어간다 (컨디션 +20)", fx:s=>{s.cond=Math.min(100,s.cond+20);}},
-     {t:"참고 강행 (댄스 +18, 컨디션 -18)", fx:s=>{s.dance+=18;s.cond-=18;}},
+     {t:"참고 강행 (체력 +18, 컨디션 -18)", fx:s=>{s.dance+=18;s.cond-=18;}},
    ]},
   {id:"fansign", emoji:"🧧", title:"팬사인회", text:"오프라인에서 팬들을 직접 만나는 날. 소통으로 팬심을 다져.",
    choices:[
@@ -1087,54 +1087,54 @@ const EVENTS = [
    ]},
   {id:"tour", emoji:"🌐", title:"해외 팬미팅 투어", text:"글로벌 팬덤이 커지는 중. 해외 일정을 잡을까?",
    choices:[
-     {t:"강행군 (비주얼·끼 +14, 컨디션 -16, 팬 ↑↑)", fx:s=>{s.visual+=14;s.charm+=14;s.cond-=16;s.fans+=1400;}},
+     {t:"강행군 (스타일·화술 +14, 컨디션 -16, 팬 ↑↑)", fx:s=>{s.visual+=14;s.charm+=14;s.cond-=16;s.fans+=1400;}},
      {t:"국내 집중 (팬 +안정)", fx:s=>{s.fans+=600;}},
    ]},
   // ── 신규 분기형 (도전·리스크) ──
   {id:"mv", emoji:"🎥", title:"뮤직비디오 파격 티저", text:"이번 MV 콘티가 파격적이야. 비주얼·컨셉 승부수를 던질까?",
    choices:[
      {t:"파격 컨셉으로 올인", odds:s=>0.38+s.visual/1400+s.creative/2000,
-       win:{label:"티저 조회수 폭발!",emoji:"🎬",desc:"비주얼 <b>+30</b> · 크리에이티브 <b>+16</b> · 팬 <b>↑↑</b>",
+       win:{label:"티저 조회수 폭발!",emoji:"🎬",desc:"스타일 <b>+30</b> · 창조 <b>+16</b> · 팬 <b>↑↑</b>",
             fx:s=>{s.visual+=30;s.creative+=16;s.fans+=Math.round(2000+s.visual*4);s.cond-=8;}},
        lose:{label:"과했다 혹평",emoji:"🫠",desc:"멘탈 <b>-12</b> · 팬 <b>↓</b>",
             fx:s=>{s.mental-=12;s.fans=Math.round(s.fans*0.9);}}},
-     {t:"무난한 컨셉 (비주얼 +12)", fx:s=>{s.visual+=12;}},
+     {t:"무난한 컨셉 (스타일 +12)", fx:s=>{s.visual+=12;}},
    ]},
   {id:"collab", emoji:"🎧", title:"해외 아티스트 콜라보", text:"글로벌 아티스트가 피처링을 제안했어. 언어·톤이 관건이야.",
    choices:[
      {t:"콜라보 도전", odds:s=>0.34+s.vocal/1300+s.creative/1600,
-       win:{label:"글로벌 차트인!",emoji:"🌍",desc:"보컬 <b>+24</b> · 크리에이티브 <b>+20</b> · 팬 <b>대폭↑↑</b>",
+       win:{label:"글로벌 차트인!",emoji:"🌍",desc:"발성 <b>+24</b> · 창조 <b>+20</b> · 팬 <b>대폭↑↑</b>",
             fx:s=>{s.vocal+=24;s.creative+=20;s.fans+=Math.round(2800);s.cond-=10;}},
        lose:{label:"톤 안 맞아 묻힘",emoji:"😵‍💫",desc:"멘탈 <b>-13</b> · 팬 <b>↓</b>",
             fx:s=>{s.mental-=13;s.fans=Math.round(s.fans*0.92);}}},
-     {t:"국내 활동 집중 (보컬 +13)", fx:s=>{s.vocal+=13;}},
+     {t:"국내 활동 집중 (발성 +13)", fx:s=>{s.vocal+=13;}},
    ]},
   {id:"vlog", emoji:"📱", title:"브이로그 채널 오픈", text:"자컨으로 팬들과 더 가까이. 근데 사생활 노출이 부담돼.",
    choices:[
      {t:"일상 다 공개", odds:s=>0.42+s.charm/1300+s.mental/500,
-       win:{label:"입덕 유발 자컨!",emoji:"🥰",desc:"끼 <b>+26</b> · 팬 <b>↑↑</b>",
+       win:{label:"입덕 유발 자컨!",emoji:"🥰",desc:"화술 <b>+26</b> · 팬 <b>↑↑</b>",
             fx:s=>{s.charm+=26;s.fans+=Math.round(1700+s.charm*4);}},
        lose:{label:"과공개 역풍",emoji:"🫥",desc:"멘탈 <b>-14</b> · 팬 <b>↓</b>",
             fx:s=>{s.mental-=14;s.fans=Math.round(s.fans*0.9);}}},
-     {t:"적당히 편집 (끼 +11)", fx:s=>{s.charm+=11;}},
+     {t:"적당히 편집 (화술 +11)", fx:s=>{s.charm+=11;}},
    ]},
   {id:"dancebattle", emoji:"🕺", title:"댄스 배틀 프로그램", text:"실력파 댄서들과 맞붙는 배틀 무대. 이기면 각인, 지면 굳은 몸 굴욕.",
    choices:[
      {t:"배틀 참가", odds:s=>0.32+s.dance/1200+s.cond/500,
-       win:{label:"무대 씹어먹음!",emoji:"🔥",desc:"댄스 <b>+34</b> · 팬 <b>대폭↑↑</b>",
+       win:{label:"무대 씹어먹음!",emoji:"🔥",desc:"체력 <b>+34</b> · 팬 <b>대폭↑↑</b>",
             fx:s=>{s.dance+=34;s.fans+=Math.round(2400+s.dance*4);s.cond-=10;}},
-       lose:{label:"버벅임 밈화",emoji:"🥶",desc:"댄스 <b>+6</b> · 멘탈 <b>-12</b> · 팬 <b>↓</b>",
+       lose:{label:"버벅임 밈화",emoji:"🥶",desc:"체력 <b>+6</b> · 멘탈 <b>-12</b> · 팬 <b>↓</b>",
             fx:s=>{s.dance+=6;s.mental-=12;s.fans=Math.round(s.fans*0.92);}}},
-     {t:"연습으로 대비 (댄스 +14)", fx:s=>{s.dance+=14;}},
+     {t:"연습으로 대비 (체력 +14)", fx:s=>{s.dance+=14;}},
    ]},
   {id:"busk", emoji:"🎸", title:"게릴라 버스킹", text:"깜짝 길거리 라이브. 입소문 나면 대박, 썰렁하면 흑역사.",
    choices:[
      {t:"광장에서 즉흥 무대", odds:s=>0.40+s.vocal/1500+s.charm/1500,
-       win:{label:"직캠 역주행!",emoji:"🎤",desc:"보컬 <b>+20</b> · 끼 <b>+20</b> · 팬 <b>↑↑</b>",
+       win:{label:"직캠 역주행!",emoji:"🎤",desc:"발성 <b>+20</b> · 화술 <b>+20</b> · 팬 <b>↑↑</b>",
             fx:s=>{s.vocal+=20;s.charm+=20;s.fans+=Math.round(1900);s.cond-=6;}},
        lose:{label:"소음신고·썰렁",emoji:"🚓",desc:"멘탈 <b>-10</b> · 팬 <b>↓</b>",
             fx:s=>{s.mental-=10;s.fans=Math.round(s.fans*0.94);}}},
-     {t:"실내 소극장으로 안전하게 (보컬 +12)", fx:s=>{s.vocal+=12;}},
+     {t:"실내 소극장으로 안전하게 (발성 +12)", fx:s=>{s.vocal+=12;}},
    ]},
   // ── 신규 1회성(once) 특별 이벤트 ──
   {id:"documentary", emoji:"🎞️", once:true, weight:0.7, title:"데뷔 다큐 제작", text:"연습생 시절부터의 서사를 담은 다큐 제안. 팬덤 결속의 기회야.",
@@ -1144,11 +1144,11 @@ const EVENTS = [
   {id:"photobook", emoji:"📸", once:true, weight:0.7, title:"첫 화보집 발매", text:"데뷔 첫 화보집. 콘셉트를 세게 잡으면 소장각, 어설프면 재고각.",
    choices:[
      {t:"아트 화보로 승부", odds:s=>0.44+s.visual/1200,
-       win:{label:"완판 화보!",emoji:"💎",desc:"비주얼 <b>+30</b> · 팬 <b>↑↑↑</b>",
+       win:{label:"완판 화보!",emoji:"💎",desc:"스타일 <b>+30</b> · 팬 <b>↑↑↑</b>",
             fx:s=>{s.visual+=30;s.fans+=Math.round(2500);}},
-       lose:{label:"콘셉트 미스",emoji:"😶‍🌫️",desc:"비주얼 <b>+8</b> · 팬 <b>↓</b>",
+       lose:{label:"콘셉트 미스",emoji:"😶‍🌫️",desc:"스타일 <b>+8</b> · 팬 <b>↓</b>",
             fx:s=>{s.visual+=8;s.fans=Math.round(s.fans*0.93);}}},
-     {t:"자연스러운 데일리 화보 (비주얼 +14)", fx:s=>{s.visual+=14;}},
+     {t:"자연스러운 데일리 화보 (스타일 +14)", fx:s=>{s.visual+=14;}},
    ]},
   {id:"charity", emoji:"💝", once:true, weight:0.7, title:"선한 영향력", text:"수익 일부를 기부하고 선행에 동참할까? 이미지에 큰 자산이 돼.",
    choices:[
@@ -1161,8 +1161,8 @@ const EVENTS = [
    ]},
   {id:"diet", emoji:"🥗", title:"컴백 전 관리 모드", text:"컴백을 앞두고 몸 관리에 들어갈 시간.",
    choices:[
-     {t:"빡세게 관리 (비주얼 +18, 컨디션 -12)", fx:s=>{s.visual+=18;s.cond-=12;}},
-     {t:"균형 있게 (비주얼 +8, 컨디션 +8)", fx:s=>{s.visual+=8;s.cond=Math.min(100,s.cond+8);}},
+     {t:"빡세게 관리 (스타일 +18, 컨디션 -12)", fx:s=>{s.visual+=18;s.cond-=12;}},
+     {t:"균형 있게 (스타일 +8, 컨디션 +8)", fx:s=>{s.visual+=8;s.cond=Math.min(100,s.cond+8);}},
    ]},
   {id:"mentor", emoji:"🧑‍🏫", title:"선배의 조언", text:"업계 선배가 밥 사주며 진심 어린 조언을 해줬어.",
    choices:[
@@ -1177,7 +1177,7 @@ const EVENTS = [
   {id:"awards", emoji:"🏆", once:true, weight:0.8, title:"최애돌 어워즈", text:"연말 최애돌 어워즈 시즌! 하트픽 투표로 팬덤 화력을 증명할 때야.",
    choices:[
      {t:"팬덤 총공 독려!", odds:s=>0.38+s.charm/1500+Math.min(0.25,s.fans/70000),
-       win:{label:"어워즈 대상 수상!",emoji:"🏆",desc:"팬 <b>대폭↑↑</b> · 멘탈 <b>+10</b> · 비주얼 <b>+10</b>",
+       win:{label:"어워즈 대상 수상!",emoji:"🏆",desc:"팬 <b>대폭↑↑</b> · 멘탈 <b>+10</b> · 스타일 <b>+10</b>",
             fx:s=>{s.fans+=Math.round(3000+s.fans*0.05);s.mental+=10;s.visual+=10;}},
        lose:{label:"아쉬운 후보 탈락",emoji:"😢",desc:"멘탈 <b>-12</b> · 팬 <b>소폭↓</b>",
             fx:s=>{s.mental-=12;s.fans=Math.round(s.fans*0.94);}}},
@@ -1186,7 +1186,7 @@ const EVENTS = [
   {id:"heartpick", emoji:"💗", title:"하트픽 총공", text:"이번 주 하트픽 1위를 노려볼까? 팬들의 하트가 쏟아지는 중.",
    choices:[
      {t:"하트픽 1위 총공!", odds:s=>0.42+s.charm/1300+Math.min(0.2,s.fans/80000),
-       win:{label:"이번 주 하트픽 1위!",emoji:"💗",desc:"팬 <b>↑↑</b> · 끼 <b>+14</b>",
+       win:{label:"이번 주 하트픽 1위!",emoji:"💗",desc:"팬 <b>↑↑</b> · 화술 <b>+14</b>",
             fx:s=>{s.fans+=Math.round(1900+s.charm*3);s.charm+=14;}},
        lose:{label:"근소한 차이로 2위",emoji:"💔",desc:"멘탈 <b>-10</b> · 컨디션 <b>-6</b>",
             fx:s=>{s.mental-=10;s.cond-=6;}}},
@@ -1201,7 +1201,7 @@ const EVENTS = [
   {id:"concept_f", gender:"F", emoji:"💃", title:"컨셉 회의: 청순 vs 걸크러시", text:"다음 컴백 컨셉을 정한다. 파격 변신은 화제성 폭발이지만 기존 팬 반응은 갈려.",
    choices:[
      {t:"걸크러시로 파격 변신", odds:s=>0.4+s.visual/1500+s.charm/1500,
-       win:{label:"컨셉 대성공·역주행!",emoji:"🔥",desc:"비주얼 <b>+26</b> · 끼 <b>+18</b> · 팬 <b>↑↑</b>",
+       win:{label:"컨셉 대성공·역주행!",emoji:"🔥",desc:"스타일 <b>+26</b> · 화술 <b>+18</b> · 팬 <b>↑↑</b>",
             fx:s=>{s.visual+=26;s.charm+=18;s.fans+=Math.round(1800+s.visual*4);s.cond-=8;}},
        lose:{label:"컨셉 미스·팬 이탈",emoji:"😮‍💨",desc:"멘탈 <b>-12</b> · 팬 <b>↓</b>",
             fx:s=>{s.mental-=12;s.fans=Math.round(s.fans*0.9);}}},
@@ -1210,7 +1210,7 @@ const EVENTS = [
   {id:"concept_m", gender:"M", emoji:"🔥", title:"컨셉 회의: 청량 vs 짐승돌", text:"다음 컴백 컨셉. 청량은 안전빵, 짐승돌은 입덕직캠 대박 아니면 오글 논란.",
    choices:[
      {t:"짐승돌 컨셉 도전", odds:s=>0.4+s.dance/1500+s.visual/1500,
-       win:{label:"입덕직캠 터짐!",emoji:"🤩",desc:"비주얼 <b>+22</b> · 댄스 <b>+22</b> · 팬 <b>↑↑</b>",
+       win:{label:"입덕직캠 터짐!",emoji:"🤩",desc:"스타일 <b>+22</b> · 체력 <b>+22</b> · 팬 <b>↑↑</b>",
             fx:s=>{s.visual+=22;s.dance+=22;s.fans+=Math.round(1800+s.dance*4);s.cond-=8;}},
        lose:{label:"오글 논란·밈화",emoji:"😬",desc:"멘탈 <b>-12</b> · 팬 <b>↓</b>",
             fx:s=>{s.mental-=12;s.fans=Math.round(s.fans*0.9);}}},
@@ -1225,7 +1225,7 @@ const RIVAL_EMOJI = ["💫","⚡","🌙","🥀","🌸","🔮","🌌","🖤","✴
 // #14 관문(오디션 중간평가) 경쟁자 = 개인 연습생 이름 (서바이벌 참가자). 그룹 이름이 나와 사람으로 안 보이던 것 수정.
 const RIVAL_PEOPLE = ["서지호","강태현","윤세아","박도윤","이하린","최민준","정유나","김서준","한지우","오예린","신재민","배수빈","임하율","조은채","권시우"];
 const PEOPLE_EMOJI = ["🧑‍🎤","👩‍🎤","🎤","🎙️","🧑‍🎤","👩‍🎤","🎤","🎙️","🧑‍🎤","👩‍🎤","🎤","🎙️","🧑‍🎤","👩‍🎤","🎤"];
-// type: stage(무대 퍼포먼스=보컬·댄스·비주얼·끼) / award(시상식=종합력+팬)
+// type: stage(무대 퍼포먼스=발성·체력·스타일·화술) / award(시상식=종합력+팬)
 // base: 라이벌 기대 파워 기준선(P 스케일, 밸런스 시뮬로 확정). gate: 실패시 탈락 관문. final: 최종.
 // 52주=1년 3막(봄 데뷔→여름 국내→가을 월드진출→연말 대상):
 //   데뷔 12주(봄) / 국내 무대 20·28(초여름·한여름) / 월드진출 쇼케이스 36(가을,관문) / 월드쇼 44(늦가을) / 연말 글로벌대상 52(12월).
@@ -1836,7 +1836,7 @@ const Game = {
     const c=this.sch().compets[week], s=this.st;
     let mine;
     if(c.type==="stage"){
-      const f=c.field.reduce((a,k)=>a+s[k],0)/c.field.length;      // 무대 스탯(보컬·댄스·비주얼·끼) 평균
+      const f=c.field.reduce((a,k)=>a+s[k],0)/c.field.length;      // 무대 스탯(발성·체력·스타일·화술) 평균
       mine = f * (0.55 + 0.45*s.cond/100) * (0.9 + Math.random()*0.2);
     } else {
       const avg=STATS.reduce((a,st)=>a+s[st.k],0)/6;               // 종합력(시상식 주력)
@@ -2049,7 +2049,7 @@ const Game = {
     const top=arr[0], total=arr.reduce((a,b)=>a+b.v,0), minV=arr[arr.length-1].v;
     const gap=top.v-arr[1].v;
     const stage4=(s.vocal+s.dance+s.visual+s.charm)/4;   // 무대 4종 평균
-    const stageStar = stage4>=440 && minV<340;            // 무대 특화(연기·크리 낮음)
+    const stageStar = stage4>=440 && minV<340;            // 무대 특화(리듬감·창조 낮음)
     const topName=t("st_"+top.k);
     // 🥚 이스터에그: 훈련 거의 안 하고 휴식·멘탈케어만 → 스탯 바닥, 데뷔조차 못한 은둔 결말. 최우선 판정.
     if(total < 200) return {emoji:"🛋️",name:t("e_slacker_n"),tier:"F",sub:t("e_slacker_s")};
@@ -2076,7 +2076,7 @@ const Game = {
     // SS — 6각 완성 (실력이 SS급, 순위 무관)
     if(superA) return {emoji:"🌟",name:t("e_ss_n"),tier:"SS",
       sub:t("e_ss_s",{champ:champ?t("e_ss_champ"):t("e_ss_nochamp")})};
-    // S/A — 연기돌 전향 (연기가 확실한 주무기)
+    // S/A — 래퍼 전향 (리듬감이 확실한 주무기)
     if(specialist && top.k==="acting") return {emoji:"🎬",name:t("e_actingstar_n"),tier:podium?"S":"A",
       sub:t("e_actingstar_s",{g:grade(top.v)})};
     // S/A — 싱어송라이터 (작곡이 확실한 주무기)
