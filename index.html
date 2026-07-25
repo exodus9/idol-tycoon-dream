@@ -685,9 +685,9 @@
       <div class="muted" style="font-size:12px;margin-top:4px">탭해서 사진 올리기 · 또는 아래에서 고르기</div>
     </div>
     <div class="ag-emojis" id="agEmojis"></div>
-    <input class="srch" id="agName" placeholder="기획사 이름 (최대 14자)" maxlength="14" style="margin-top:12px">
+    <input class="srch" id="agName" placeholder="기획사 이름 (최대 14자)" maxlength="14" style="margin-top:12px" oninput="var b=document.getElementById('agSaveBtn');if(b)b.disabled=!this.value.trim();">
     <!-- 데뷔조 이름 입력 제거: 그룹명은 데뷔 세리머니에서 지음(옛 groupName이 편성 버퍼에 붙어 "대표그룹은 A인데 정보는 B" 혼동 유발) -->
-    <button class="btn" onclick="DG.saveAgencyFromUI()" style="margin-top:12px">저장 →</button>
+    <button class="btn" id="agSaveBtn" onclick="DG.saveAgencyFromUI()" style="margin-top:12px" disabled>저장 →</button>
   </section>
 
   <!-- 데뷔 세리머니 -->
@@ -704,14 +704,14 @@
       <div class="muted" style="font-size:12px;margin-top:4px">그룹 로고 · 탭해서 사진 올리기 · 또는 아래에서 고르기</div>
     </div>
     <div class="ag-emojis" id="dbEmojis"></div>
-    <input class="srch" id="dbGroupName" placeholder="그룹 이름 (예: STELLAR, 최대 14자)" maxlength="14" style="margin-top:12px">
-    <button class="btn" onclick="DG.confirmDebut()" style="margin-top:12px">🎬 데뷔 시키기!</button>
+    <input class="srch" id="dbGroupName" placeholder="그룹 이름 (예: STELLAR, 최대 14자)" maxlength="14" style="margin-top:12px" oninput="var b=document.getElementById('debutBtn');if(b)b.disabled=!this.value.trim();">
+    <button class="btn" id="debutBtn" onclick="DG.confirmDebut()" style="margin-top:12px" disabled>🎬 데뷔 시키기!</button>
   </section>
 
   <!-- 연습생 숙소 -->
   <section class="screen" id="s-roster">
     <div class="sub-head"><h2 style="margin:0">📋 연습생 숙소</h2></div>
-    <p class="muted" style="margin:2px 0 6px">육성한 연습생들. <b>편성</b>으로 데뷔조에, 안 쓸 연습생은 <b>계약 해지</b>해 육성 카드로.</p>
+    <p class="muted" style="margin:2px 0 6px">육성한 연습생들. <b>편성</b>으로 데뷔조에, 안 쓸 연습생은 <b>방출</b>해 육성 카드로.</p>
     <div id="rosterList"></div>
     <button class="btn" onclick="Game.goSelect()" style="margin-top:14px">＋ 새 연습생 육성</button>
   </section>
@@ -792,7 +792,7 @@
 
   <!-- 랭킹 (그룹 차트 + 전설의 연습생) -->
   <section class="screen" id="s-league">
-    <div class="sub-head"><h2 style="margin:0">🏆 랭킹</h2></div>
+    <div class="sub-head"><h2 style="margin:0">🏆 차트</h2></div>
     <div class="segtab rank-seg">
       <button class="seg on" id="rseg-group" onclick="DG.setRankTab('group')">🏆 그룹</button>
       <button class="seg" id="rseg-trainee" onclick="DG.setRankTab('trainee')">🏅 연습생</button>
@@ -838,10 +838,10 @@
 
   <!-- 하단 탭바 (몰입 앱인앱 메인 네비 · 육성/서브화면선 자동 숨김) -->
   <nav class="tabbar" id="tabbar" style="display:none">
-    <button class="tab" data-tab="home" onclick="Nav.go('home')"><span class="tic">🏠</span>홈</button>
+    <button class="tab" data-tab="home" onclick="Nav.go('home')"><span class="tic">🏢</span>사무실</button>
     <button class="tab" data-tab="roster" onclick="Nav.go('roster')"><span class="tic">📋</span>숙소</button>
     <button class="tab" data-tab="cards" onclick="Nav.go('cards')"><span class="tic">🎴</span>카드</button>
-    <button class="tab" data-tab="ranking" onclick="Nav.go('ranking')"><span class="tic">🏆</span>랭킹</button>
+    <button class="tab" data-tab="ranking" onclick="Nav.go('ranking')"><span class="tic">🏆</span>차트</button>
     <button class="tab" data-tab="menu" onclick="Nav.go('menu')"><span class="tic">☰</span>메뉴</button>
   </nav>
 
@@ -3630,6 +3630,20 @@ window.addEventListener("popstate", ()=>{
     useMic(){ this._regenMic(); if(this.data.mic==null)this.data.mic=this.MIC_MAX; if(this.data.mic>=this.MIC_MAX)this.data.micAt=Date.now(); this.data.mic=Math.max(0,this.data.mic-1); this.persist(); },
     micNextMs(){ this._regenMic(); if(this.mics()>=this.MIC_MAX) return 0; return this.MIC_REFILL_MS-((Date.now()-(this.data.micAt||Date.now()))%this.MIC_REFILL_MS); },
     micRefillMsg(){ const ms=this.micNextMs(); if(!ms) return '가득 참'; const m=Math.ceil(ms/60000); return `다음 충전까지 ${m}분`; },
+    // 마이크 충전 카운트다운 = MM:SS (재율애비: 00:00 형태 타이머)
+    micClock(){ const ms=this.micNextMs(); const m=Math.floor(ms/60000), s=Math.floor(ms/1000)%60; return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; },
+    micBarHTML(){ const mics=this.mics(), full=mics>=this.MIC_MAX;
+      return `<span class="mic-icons">${'🎤'.repeat(mics)}${'<span style="opacity:.28">🎤</span>'.repeat(this.MIC_MAX-mics)}</span>
+        <span class="mic-info">${mics}/${this.MIC_MAX}${full?'':` · <span class="muted">다음 충전 <b id="micClock">${this.micClock()}</b></span>`}</span>`; },
+    startMicTick(){ this.stopMicTick(); this._micShown=this.mics();
+      this._micIv=setInterval(()=>{ const bar=document.getElementById('micBar');
+        const sb=document.getElementById('s-battle');
+        if(!bar || !(sb&&sb.classList.contains('on'))){ this.stopMicTick(); return; }   // 로비 이탈 시 자동정지(show는 DOM 안 지우고 숨기기만 해서 #micBar 잔존 → 활성화면 체크 필수)
+        const cur=this.mics();                                        // _regenMic 트리거
+        if(cur!==this._micShown){ this._micShown=cur; bar.innerHTML=this.micBarHTML(); return; }  // 충전되면 아이콘·정보 통째 갱신
+        const el=document.getElementById('micClock'); if(el) el.textContent=this.micClock();
+      }, 1000); },
+    stopMicTick(){ if(this._micIv){ clearInterval(this._micIv); this._micIv=null; } },
 
     // 카드 = 레어도(고정) × 강화 별(★1~5, 머지). 장착 효과는 보유 최고 별 기준.
     add(type,star,n){ const cs=this.data.cards; if(!cs[type])cs[type]={}; cs[type][star]=(cs[type][star]||0)+n; if(cs[type][star]<=0)delete cs[type][star]; if(!Object.keys(cs[type]).length)delete cs[type];
@@ -3830,10 +3844,8 @@ window.addEventListener("popstate", ()=>{
       const g=this.repGroup(); if(!g) return;
       const bs=this.battleSeason(), tier=this.battleTier(bs.pts);
       const mem=this.groupMembers(g), bp=this.battlePower(mem);
-      const mics=this.mics();
       document.getElementById('battleMine').innerHTML=
-        `<div class="mic-bar"><span class="mic-icons">${'🎤'.repeat(mics)}${'<span style=\"opacity:.28\">🎤</span>'.repeat(this.MIC_MAX-mics)}</span>
-           <span class="mic-info">${mics}/${this.MIC_MAX}${mics<this.MIC_MAX?` · <span class="muted">${this.micRefillMsg()}</span>`:''}</span></div>
+        `<div class="mic-bar" id="micBar">${this.micBarHTML()}</div>
          <div class="lg-head"><div class="lg-tier-ic">${tier.ic}</div><div class="lg-tier-nm">${esc(tier.nm)}</div>
           <div class="lg-tier-sub">${this.logoHtml(g.logo,20)} ${esc(g.name)} · 승점 <b>${bs.pts}</b>P · ${bs.w||0}승 ${bs.l||0}패</div>
           <div class="lg-rank-badge">전투력 ${bp.power.toLocaleString()} · 시너지 +${bp.syn}%${bp.fanBonus?` · 💗팬덤 +${bp.fanBonus}`:''}</div>
@@ -3860,6 +3872,7 @@ window.addEventListener("popstate", ()=>{
         `<div class="dg-sub" style="margin-top:15px"><b>🏅 티어 기준</b><span class="muted">시즌 승점 · 2주마다 리셋</span></div>
          <div class="tier-strip">${BATTLE_TIERS.map(tr=>`<span class="tier-chip ${tr.nm===tier.nm?'on':''}">${tr.ic} ${tr.nm} <small>${tr.min}P+</small></span>`).join('')}</div>
          ${_log?`<div class="dg-sub" style="margin-top:13px"><b>📜 최근 전적</b></div><div class="lb">${_log}</div>`:''}`;
+      this.startMicTick();   // 마이크 00:00 카운트다운 매초 갱신(로비 이탈 시 자동정지)
     },
     openFoe(i){ const f=(this._foes||[])[i]; if(!f) return; this.openBattle(f.name, f.logo, f.score); },
     openBattle(oppName, oppLogo, oppScore){ this.load();
@@ -4427,8 +4440,8 @@ window.addEventListener("popstate", ()=>{
       const actions = `
           ${!commit&&this.lineupRids().indexOf(rid)<0?`<button class="btn" style="flex:2;padding:13px 6px;min-width:0;white-space:nowrap" onclick="var o=document.getElementById('ov');o.className='ov';o.onclick=null;DG.doQuick(${rid})">＋ 편성</button>`:''}
           <button class="btn ghost" style="flex:0 0 54px;padding:13px 0" onclick="DG.toggleFav(${rid})" title="최애 지정">${isFav?'💖':'🤍'}</button>
-          ${!commit?`<button class="btn ghost" style="flex:0 0 54px;padding:13px 0" onclick="DG.toggleLock(${rid})" title="잠금(은퇴 방지)">${r.locked?'🔒':'🔓'}</button>`:''}
-          ${(!commit&&!r.locked)?`<button class="btn ghost" style="flex:1;padding:13px 6px;min-width:0;white-space:nowrap;color:#ff7d95" onclick="var o=document.getElementById('ov');o.className='ov';o.onclick=null;DG.doDiscard(${rid})">계약 해지</button>`:''}`;
+          ${!commit?`<button class="btn ghost" style="flex:0 0 54px;padding:13px 0" onclick="DG.toggleLock(${rid})" title="잠금(방출 방지)">${r.locked?'🔒':'🔓'}</button>`:''}
+          ${(!commit&&!r.locked)?`<button class="btn ghost" style="flex:1;padding:13px 6px;min-width:0;white-space:nowrap;color:#ff7d95" onclick="var o=document.getElementById('ov');o.className='ov';o.onclick=null;DG.doDiscard(${rid})">방출</button>`:''}`;
       this.showFlipCard(front, back, actions, (ov)=>{
         try{ drawRadar(document.getElementById('rosRadar'), sv, {dark:true, big:true}); }catch(e){}
         // 애정⑤ 반응 대사 말풍선(카드 위 3초)
@@ -4527,11 +4540,11 @@ window.addEventListener("popstate", ()=>{
       document.getElementById('_cmNo').onclick=close;
       document.getElementById('_cmYes').onclick=()=>{ close(); try{opt.onOk&&opt.onOk();}catch(e){} };
     },
-    // #20 은퇴 → '계약 해지'. 편성중(#21)·잠금 차단. 성공 시 연습생 카드 → 육성 카드 변환 연출.
+    // #20 은퇴 → '방출'. 편성중(#21)·잠금 차단. 성공 시 연습생 카드 → 육성 카드 변환 연출.
     doDiscard(rid){ const r=this.rosterById(rid); if(!r)return;
       if(r.locked){ toast('🔒 잠긴 연습생이야 — 상세에서 잠금 해제 먼저'); return; }   // #9 실수 방지
-      if(this.lineupRids().indexOf(rid)>=0){ toast('📋 편성 중인 연습생은 계약 해지 못 해 — 먼저 편성에서 빼줘'); return; }   // #21
-      this.confirmModal({title:'계약 해지', body:`<b>${esc(r.name)}</b> 와(과) 계약을 해지할까?<br><span class="muted" style="font-size:12.5px">그동안의 노력이 <b>육성 카드</b>로 남아.</span>`, ok:'계약 해지', cancel:'취소', danger:true,
+      if(this.lineupRids().indexOf(rid)>=0){ toast('📋 편성 중인 연습생은 방출 못 해 — 먼저 편성에서 빼줘'); return; }   // #21
+      this.confirmModal({title:'방출', body:`<b>${esc(r.name)}</b> 을(를) 방출할까?<br><span class="muted" style="font-size:12.5px">그동안의 노력이 <b>육성 카드</b>로 남아.</span>`, ok:'방출', cancel:'취소', danger:true,
         onOk:()=>{ const res=this.discard(rid); if(res.err==='inup'){ toast('편성 중이라 해지 못 해'); return; }
           if(res.ok){ this._discardFx(res); this.renderRoster(); } }}); },
     // 연습생 카드 → 육성 카드 변환 연출(플립+파티클)
@@ -4549,7 +4562,7 @@ window.addEventListener("popstate", ()=>{
       try{ sfx('sparkle'); setTimeout(()=>sfx('win'),620); }catch(e){}
     },
     toggleLock(rid){ this.load(); const r=this.rosterById(rid); if(!r)return;
-      r.locked=!r.locked; this.persist(); toast(r.locked?'🔒 잠금 — 계약 해지 불가':'🔓 잠금 해제');
+      r.locked=!r.locked; this.persist(); toast(r.locked?'🔒 잠금 — 방출 불가':'🔓 잠금 해제');
       this.showRosterDetail(rid); },   // 팝업 갱신(버튼 라벨 반영)
     // 현 데뷔조를 그룹으로 데뷔(저장) → 멤버 전속. 이름 입력받아 스냅샷
     // 데뷔 = 전용 세리머니 화면(그룹명·로고 짓기). 기존 prompt 1줄 → s-debut 승격.
@@ -4745,7 +4758,7 @@ window.addEventListener("popstate", ()=>{
     // 카드별 정확한 획득 경로(직관성 — 도감·상세에 명시). 하이브리드는 재료 R카드 2종을 이름으로.
     cardOrigin(id){ const c=CARDS[id]; if(!c) return '';
       if(c.rr===0) return '🎯 육성 완주 시 획득';
-      if(c.rr===1){ const k=Object.keys(c.eff.stat||{})[0], nm=STATNM[k]||''; return `🎯 육성 완주(${nm} 위주 훈련) · 🤝 계약 해지 · ⚗️ N+N 합성`; }
+      if(c.rr===1){ const k=Object.keys(c.eff.stat||{})[0], nm=STATNM[k]||''; return `🎯 육성 완주(${nm} 위주 훈련) · 🤝 방출 · ⚗️ N+N 합성`; }
       if(c.hyb){ const ks=Object.keys(c.eff.stat||{}); const r1=this.nmOf(STATCARD[ks[0]]), r2=this.nmOf(STATCARD[ks[1]]);
         return `⚗️ ${r1} + ${r2} 합성 · 🎯 육성 SR 드랍`; }
       if(id==='genius') return '🎯 육성 완주 SR 드랍 전용 (합성으로는 안 나와)';
@@ -5255,6 +5268,7 @@ window.addEventListener("popstate", ()=>{
     renderAgency(){
       this.load(); const a=this.agency(); this._agSel=a.logo||'🏢';
       const nm=document.getElementById('agName'); if(nm) nm.value=(a.name&&a.name!=='우리 기획사')?a.name:'';
+      const sb=document.getElementById('agSaveBtn'); if(sb) sb.disabled=!(nm&&nm.value.trim());   // L. 저장버튼 초기상태 = 입력값 동기화
       const gp=document.getElementById('agGroup'); if(gp) gp.value=(this.data.groupName&&this.data.groupName!=='우리 데뷔조')?this.data.groupName:'';
       this.renderAgLogo();
       const EMO=['🏢','🏯','🎪','🌟','🎬','🎤','🎧','🎹','🔥','💎','👑','🌈','🍀','🐣','🐰','🦆','🚀','🎯'];
@@ -5273,7 +5287,8 @@ window.addEventListener("popstate", ()=>{
           document.querySelectorAll('.ag-emo.on').forEach(b=>b.classList.remove('on')); };
         img.src=e.target.result; }; rd.readAsDataURL(f); },
     saveAgencyFromUI(){ this.load();
-      const name=(((document.getElementById('agName')||{}).value)||'').trim().slice(0,14) || '우리 기획사';
+      const name=(((document.getElementById('agName')||{}).value)||'').trim().slice(0,14);
+      if(!name){ try{toast('기획사 이름을 지어줘');}catch(e){} const el=document.getElementById('agName'); if(el)el.focus(); return; }   // L. 필수값
       this.data.agency={name, logo:this._agSel||'🏢'}; this.persist();   // groupName은 더이상 셋업에서 안 받음(세리머니에서 지음)
       try{toast('저장 완료! 🏢');}catch(e){} this.go();
     },
@@ -5539,7 +5554,7 @@ window.addEventListener("popstate", ()=>{
       if(!this.on()) return;
       const M={ roster:{m:'🐤', b:`📋 <b>숙소</b>예요. 완주한 연습생이 모이는 곳! 여기서 포지션에 배치해 데뷔조를 짜요.`},
         cards:{m:'🐰', b:`🎴 <b>카드</b>예요. 육성 중 얻은 카드를 <b>합쳐(머지)</b> 강하게 만들고, 다음 육성에 <b>장착</b>해 더 세게 키워요.`},
-        ranking:{m:'🐤', b:`🏆 <b>랭킹</b>이에요. 내 그룹이 시즌 승점으로 다른 그룹들과 겨뤄요.`},
+        ranking:{m:'🐤', b:`🏆 <b>차트</b>예요. 내 그룹이 시즌 승점으로 다른 그룹들과 겨뤄요. 여기서 대결(경쟁전)도 들어가요.`},
         menu:{m:'🐰', b:`☰ <b>메뉴</b>예요. 업적·도감·설정이 여기 있어요. 튜토리얼도 여기서 다시 볼 수 있어요.`} };
       const info=M[tab]; if(!info) return; const id='tab_'+tab; if(this.did(id)) return;
       setTimeout(()=>this.spot({ id, mascot:info.m, place:'above',
