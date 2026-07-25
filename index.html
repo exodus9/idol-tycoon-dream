@@ -4941,18 +4941,33 @@ window.addEventListener("popstate", ()=>{
       if(hint) hint.innerHTML='카드를 모아 <b style="color:#a855f7">⚗️ 조합소</b>에서 강화(별↑)·합성(레어도↑)해봐.';
       let all=this.ownedTypes(); const f=this._cardFilter||'all', srt=this._cardSort||'rr';
       if(srt==='star') all=all.slice().sort((a,b)=>this.bestStar(b)-this.bestStar(a) || (CARDS[b].rr-CARDS[a].rr));   // #6 별 우선 정렬
+      const stack=!!this._cardStack;   // 기본 false=낱장 전량 표시(재율애비: 성취감+내구도 착시해결), 토글로 같은카드 겹치기
       if(fbox) fbox.innerHTML=`<div class="cfilter">${['all','N','R','SR','SSR','UR'].map(x=>
         `<button class="cf-chip ${f===x?'on':''}" onclick="DG.setCardFilter('${x}')">${x==='all'?'전체':x}</button>`).join('')}</div>
         <div class="cfilter" style="margin-top:6px">${[['rr','레어도순'],['star','★별순']].map(d=>
-        `<button class="cf-chip ${srt===d[0]?'on':''}" onclick="DG._cardSort='${d[0]}';DG.renderCardsOwned()">${d[1]}</button>`).join('')}</div>`;
+        `<button class="cf-chip ${srt===d[0]?'on':''}" onclick="DG._cardSort='${d[0]}';DG.renderCardsOwned()">${d[1]}</button>`).join('')}
+        <button class="cf-chip ${stack?'on':''}" onclick="DG._cardStack=!DG._cardStack;DG.renderCardsOwned()" title="같은 카드를 겹쳐서 볼지">🂠 겹치기</button></div>`;
       const types = f==='all'? all : all.filter(id=>RARITY[CARDS[id].rr]===f);
       if(!types.length){ box.innerHTML=`<p class="muted" style="text-align:center;padding:24px">${all.length?'이 레어도 카드가 없어':'아직 보유한 육성카드가 없어.<br>육성을 마치면 생겨!'}</p>`; return; }
-      // ③ card-demo 스타일 카드 그리드 (탭=상세)
-      box.innerHTML=`<div class="tgrid">`+types.map(id=>{ const bs=this.bestStar(id);
-        let tot=0; for(let s=1;s<=MAXSTAR;s++) tot+=this.countAt(id,s);
-        return this.tcardHTML(id,{star:bs, attr:`onclick="DG.showCardDetail('${id}')"`,
-          foot:`<div class="tc-meta" style="margin-top:2px">${tot}장 보유${bs>=MAXSTAR?' · 👑풀강':''}</div>`});
-      }).join('')+`</div>`;
+      if(stack){
+        // 겹치기: 타입당 대표 1장(총 N장 표기)
+        box.innerHTML=`<div class="tgrid">`+types.map(id=>{ const bs=this.bestStar(id);
+          let tot=0; for(let s=1;s<=MAXSTAR;s++) tot+=this.countAt(id,s);
+          return this.tcardHTML(id,{star:bs, attr:`onclick="DG.showCardDetail('${id}')"`,
+            foot:`<div class="tc-meta" style="margin-top:2px">${tot}장 보유${bs>=MAXSTAR?' · 👑풀강':''}</div>`});
+        }).join('')+`</div>`;
+      } else {
+        // 낱장: 모든 물리 카드를 개별로. 같은 (타입·별) 스택 중 '쓰던 1장'만 내구도 감소, 나머지는 만충(착시 해소)
+        const cells=[];
+        types.forEach(id=>{ for(let s=1;s<=MAXSTAR;s++){ const cnt=this.countAt(id,s); if(!cnt) continue;
+          const worn=this.wearOf(id,s)>0, dLeft=this.durLeft(id,s);
+          for(let k=0;k<cnt;k++){ const isWorn=worn&&k===0;
+            cells.push(this.tcardHTML(id,{star:s, noNew:k>0, attr:`onclick="DG.showCardDetail('${id}')"`,
+              foot:`<div class="tc-meta" style="margin-top:2px">🔋 ${isWorn?dLeft:this.DUR_MAX}/${this.DUR_MAX}</div>`}));
+          }
+        }});
+        box.innerHTML=`<div class="tgrid">`+cells.join('')+`</div>`;
+      }
     },
     renderCardsDex(){
       const box=document.getElementById('cardsList'), fbox=document.getElementById('cardsFilter'), hint=document.getElementById('cardsHint');
