@@ -3299,6 +3299,12 @@ window.addEventListener("popstate", ()=>{
   .rcard{position:relative;aspect-ratio:3/4.05;border-radius:14px;overflow:hidden;cursor:pointer;isolation:isolate;box-shadow:0 10px 24px -10px rgba(0,0,0,.7)}
   .rcard .rph{position:absolute;inset:0;background-size:cover;background-position:top center;z-index:0}
   .rcard .rph.noimg{display:flex;align-items:center;justify-content:center;font-size:48px;background:linear-gradient(160deg,#3a3350,#241f38)}
+  /* 그룹카드 앞면 3인 사선 겹침(리더+상위2인) */
+  .rcard .rph3{position:absolute;inset:0;z-index:0;background:linear-gradient(160deg,#2a2446,#1a1630)}
+  .rcard .rph3 .m{position:absolute;aspect-ratio:1;border-radius:50%;background-size:cover;background-position:center;border:3px solid rgba(255,255,255,.82);box-shadow:0 6px 16px rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;font-size:24px;background-color:#3a3350}
+  .rcard .rph3 .m1{width:54%;top:5%;left:5%;z-index:3}
+  .rcard .rph3 .m2{width:50%;top:25%;right:5%;z-index:2}
+  .rcard .rph3 .m3{width:47%;top:47%;left:15%;z-index:1}
   .rcard .rgd{position:absolute;inset:0;z-index:1;background:linear-gradient(to top,rgba(6,4,12,.93) 8%,rgba(6,4,12,.4) 32%,transparent 54%)}
   .rcard .rfr{position:absolute;inset:0;z-index:3;border-radius:14px;pointer-events:none;border:2.5px solid transparent}
   .rcard.t1 .rfr{border-color:#5fa8e6;box-shadow:inset 0 0 0 1px rgba(255,255,255,.22),inset 0 0 16px rgba(60,130,230,.35)}
@@ -4377,7 +4383,13 @@ window.addEventListener("popstate", ()=>{
     // ===== ③⑫ 수집카드 컴포넌트: 앞면 카드 마크업 + 플립 팝업(탭=뒷면 상세) =====
     // o={img, em(사진없을때), name, tier(0~4), badge(좌상단), tag(우상단), stars('★★★'), sub, pos}
     ucardHTML(o){
-      const ph = o.img?`<div class="rph" style="background-image:url('${o.img}')"></div>`:`<div class="rph noimg">${o.em||'🎤'}</div>`;
+      let ph;
+      if(o.members && o.members.length>=2){   // 그룹 앞면 3인 사선
+        const cls=['m1','m2','m3'];
+        ph=`<div class="rph3">${o.members.slice(0,3).map((m,i)=>
+          m.img?`<div class="m ${cls[i]}" style="background-image:url('${m.img}')"></div>`
+               :`<div class="m ${cls[i]}">${m.em||'🎤'}</div>`).join('')}</div>`;
+      } else ph = o.img?`<div class="rph" style="background-image:url('${o.img}')"></div>`:`<div class="rph noimg">${o.em||'🎤'}</div>`;
       return `<div class="rcard t${o.tier||0}">
         ${ph}<div class="rgd"></div><div class="rholo"></div>
         ${o.badge?`<div class="rbadge">${esc(o.badge)}</div>`:''}${o.tag?`<div class="rtag">${esc(o.tag)}</div>`:''}
@@ -5169,8 +5181,13 @@ window.addEventListener("popstate", ()=>{
       const isRep=g.gid!=null && g.gid===this.repGroupGid();
       const bs=isRep?this.battleSeason():null, tier=bs?this.battleTier(bs.pts):null;
       const lead=mem.find(m=>m.r.img)||mem[0];
+      // C. 앞면 3인 사선 = 리더(고정) + 리더 제외 posScore 상위 2인 (센터 없는 덱도 성립)
+      const leaderM=mem.find(m=>m.type==='leader')||mem[0];
+      const rest=mem.filter(m=>m!==leaderM).slice().sort((a,b)=>this.posScore(b.r.stats,b.type)-this.posScore(a.r.stats,a.type));
+      const rep3=[leaderM,...rest].filter(Boolean).slice(0,3);
+      const members=rep3.map(m=>({img:m.r.img, em:'🎤'}));
       const gtier=this.gradeTier(g.grade!=null?g.grade:(bp?grade(Math.round(bp.base/Math.max(1,mem.length))):'C'));
-      const front=this.ucardHTML({img:lead&&lead.r.img, em:(g.logo&&String(g.logo).length<4)?g.logo:'🎤', name:g.name||'데뷔조', tier:gtier,
+      const front=this.ucardHTML({members, img:lead&&lead.r.img, em:(g.logo&&String(g.logo).length<4)?g.logo:'🎤', name:g.name||'데뷔조', tier:gtier,
         badge:g.grade||'', tag:tier?`${tier.ic}${tier.nm}`:'', stars:'★'.repeat(gtier+1),
         sub: bs?`승점 ${bs.pts||0}P · ${bs.w||0}승 ${bs.l||0}패`:`⚔️ 전투력 ${fmt(bp.power)}`, pos:`👥 ${mem.length}인`});
       const back=`<div class="fb-name">${this.logoHtml(g.logo,20)} ${esc(g.name||'데뷔조')}</div>
