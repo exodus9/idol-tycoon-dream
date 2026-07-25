@@ -3730,7 +3730,7 @@ window.addEventListener("popstate", ()=>{
     groupOfRid(rid){ return (this.data.groups||[]).find(g=>Object.keys(g.lineup||{}).some(k=>g.lineup[k]===rid)); },
     idkeyInLineup(idkey, exceptSlot){ for(const sid in this.data.lineup){ if(sid===exceptSlot)continue; const r=this.rosterById(this.data.lineup[sid]); if(r&&r.idkey===idkey)return true; } return false; },
     // ===== 동적 슬롯 (data.slots=[{sid,type}]. leader=slots[0] 고정) =====
-    defaultSlots(){ return [{sid:1,type:'leader'},{sid:2,type:'vocal'},{sid:3,type:'dancer'}]; },
+    defaultSlots(){ return [{sid:1,type:'leader'},{sid:2,type:'center'},{sid:3,type:'dancer'}]; },   // 재율애비: 시작슬롯 리더/센터/댄서(센터=첫인상 어필)
     slots(){ if(!Array.isArray(this.data.slots)||!this.data.slots.length){ this.data.slots=this.defaultSlots(); this.data.slotSeq=3; } return this.data.slots; },
     slotById(sid){ return this.slots().find(s=>String(s.sid)===String(sid)); },
     slotIco(slot){ return slot?(POSICO[slot.type]||'🎤'):'🎤'; },
@@ -4160,12 +4160,15 @@ window.addEventListener("popstate", ()=>{
       }
       const achvD=this.achvDone(), achvT=ACHV.length, achvPct=achvT?Math.round(achvD/achvT*100):0;
       // ㉖ 차트·카드 위젯은 하단탭과 중복 진입이라 제거(이동은 탭바로). 업적(탭 아님)만 홈 위젯 유지.
-      document.getElementById('homeWidgets').innerHTML=
-        `<div class="hw hw-wide" onclick="DG.goAchv()">
-           <span class="hw-ic">🏅</span>
-           <div class="hw-wide-m"><div class="hw-t">업적</div><div class="hw-bar"><i style="width:${achvPct}%"></i></div></div>
-           <div class="hw-v">${achvD}<small>/${achvT}</small></div>
-         </div>`;
+      // E. 업적은 메뉴가 본진 — 홈은 '새 달성 있을 때만' 넛지 배너(중복 제거·홈 정리). 평소엔 비움.
+      const _newAchv = this.achvDone() > (this.data.achvViewed||0);
+      document.getElementById('homeWidgets').innerHTML = _newAchv
+        ? `<div class="hw hw-wide" onclick="DG.showMenu()" style="border-color:var(--accent);cursor:pointer">
+             <span class="hw-ic">🏅</span>
+             <div class="hw-wide-m"><div class="hw-t">새 업적 달성! <span class="muted" style="font-weight:400;font-size:12px">메뉴에서 확인 ›</span></div></div>
+             <span class="tab-dot" style="position:static;margin-left:auto"></span>
+           </div>`
+        : '';
 
       // 홈 진입 시 새 업적 감지
       this.checkAchv();
