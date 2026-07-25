@@ -5192,10 +5192,10 @@ window.addEventListener("popstate", ()=>{
         sub: bs?`승점 ${bs.pts||0}P · ${bs.w||0}승 ${bs.l||0}패`:`⚔️ 전투력 ${fmt(bp.power)}`, pos:`👥 ${mem.length}인`});
       const back=`<div class="fb-name">${this.logoHtml(g.logo,20)} ${esc(g.name||'데뷔조')}</div>
         <div class="fb-sub">${g.grade?g.grade+'등급 · ':''}⚔️ 전투력 ${fmt(bp.power)} · 시너지 +${bp.syn}%</div>
-        <div class="fb-rows" style="margin-top:5px">${mem.map(m=>`<div style="display:flex;align-items:center;gap:7px;padding:2px 0">
-          ${m.r.img?`<span style="width:22px;height:22px;border-radius:50%;background:url('${m.r.img}') center/cover;flex:none"></span>`:'<span style="flex:none">🎤</span>'}
-          <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(m.r.name)}</span>
-          <small style="color:#c3b6dd">${POSICO[m.type]||''} ${POSTYPES[m.type]?POSTYPES[m.type].nm:''}</small></div>`).join('')}</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:9px">${mem.map(m=>`<div style="text-align:center;min-width:0">
+          ${m.r.img?`<span style="display:block;width:54px;height:54px;border-radius:50%;background:url('${m.r.img}') center/cover;margin:0 auto;border:2px solid rgba(255,255,255,.5)"></span>`:'<span style="display:flex;width:54px;height:54px;border-radius:50%;background:#3a3350;align-items:center;justify-content:center;margin:0 auto;font-size:26px">🎤</span>'}
+          <div style="font-size:11.5px;font-weight:600;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(m.r.name)}</div>
+          <div style="font-size:10px;color:#c3b6dd">${POSICO[m.type]||''} ${POSTYPES[m.type]?POSTYPES[m.type].nm:''}</div></div>`).join('')}</div>
         ${syn.list.length?`<div style="margin-top:7px"><div class="fb-sub" style="margin:0 0 4px">✨ 시너지 +${syn.pct}%</div>
           <div class="fb-rows">${syn.list.map(s=>`<span style="display:inline-block;margin:0 5px 4px 0;padding:1.5px 8px;border-radius:999px;background:rgba(255,255,255,.1);font-size:11px">${esc(s.nm)} +${s.pct}%</span>`).join('')}</div></div>`:''}`;
       // 공유는 텍스트+링크(재율애비: 이미지 생성 제거). 카드 앞뒷면 뷰가 기본, 하단 공유 버튼.
