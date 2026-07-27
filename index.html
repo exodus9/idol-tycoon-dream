@@ -976,6 +976,8 @@ const STATS = [
   {k:"creative",n:"창조",   ico:"🎼", c:"#4fe0c0"},
 ];
 const MENTAL = {k:"mental", n:"멘탈", ico:"🧠", c:"#9aa6c9"};
+// 시즌 트렌드(pos) → 육성 스탯 매핑. 이번 시즌 '대세' 스탯 훈련에 보너스 → 매 시즌 유리한 빌드 변별(반복 리텐션). Game/DG 공용 스코프.
+const TREND_STAT = { vocal:"vocal", rapper:"acting", dancer:"dance", center:"visual", producer:"creative" };
 
 // 등급 F ~ SS — 스탯은 누적 포인트 P. 100마다 등급 1개↑ (게이지 꽉차면 등급업).
 // level 0~7 = F E D C B A S SS. 게이지 = 현재 등급 안에서의 진행도(0~100).
@@ -1756,9 +1758,11 @@ const Game = {
     const stc=k=>((STATS.find(x=>x.k===k)||{}).c)||"#5a4a8f";
     const stnm=k=>((STATS.find(x=>x.k===k)||{}).n)||"";
     const cardById=id=>(id==="special"?RARE_CARD:TRAIN_CARDS.find(c=>c.id===id));
+    let _trendStat=null; try{ if(window.DG&&DG.currentTrend) _trendStat=TREND_STAT[DG.currentTrend().pos]; }catch(e){}
     // 카드 = 아이콘 + 이름 + ⚡코스트. 설명 문장 없음(암묵지 — 특수 카드는 뱃지·색으로, 나머진 플레이로 학습)
     const cardHTML=(id,i)=>{ const c=cardById(id); if(!c) return "";
       const spec=c.stat && c.stat===s.idol.spec;
+      const onTrend=c.stat && c.stat===_trendStat;
       const tc = c.kind==="rest"?"#3a4a6a":c.kind==="live"?"#6a4a6a":c.kind==="rare"?"#b98a2a":c.kind==="burst"?"#c9482a":c.kind==="buff"?"#2a8a7a":stc(c.stat);
       const stamNow=(s.stam!=null?s.stam:100);
       const noStam = c.cost>0 && stamNow < c.cost;
@@ -1769,7 +1773,7 @@ const Game = {
       return `<button class="hcard act${c.kind==="rare"?' rare':''}${c.kind==="burst"?' burst':''}${spec?' spec':''}${noStam?' dim':''}" style="--tc:${tc}" onclick="Game.playCard(${i})">
         ${badge}
         <span class="hc-ic">${c.ic}</span>
-        <span class="hc-nm">${c.nm}</span>
+        <span class="hc-nm">${c.nm}${onTrend?' <span class="hc-trend">📈</span>':''}</span>
         <span class="hc-cost${noStam?' no':''}">⚡ ${costTx}</span></button>`;
     };
     // 상태 칩(콤보·몰입) — 숫자 없이 최소 표기. 효과는 결과로 체감.
@@ -1830,7 +1834,11 @@ const Game = {
     const buffMult = buffOn ? s.buff.mult : 1;
     const rndv = 0.88+Math.random()*0.24;   // ±12% 텍스처
     const talent = spec ? 1.25 : 1.0;
-    let g = Math.round(c.base * mult * growthMult(s[stat]) * talent * (s.cardGrowth||1) * comboMult * buffMult * rndv);
+    // 시즌 트렌드 보너스: 이번 시즌 '대세' 스탯이면 +25%(매 시즌 유리한 빌드 변별)
+    let trendStat=null; try{ if(window.DG&&DG.currentTrend) trendStat=TREND_STAT[DG.currentTrend().pos]; }catch(e){}
+    const onTrend = stat===trendStat;
+    const trendMult = onTrend ? 1.25 : 1.0;
+    let g = Math.round(c.base * mult * growthMult(s[stat]) * talent * trendMult * (s.cardGrowth||1) * comboMult * buffMult * rndv);
     const oldV=Math.round(s[stat]), oldG=grade(oldV), oldL=levelOf(oldV);
     s[stat]=Math.max(0,Math.min(800,s[stat]+g));
     if(!s.trainCount)s.trainCount={}; s.trainCount[stat]=(s.trainCount[stat]||0)+1;
@@ -1847,8 +1855,9 @@ const Game = {
     const bloomLine = c.kind==="rare" ? `<div class="bloom-line">✨ 스페셜 레슨! 특기가 만개했다</div>` : (c.kind==="burst"?`<div class="bloom-line">🔥 혹독한 특훈! 한계를 넘었다</div>`:"");
     const comboTag = s.combo>=2 ? ` · 🔥${s.combo}연속` : "";
     const buffTag = buffOn ? ` · 🧘몰입` : "";
+    const trendTag = onTrend ? ` · 📈트렌드` : "";
     this.trainReveal(s.idol, stat, jk, J,
-      bloomLine + `${sico} ${sname} <b>+${g}</b> · 팬 +${fmt(fanGain)}${spec?' · ⭐특기':''}${comboTag}${buffTag}${cb==="good"?' · 好調!':cb==="bad"?' · 부진…':''}`,
+      bloomLine + `${sico} ${sname} <b>+${g}</b> · 팬 +${fmt(fanGain)}${spec?' · ⭐특기':''}${trendTag}${comboTag}${buffTag}${cb==="good"?' · 好調!':cb==="bad"?' · 부진…':''}`,
       t("say_"+jk),
       ()=>{ this.render(); this.bumpStat(stat,oldV,newV,oldG,newG); setTimeout(()=>this.afterTurn(),820); });
   },
