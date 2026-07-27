@@ -4297,9 +4297,17 @@ window.addEventListener("popstate", ()=>{
     // ===== 업적 =====
     achvState(){ return ACHV.map(a=>{ const val=a.cur(this), done=val>=a.goal; return {a, val, done, pct:Math.min(100,Math.round(val/a.goal*100))}; }); },
     achvDone(){ return this.achvState().filter(x=>x.done).length; },
+    // E. 업적 보상 = 클리어당 육성카드(주요 위주 차등). 큰 마일스톤만 SR(genius), 자잘 초반=N(effort), 기본=R 랜덤스탯. ⚠️합성경제 붕괴 방지(SR 소수)
+    achvReward(a){ const id=a.id||'', nm=a.nm||'';
+      if(/^(dexfull|star5|star5x3|ssr1|ur1|urboth|hyb15|cards20|win50|max800|roster20)$/.test(id)) return 'genius';   // SR
+      if(/^(card1|hyb1|battle1|win1|name1)$/.test(id) || /몸풀기|첫 카드|첫 편성|첫걸음/.test(nm)) return 'effort';        // N
+      return STATCARD[ORDER[Math.floor(Math.random()*ORDER.length)]]; },                                                // R 기본
     checkAchv(){ this.load(); if(!this.data.achvSeen) this.data.achvSeen={};
       const newly=[]; ACHV.forEach(a=>{ if(a.cur(this)>=a.goal && !this.data.achvSeen[a.id]){ this.data.achvSeen[a.id]=1; newly.push(a); } });
-      if(newly.length){ this.persist(); newly.forEach(a=>this.queueAchvFx(a)); }
+      if(newly.length){
+        newly.forEach(a=>{ const rw=this.achvReward(a); if(rw && CARDS[rw]){ const wasNew=!this.owned(rw); this.add(rw,1,1);
+          if(wasNew){ if(!this.data.newCards)this.data.newCards={}; this.data.newCards[rw]=1; } a._rw=rw; } });
+        this.persist(); newly.forEach(a=>this.queueAchvFx(a)); }
       return newly; },
     // A) 업적 달성 연출 — 상단 배너 슬라이드인(뱃지 회전·색종이·햅틱). 여러 개면 큐로 순차.
     queueAchvFx(a){ if(!this._achvQ)this._achvQ=[]; this._achvQ.push(a); if(!this._achvBusy)this._nextAchvFx(); },
@@ -4307,7 +4315,7 @@ window.addEventListener("popstate", ()=>{
       let host=document.getElementById('achvFx'); if(!host){ host=document.createElement('div'); host.id='achvFx'; document.body.appendChild(host); }
       host.className='achv-fx in';
       host.innerHTML=`<div class="afx-badge">${a.ic}</div>
-        <div class="afx-txt"><div class="afx-h">🏅 업적 달성!</div><div class="afx-nm">${esc(a.nm)}</div><div class="afx-desc">${esc(a.desc)}</div></div>`;
+        <div class="afx-txt"><div class="afx-h">🏅 업적 달성!</div><div class="afx-nm">${esc(a.nm)}</div><div class="afx-desc">${a._rw?`🎴 ${this.rarBadge(a._rw)} ${esc(this.nmOf(a._rw))} 획득!`:esc(a.desc)}</div></div>`;
       // 색종이
       const pal=['#ffd35c','#ff5fa2','#5fc9ff','#8b5cff','#4fd6a0'];
       for(let i=0;i<14;i++){ const s=document.createElement('span'); s.className='afx-conf'; s.style.left=(8+Math.random()*84)+'%'; s.style.background=pal[i%pal.length]; s.style.animationDelay=(Math.random()*0.35)+'s'; host.appendChild(s); setTimeout(()=>s.remove(),1600); }
