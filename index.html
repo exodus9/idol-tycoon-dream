@@ -3378,6 +3378,14 @@ window.addEventListener("popstate", ()=>{
   .goal-go{color:var(--sub);font-weight:800;flex:none}
   .goal-claim{display:flex;align-items:center;gap:10px;margin-top:13px;padding:11px 14px;border-radius:14px;cursor:pointer;
     background:linear-gradient(135deg,rgba(255,194,71,.16),rgba(255,77,114,.1));border:1px solid var(--gold);font-size:13.5px;color:var(--txt)}
+  /* 결과 화면 다음-목표 티저(한 명 더 육성 훅) */
+  .res-goals{margin-top:12px;background:var(--bg);border:1px solid var(--line);border-radius:13px;padding:11px 13px;text-align:left}
+  .res-goals-h{font-size:12.5px;font-weight:800;color:var(--txt);margin-bottom:8px}
+  .res-goal{display:flex;align-items:center;gap:10px;padding:4px 0}
+  .res-goal .rg-nm{flex:1;font-size:12.5px;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .res-goal .rg-c{color:var(--sub);font-weight:800;font-size:11px}
+  .res-goal .rg-bar{flex:0 0 88px;height:5px;background:var(--panel);border-radius:3px;overflow:hidden}
+  .res-goal .rg-bar>i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent2),var(--gold))}
   .rank-seg{margin:2px 0 13px}
   .rank-seg2{margin:-6px 0 13px}
   .rank-seg2 .seg{padding:8px 8px;font-size:13px}
@@ -5322,10 +5330,18 @@ window.addEventListener("popstate", ()=>{
         ? ['"다 프로듀서님 덕분이에요… 진짜로요!"','"저 잘했죠? 칭찬해줘요!"','"프로듀서님 없었으면 여기까지 못 왔어요"','"다음엔 더 잘할게요. 약속!"']
         : ['"미안해요… 다음엔 꼭 해낼게요"','"조금만 더 믿어주면 안 될까요?"'];
       const thanks=`<div class="fb-sub" style="text-align:center;margin:2px 0 8px;font-size:13px;color:#ffd35c">💬 ${thanksPool[Math.floor(Math.random()*thanksPool.length)]}</div>`;
+      // ⭐한 명 더 육성 훅: 방금 완주로 진척된 다음 목표 노출 → 최고 몰입 순간에 다음 런 유도
+      const ng=this.nextGoals(2);
+      const goalPull = ng.length ? `<div class="res-goals"><div class="res-goals-h">🎯 다음 목표</div>
+        ${ng.map(g=>{ const pct=Math.min(100,Math.round((g.val||0)/g.a.goal*100));
+          return `<div class="res-goal"><span class="rg-nm">${g.a.ic} ${esc(g.a.nm)}${g.a.goal>1?` <span class="rg-c">${g.val||0}/${g.a.goal}</span>`:''}</span>
+            <span class="rg-bar"><i style="width:${Math.max(5,pct)}%"></i></span></div>`; }).join('')}</div>` : '';
       box.innerHTML=`<div class="dg-res">${rec}<div class="dg-res-slot">${res.joinMsg}</div>${thanks}
         ${titleChips}
         <div class="dg-res-cards"><b>🎴 획득한 육성카드</b><div class="dg-chips" style="margin-top:6px">${chips}</div></div>
-        ${res.debuted?`<button class="btn ghost" onclick="DG.goRoster()" style="margin-top:10px">📋 연습생 숙소에서 편성하기</button>`:''}</div>`;
+        ${goalPull}
+        ${res.debuted?`<button class="btn ghost" onclick="DG.goRoster()" style="margin-top:10px">📋 연습생 숙소에서 편성하기</button>`:''}
+        <button class="btn" onclick="Game.goSelect()" style="margin-top:9px">＋ 한 명 더 육성</button></div>`;
       if(res.debuted) setTimeout(()=>{ try{toast('연습생 숙소 합류! 📋');}catch(e){} }, 450);
       setTimeout(()=>{ try{ this.checkAchv(); }catch(e){} }, 1400);   // #7 완주 직후 업적 토스트
     },
