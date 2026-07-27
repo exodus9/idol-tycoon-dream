@@ -3142,6 +3142,31 @@ window.addEventListener("popstate", ()=>{
   .bt-stagesum{text-align:center;font-size:13.5px;margin-bottom:10px}
   .bt-stagesum b{color:var(--accent);font-size:18px;font-variant-numeric:tabular-nums}
   .bt-syn{color:var(--gold);font-size:12px;margin-left:5px}
+  /* ⭐무대 라인업(얼굴 스포트라이트 순차 등장) — 옛 영수증 리스트 대체 */
+  .bt-lineup{display:flex;justify-content:center;align-items:flex-end;flex-wrap:wrap;gap:7px;min-height:80px;margin:2px 0 4px;padding:14px 6px 8px;border-radius:16px;
+    background:radial-gradient(120% 100% at 50% 0%, rgba(255,120,180,.18), transparent 66%), rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.07)}
+  .btl-mem{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;opacity:0;transform:translateY(12px) scale(.8)}
+  .btl-mem.in{opacity:1;transform:none;transition:transform .36s cubic-bezier(.3,1.7,.5,1),opacity .3s}
+  .btl-av{width:50px;height:50px;border-radius:50%;background:#3a3350;background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;font-size:22px;border:2px solid rgba(255,255,255,.28);box-shadow:0 4px 12px rgba(0,0,0,.45);transition:border-color .25s,box-shadow .25s}
+  .btl-mem.spot .btl-av{border-color:var(--gold);box-shadow:0 0 18px rgba(255,211,92,.85),0 0 5px #fff}
+  .btl-pos{font-size:9px;color:#c3b6dd;line-height:1;max-width:58px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .btl-plus{position:absolute;top:-15px;font-size:13px;font-weight:900;color:var(--gold);text-shadow:0 1px 4px #000;opacity:0}
+  .btl-mem.in .btl-plus{animation:btlPlus .7s ease .05s both}
+  @keyframes btlPlus{0%{opacity:0;transform:translateY(8px)}25%{opacity:1}100%{opacity:1;transform:translateY(-4px)}}
+  /* ⭐대결 게이지(밀고 당기기) */
+  .bt-versus{display:flex;align-items:center;justify-content:center;gap:12px;margin:6px 0 7px}
+  .btv-side{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;min-width:0}
+  .btv-nm{font-size:12px;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px}
+  .btv-mid{font-size:16px;font-weight:900;color:var(--accent);flex:0 0 auto;animation:btVsPulse 1.1s ease-in-out infinite}
+  .bt-gauge{position:relative;height:30px;border-radius:15px;overflow:hidden;margin:2px 0 6px;
+    background:linear-gradient(90deg,#5a4a8f,#4a5aa8);box-shadow:inset 0 2px 6px rgba(0,0,0,.4)}
+  .btg-mine{position:absolute;left:0;top:0;bottom:0;width:50%;background:linear-gradient(90deg,#ff6a9a,#ff4d72);transition:width 1.15s cubic-bezier(.3,1.15,.35,1)}
+  .btg-knob{position:absolute;top:-2px;bottom:-2px;width:4px;left:50%;transform:translateX(-50%);background:#fff;box-shadow:0 0 10px #fff;z-index:3;transition:left 1.15s cubic-bezier(.3,1.15,.35,1)}
+  .btg-v{position:absolute;top:50%;transform:translateY(-50%);font-size:14px;font-weight:900;font-variant-numeric:tabular-nums;z-index:2;text-shadow:0 1px 3px rgba(0,0,0,.7);color:#fff}
+  .btg-v.mine{left:10px} .btg-v.opp{right:10px}
+  .bt-gauge.crit{animation:btGaugeCrit .5s ease}
+  @keyframes btGaugeCrit{0%{filter:brightness(2.4) saturate(1.5)}100%{filter:none}}
+  .bt-critbadge{font-size:13px;font-weight:900;color:var(--gold);text-shadow:0 0 12px rgba(255,194,71,.7);margin-bottom:4px}
   .bt-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
   .bt-side{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:5px}
   .bt-logo{font-size:32px;width:64px;height:64px;border-radius:18px;background:rgba(0,0,0,.28);display:flex;align-items:center;justify-content:center;box-shadow:var(--hi)}
@@ -4129,43 +4154,68 @@ window.addEventListener("popstate", ()=>{
       const trend=this.currentTrend();
       mem = mem || this.groupMembers(g);
       const info = res.myInfo || this.battlePower(mem);
-      // 무대화: 내 멤버들 기여(posScore) 큰 순으로 등장
+      // 무대 라인업: 내 멤버들 기여(posScore) 큰 순으로 등장
       const contribs = mem.map(m=>({ img:m.r.img, pos:m.type, val:Math.round(this.posScore(m.r.stats,m.type)) })).sort((a,b)=>b.val-a.val);
-      const crTag=(r)=> r.crit? `<div class="bt-crit ${r.up?'up':'down'}">${r.up?'⚡ CRITICAL':'💧 불발'}</div>`:'<div class="bt-crit-none"></div>';
+      const anyCrit = res.my.crit || res.opp.crit;
       ov.innerHTML=`<div class="ev-card bt-card">
         <div class="bt-title">⚔️ 무대 대결</div>
         <div class="bt-trend">${trend.ic} 트렌드 «${esc(trend.nm)}»</div>
-        <div class="bt-stage" id="btStage"></div>
+        <div class="bt-lineup" id="btLineup"></div>
         <div class="bt-stagesum" id="btStageSum" style="opacity:0">🎤 무대 점수 <b id="btStageTot">0</b>${info.syn?` <span class="bt-syn">🔥 시너지 +${info.syn}%</span>`:''}</div>
-        <div class="bt-row" id="btVs" style="opacity:0">
-          <div class="bt-side"><span class="bt-logo">${this.logoHtml(g.logo,42)}</span>
-            <div class="bt-nm">${esc(g.name)}</div><div class="bt-pw" id="btMyPw">0</div>${crTag(res.my)}</div>
-          <div class="bt-vs">VS</div>
-          <div class="bt-side"><span class="bt-logo">${this.logoHtml(opp.logo,42)}</span>
-            <div class="bt-nm">${esc(opp.name)}</div><div class="bt-pw" id="btOpPw">0</div>${crTag(res.opp)}</div>
+        <div class="bt-versus" id="btVs" style="opacity:0;transition:opacity .5s">
+          <div class="btv-side"><span class="bt-logo" style="width:46px;height:46px;font-size:26px;border-radius:13px">${this.logoHtml(g.logo,42)}</span><span class="btv-nm">${esc(g.name)}</span></div>
+          <div class="btv-mid">VS</div>
+          <div class="btv-side"><span class="bt-logo" style="width:46px;height:46px;font-size:26px;border-radius:13px">${this.logoHtml(opp.logo,42)}</span><span class="btv-nm">${esc(opp.name)}</span></div>
         </div>
+        <div class="bt-gauge" id="btGauge" style="opacity:0;transition:opacity .4s">
+          <div class="btg-mine" id="btgMine"></div>
+          <div class="btg-knob" id="btgKnob"></div>
+          <div class="btg-v mine" id="btgMyV">0</div>
+          <div class="btg-v opp" id="btgOpV">0</div>
+        </div>
+        <div class="bt-critbadge" id="btCrit" style="opacity:0">⚡ CRITICAL!</div>
         <div class="bt-result ${res.win?'win':'lose'}" id="btResult" style="opacity:0">${res.win?'🏆 승리!':'😢 패배…'}</div>
         <div class="bt-pts" id="btPts" style="opacity:0">${res.tier?`<span class="${res.delta>=0?'up':'dn'}">${res.delta>=0?'+':''}${res.delta} 승점</span> · ${res.tier.ic} ${esc(res.tier.nm)} <b>${res.pts}</b>`:''}</div>
-        <button class="btn" id="btClose" style="opacity:0" onclick="var o=document.getElementById('ov');o.className='ov';o.onclick=null">확인</button>
+        <button class="btn" id="btClose" style="opacity:0;transition:opacity .4s" onclick="var o=document.getElementById('ov');o.className='ov';o.onclick=null">확인</button>
       </div>`;
-      // ① 무대화: 내가 키운 멤버가 포지션별로 순차 등장 + 기여 팝업 → 합산(재율애비: 내 애들이 뭘 한단 느낌)
-      const stage=document.getElementById('btStage'); let acc=0; const step=270, start=250;
-      contribs.forEach((c,i)=>{ setTimeout(()=>{ if(!document.getElementById('btStage'))return;
-        const cell=document.createElement('div'); cell.className='bts-mem';
-        const av=c.img?`<span class="bts-av" style="background-image:url('${c.img}')"></span>`:`<span class="bts-av noimg">${POSICO[c.pos]||'🎤'}</span>`;
-        cell.innerHTML=`${av}<span class="bts-pos">${POSICO[c.pos]||''} ${POSTYPES[c.pos]?POSTYPES[c.pos].nm:''}</span><span class="bts-val">+${c.val.toLocaleString()}</span>`;
-        stage.appendChild(cell); acc+=c.val; const tot=document.getElementById('btStageTot'); if(tot)tot.textContent=acc.toLocaleString();
+      // ① 무대 라인업: 내가 키운 멤버 얼굴이 스포트라이트 받으며 순차 등장 + 기여 +N 플로팅 → 무대점수 누적
+      const stage=document.getElementById('btLineup'); let acc=0; const step=280, start=260;
+      contribs.forEach((c,i)=>{ setTimeout(()=>{ if(!document.getElementById('btLineup'))return;
+        const cell=document.createElement('div'); cell.className='btl-mem';
+        const av=c.img?`<span class="btl-av" style="background-image:url('${c.img}')"></span>`:`<span class="btl-av">${POSICO[c.pos]||'🎤'}</span>`;
+        cell.innerHTML=`<span class="btl-plus">+${c.val.toLocaleString()}</span>${av}<span class="btl-pos">${POSICO[c.pos]||''} ${POSTYPES[c.pos]?POSTYPES[c.pos].nm:''}</span>`;
+        stage.appendChild(cell);
+        requestAnimationFrame(()=>{ cell.classList.add('in','spot'); setTimeout(()=>cell.classList.remove('spot'), 520); });
+        acc+=c.val; const tot=document.getElementById('btStageTot'); if(tot)tot.textContent=acc.toLocaleString();
         try{ sfx('tick'); if(navigator.vibrate)navigator.vibrate(8); }catch(e){}
       }, start+i*step); });
-      const stageEnd = start + contribs.length*step + 200;
+      const stageEnd = start + contribs.length*step + 220;
+      // 무대 점수 합 팝
       setTimeout(()=>{ const ss=document.getElementById('btStageSum'); if(ss){ ss.style.transition='opacity .4s'; ss.style.opacity='1'; ss.style.animation='btResultPop .45s cubic-bezier(.3,1.5,.5,1) both'; } try{sfx('sparkle');}catch(e){} }, stageEnd);
-      setTimeout(()=>{ const vs=document.getElementById('btVs'); if(vs){ vs.style.transition='opacity .5s'; vs.style.opacity='1'; }
-        this._countUp('btMyPw', res.my.final, 700); this._countUp('btOpPw', res.opp.final, 700); }, stageEnd+550);
+      // VS 등장
+      setTimeout(()=>{ const vs=document.getElementById('btVs'); if(vs) vs.style.opacity='1'; }, stageEnd+500);
+      // 대결 게이지: 50%에서 실제 파워 비율로 밀림 + 양쪽 수치 카운트업
+      setTimeout(()=>{ const gEl=document.getElementById('btGauge'); if(gEl) gEl.style.opacity='1';
+        const total=(res.my.final||0)+(res.opp.final||0)||1;
+        let ratio=Math.round((res.my.final||0)/total*100); ratio=Math.max(10,Math.min(90,ratio));
+        requestAnimationFrame(()=>{ const mn=document.getElementById('btgMine'), kb=document.getElementById('btgKnob');
+          if(mn) mn.style.width=ratio+'%'; if(kb) kb.style.left=ratio+'%'; });
+        this._countUp('btgMyV', res.my.final, 1050); this._countUp('btgOpV', res.opp.final, 1050);
+        try{ sfx('whoosh'); }catch(e){}
+      }, stageEnd+650);
+      // 크리티컬 번쩍(게이지 밀리는 도중)
+      if(anyCrit){ setTimeout(()=>{ const cb=document.getElementById('btCrit'), gEl=document.getElementById('btGauge');
+        if(cb){ cb.textContent = (res.my.crit&&res.my.up)?'⚡ CRITICAL!' : (res.my.crit?'💧 크리 불발…' : '⚡ 상대 CRITICAL!');
+          cb.style.opacity='1'; cb.style.animation='btResultPop .45s cubic-bezier(.3,1.6,.5,1) both'; }
+        if(gEl && res.my.crit && res.my.up) gEl.classList.add('crit');
+        try{ if(navigator.vibrate)navigator.vibrate([30,40,60]); }catch(e){}
+      }, stageEnd+1250); }
+      // 결과 + 승점 + 확인
       setTimeout(()=>{ const rEl=document.getElementById('btResult');
         if(rEl){ rEl.style.opacity='1'; rEl.style.animation='btResultPop .5s cubic-bezier(.3,1.6,.5,1) both'; }
-        ['btPts','btClose'].forEach(id=>{ const el=document.getElementById(id); if(el){ el.style.transition='opacity .45s'; el.style.opacity='1'; } });
-        try{ sfx(res.win?'win':'lose'); if(res.win && Game.confetti) Game.confetti(res.delta>=25?60:42,false); }catch(e){} }, stageEnd+1450);
-      if(res.tierChange){ setTimeout(()=>this._tierChangeFx(res.tier, res.prevTier, res.tierChange), stageEnd+2150); }
+        ['btPts','btClose'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.opacity='1'; });
+        try{ sfx(res.win?'win':'lose'); if(res.win && Game.confetti) Game.confetti(res.delta>=25?60:42,false); }catch(e){} }, stageEnd+1900);
+      if(res.tierChange){ setTimeout(()=>this._tierChangeFx(res.tier, res.prevTier, res.tierChange), stageEnd+2650); }
     },
     _tierChangeFx(tier, prev, dir){
       const up=dir==='up';
