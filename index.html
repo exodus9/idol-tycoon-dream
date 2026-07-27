@@ -3869,6 +3869,7 @@ window.addEventListener("popstate", ()=>{
     showBattleLobby(){ this.load();
       const g=this.repGroup(); if(!g){ try{toast('먼저 데뷔시킨 그룹을 ⭐대표로 지정해줘');}catch(e){} return; }
       show('s-battle'); this._renderLobby(this._lobbyPool||null);
+      try{ if(window.Tut) Tut.onBattleLobby(); }catch(e){}
       this.fetchGroupBoard().then(list=>{ if(list) this._lobbyPool=list; if(document.getElementById('s-battle').classList.contains('on')) this._renderLobby(this._lobbyPool||null); });
     },
     _renderLobby(serverList){
@@ -4889,7 +4890,7 @@ window.addEventListener("popstate", ()=>{
           ${(!locked&&!o.noStars&&star>0)?`<div class="tc-stars">${'★'.repeat(Math.min(5,star))}</div>`:''}
           ${o.foot||''}</div></div>`;
     },
-    goForge(){ this.load(); this.forge=[null,null]; show('s-forge'); this.renderForge(); },
+    goForge(){ this.load(); this.forge=[null,null]; show('s-forge'); this.renderForge(); try{ if(window.Tut) Tut.onForge(); }catch(e){} },
     pickForge(slot){ this.load();
       const other=this.forge&&this.forge[1-slot];
       const items=[];
@@ -5688,6 +5689,21 @@ window.addEventListener("popstate", ()=>{
       setTimeout(()=>this.spot({ id, mascot:info.m, place:'above',
         get:()=>document.querySelector(`#tabbar .tab[data-tab="${tab}"]`),
         body:info.b, cta:'확인', step:'5/5' }), 280);
+    },
+    // 상세화: 조합소·경쟁전 로비 첫 진입 설명(모든 요소 숙지)
+    onForge(){
+      if(!this.on() || this.did('tut_forge')) return;
+      setTimeout(()=>this.spot({ id:'tut_forge', mascot:'🐰', place:'below',
+        get:()=>document.querySelector('#s-forge .forge-stage'),
+        body:`⚗️ <b>조합소</b>예요. 카드 2장을 올려 — <b>같은 카드</b>면 별↑(강화), <b>다른 카드·같은 레어도</b>면 레어도↑(합성). 별 높은 카드를 재료로 쓰면 <b>성공률</b>이 올라가요.`,
+        cta:'알겠어요!', step:'📖' }), 320);
+    },
+    onBattleLobby(){
+      if(!this.on() || this.did('tut_lobby')) return;
+      setTimeout(()=>this.spot({ id:'tut_lobby', mascot:'🐤', place:'below',
+        get:()=>document.getElementById('micBar')||document.querySelector('#s-battle .lg-head'),
+        body:`⚔️ <b>대결 로비</b>예요. 🎤<b>마이크</b> 1개로 대결 1번(지면 소모·이기면 유지, 시간 지나면 충전). 내 승점과 비슷한 상대 3팀이 잡혀요 — 이기면 승점↑ <b>티어 승급</b>!`,
+        cta:'좋아요!', step:'📖' }), 420);
     }
   };
   window.Tut = Tut;
