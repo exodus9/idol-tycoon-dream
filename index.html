@@ -3040,6 +3040,8 @@ window.addEventListener("popstate", ()=>{
   .tcard .tc-badge{padding:1.5px 7px;border-radius:999px;background:rgba(0,0,0,.28);backdrop-filter:blur(2px)}
   .tcard .tc-art{flex:1;display:flex;align-items:center;justify-content:center;z-index:2;position:relative;min-height:0}
   .tcard .tc-em{font-size:44px;line-height:1;filter:drop-shadow(0 4px 10px rgba(0,0,0,.4))}
+  .flipcard .tc-em{font-size:72px}   /* 카드 상세(큰 플립카드)에선 아이콘 크게 — 재율애비: 상세 아이콘 너무 작음 */
+  .flipcard .tc-art::before{width:118px;height:118px}
   .tcard .tc-art::before{content:"";position:absolute;width:76px;height:76px;border-radius:50%;
     background:radial-gradient(circle,rgba(255,255,255,.55) 0%,rgba(255,255,255,0) 66%);z-index:-1}
   .tcard .tc-foot{z-index:3}
@@ -3771,7 +3773,7 @@ window.addEventListener("popstate", ()=>{
     battleTier(pts){ let t=BATTLE_TIERS[0]; for(const x of BATTLE_TIERS){ if(pts>=x.min)t=x; } return t; },
     battleAllOf(gid){ if(!this.data.groupAll) this.data.groupAll={}; if(!this.data.groupAll[gid]) this.data.groupAll[gid]={w:0,l:0,best:0}; return this.data.groupAll[gid]; },
     battleAll(){ const gid=this.repGroupGid(); return gid==null ? {w:0,l:0,best:0} : this.battleAllOf(gid); },   // 통산(시즌 리셋 안 됨, 그룹별) = 역대 세그
-    // ===== 시너지 조합 (경쟁전②) — 4축 합산, 상한 +40%. members 미지정=현재 편성, trend 미지정=이번 시즌 =====
+    // ===== 시너지 조합 (경쟁전②) — 4축 합산, 상한 없음(수치 대폭↓으로 다양성 유도). members 미지정=현재 편성, trend 미지정=이번 시즌 =====
     // ⚠️수치 초안(밸런싱 대기). ①콘셉트 몰이는 트렌드 포지션 일치 시 ×1.5.
     groupSynergy(members, trend){
       if(!members){ members=this.slots().map(s=>({type:s.type, r:this.rosterById(this.data.lineup[s.sid])})).filter(m=>m.r); }
@@ -3784,31 +3786,31 @@ window.addEventListener("popstate", ()=>{
       // ① 콘셉트 몰이(같은 포지션 N명): 트렌드 포지션 일치 시 ×1.5(🔥)
       const CM={vocal:'보컬 몰이', rapper:'힙합 몰이', dancer:'퍼포먼스 몰이'};
       const hotPos=(trend&&trend.pos)||null;
-      ['vocal','rapper','dancer'].forEach(t=>{ const c=pc[t]||0; if(c>=2){ let b=(c>=4?18:c>=3?12:6); const hot=(hotPos===t); if(hot)b=Math.round(b*1.5); list.push({nm:CM[t]+(hot?' 🔥':''), pct:b, k:'concept'}); } });
-      if((pc.producer||0)>=2){ let b=(pc.producer>=3?16:8); const hot=(hotPos==='producer'); if(hot)b=Math.round(b*1.5); list.push({nm:'크리에이터 몰이'+(hot?' 🔥':''), pct:b, k:'concept'}); }
+      ['vocal','rapper','dancer'].forEach(t=>{ const c=pc[t]||0; if(c>=2){ let b=(c>=4?9:c>=3?6:3); const hot=(hotPos===t); if(hot)b=Math.round(b*1.5); list.push({nm:CM[t]+(hot?' 🔥':''), pct:b, k:'concept'}); } });
+      if((pc.producer||0)>=2){ let b=(pc.producer>=3?8:4); const hot=(hotPos==='producer'); if(hot)b=Math.round(b*1.5); list.push({nm:'크리에이터 몰이'+(hot?' 🔥':''), pct:b, k:'concept'}); }
       // ② 케미 조합(트렌드 무관)
       const has=t=>(pc[t]||0)>0;
-      if(has('vocal')&&has('rapper')&&has('dancer')) list.push({nm:'삼각편대', pct:12, k:'chemi'});
-      else if(has('vocal')&&has('rapper')) list.push({nm:'멜로디&플로우', pct:8, k:'chemi'});
-      if(has('leader')&&has('center')) list.push({nm:'완벽한 프론트', pct:6, k:'chemi'});
-      if(Object.keys(pc).length>=6) list.push({nm:'육각 완전체', pct:20, k:'chemi'});
+      if(has('vocal')&&has('rapper')&&has('dancer')) list.push({nm:'삼각편대', pct:6, k:'chemi'});
+      else if(has('vocal')&&has('rapper')) list.push({nm:'멜로디&플로우', pct:4, k:'chemi'});
+      if(has('leader')&&has('center')) list.push({nm:'완벽한 프론트', pct:3, k:'chemi'});
+      if(Object.keys(pc).length>=6) list.push({nm:'육각 완전체', pct:10, k:'chemi'});
       // ③ 등급 보유(칭호): 전설>스타성 택1 + 에이스
-      if(titles.has('legend')) list.push({nm:'전설 보유', pct:12, k:'grade'});
-      else if(titles.has('star')) list.push({nm:'스타성 보유', pct:7, k:'grade'});
-      if(titles.has('ace')) list.push({nm:'에이스 보유', pct:5, k:'grade'});
+      if(titles.has('legend')) list.push({nm:'전설 보유', pct:6, k:'grade'});
+      else if(titles.has('star')) list.push({nm:'스타성 보유', pct:4, k:'grade'});
+      if(titles.has('ace')) list.push({nm:'에이스 보유', pct:3, k:'grade'});
       // ④ 원조 케미(원본그룹) — 편성당 최고 1등급만(오버스펙 차단). 커스텀(grp='')은 순혈/완전체 깨뜨림
       const grps=members.map(m=>m.r.grp||''), allOrigin=grps.every(g=>g);
       const gc={}; grps.forEach(g=>{ if(g) gc[g]=(gc[g]||0)+1; });
       const names=Object.keys(gc), big3=names.filter(g=>gc[g]>=3);
       let ob=0, on='';
-      if(allOrigin && names.length===1 && n===9){ ob=35; on='완전체'; }
-      else if(allOrigin && names.length===1 && n>=3){ ob=26; on='순혈'; }
-      else if(allOrigin && n===9 && names.length>=2){ ob=25; on='풀 콜라보'; }
-      else if(allOrigin && big3.length>=2){ ob=18; on='콜라보'; }
-      else if(names.some(g=>gc[g]>=2)){ ob=8; on='실친'; }
+      if(allOrigin && names.length===1 && n===9){ ob=18; on='완전체'; }
+      else if(allOrigin && names.length===1 && n>=3){ ob=13; on='순혈'; }
+      else if(allOrigin && n===9 && names.length>=2){ ob=13; on='풀 콜라보'; }
+      else if(allOrigin && big3.length>=2){ ob=9; on='콜라보'; }
+      else if(names.some(g=>gc[g]>=2)){ ob=4; on='실친'; }
       if(ob>0) list.push({nm:on+' 케미', pct:ob, k:'origin'});
       const raw=list.reduce((a,x)=>a+x.pct,0);
-      return {pct:Math.min(40,raw), raw, capped:raw>40, list};
+      return {pct:raw, raw, capped:false, list};   // 재율애비: 시너지 한도 삭제(다양한 시너지 조합 유도, base가 더 지배적)
     },
     // ===== 전투력 (경쟁전④⑤) = (편성 적합도 + 트렌드 스탯 보너스) × (1+시너지). 트렌드 스탯 강하면 유리(상한 없음) =====
     TREND_STAT: {vocal:'vocal', rapper:'acting', dancer:'dance', center:'visual', producer:'creative'},
