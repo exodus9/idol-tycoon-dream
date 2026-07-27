@@ -315,6 +315,12 @@
   .lb-row .sc{font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums}
   /* 데뷔조 순위전 */
   .lb{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .lg-battle{background:linear-gradient(135deg,rgba(255,95,162,.16),rgba(139,92,255,.1));border:1px solid var(--accent);border-radius:16px;padding:13px 14px;margin-bottom:12px;box-shadow:0 8px 22px -12px rgba(236,58,92,.45)}
+  .lg-battle.none{background:var(--panel);border:1px dashed var(--line);color:var(--sub);font-size:12.5px;text-align:center;padding:14px}
+  .lg-battle .lgb-info{display:flex;align-items:center;gap:11px}
+  .lg-battle .lgb-ic{font-size:34px;line-height:1;flex:none}
+  .lg-battle .lgb-nm{font-weight:800;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .lg-battle .lgb-sub{font-size:12px;color:var(--sub);margin-top:2px}
   .lg-head{background:linear-gradient(135deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:18px;padding:16px 14px;text-align:center;box-shadow:0 8px 22px -12px rgba(236,58,92,.35)}
   .lg-tier-ic{font-size:42px;line-height:1}
   .lg-tier-nm{font-size:20px;font-weight:800;margin-top:5px}
@@ -793,6 +799,7 @@
   <!-- 랭킹 (그룹 차트 + 전설의 연습생) -->
   <section class="screen" id="s-league">
     <div class="sub-head"><h2 style="margin:0">🏆 차트</h2></div>
+    <div id="leagueBattle"></div>
     <div class="segtab rank-seg">
       <button class="seg on" id="rseg-group" onclick="DG.setRankTab('group')">🏆 그룹</button>
       <button class="seg" id="rseg-trainee" onclick="DG.setRankTab('trainee')">🏅 연습생</button>
@@ -5113,7 +5120,19 @@ window.addEventListener("popstate", ()=>{
       if(g)g.classList.toggle('on',this._rankTab==='group'); if(tr)tr.classList.toggle('on',this._rankTab==='trainee');
       const a=document.getElementById('rsub-season'), b=document.getElementById('rsub-all');
       if(a)a.classList.toggle('on',this._leagueSub==='season'); if(b)b.classList.toggle('on',this._leagueSub==='alltime');
-      show('s-league'); this.renderRankTab(); },
+      show('s-league'); this.renderLeagueBattle(); this.renderRankTab(); },
+    // IA. 차트탭 = 무대·경쟁 허브: 최상단에 배틀로비 진입(로비진입) + 아래 순위(순위열람)
+    renderLeagueBattle(){
+      const el=document.getElementById('leagueBattle'); if(!el) return;
+      const rep=this.repGroup();
+      if(!rep){ el.innerHTML=`<div class="lg-battle none">먼저 <b>사무실</b>에서 데뷔조를 ⭐대표로 지정하면 여기서 대결할 수 있어요</div>`; return; }
+      const bs=this.battleSeason(), tier=this.battleTier(bs.pts), mem=this.groupMembers(rep), bp=this.battlePower(mem);
+      el.innerHTML=`<div class="lg-battle">
+        <div class="lgb-info"><span class="lgb-ic">${tier.ic}</span>
+          <div style="min-width:0"><div class="lgb-nm">${this.logoHtml(rep.logo,18)} ${esc(rep.name)} · ${esc(tier.nm)}</div>
+          <div class="lgb-sub">승점 <b>${bs.pts}</b>P · 전투력 ${bp.power.toLocaleString()} · ${bs.w||0}승 ${bs.l||0}패</div></div></div>
+        <button class="btn" style="width:100%;margin-top:10px" onclick="DG.showBattleLobby()">⚔️ 대결하러 가기</button></div>`;
+    },
     setRankTab(tab){ this._rankTab=tab;
       const g=document.getElementById('rseg-group'), tr=document.getElementById('rseg-trainee');
       if(g)g.classList.toggle('on',tab==='group'); if(tr)tr.classList.toggle('on',tab==='trainee');
