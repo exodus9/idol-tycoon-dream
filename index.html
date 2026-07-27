@@ -3883,6 +3883,23 @@ window.addEventListener("popstate", ()=>{
          <div class="tier-strip">${BATTLE_TIERS.map(tr=>`<span class="tier-chip ${tr.nm===tier.nm?'on':''}">${tr.ic} ${tr.nm} <small>${tr.min}P+</small></span>`).join('')}</div>
          ${_log?`<div class="dg-sub" style="margin-top:13px"><b>📜 최근 전적</b></div><div class="lb">${_log}</div>`:''}`;
       this.startMicTick();   // 마이크 00:00 카운트다운 매초 갱신(로비 이탈 시 자동정지)
+      // F. 온보딩: 경쟁전 3판 후 1회 공유 유도(성취 직후). ov 비어있을 때만(배틀 결과 닫힌 뒤) 표시
+      try{ const ba=this.battleAll(), ovEl=document.getElementById('ov');
+        if(!this.data.sharePromptShown && (ba.w+ba.l)>=3 && ovEl && !ovEl.classList.contains('on')){
+          this.data.sharePromptShown=1; this.persist(); this.shareNudgePopup(); } }catch(e){}
+    },
+    shareNudgePopup(){
+      const g=this.repGroup(); if(!g) return;
+      const mem=this.groupMembers(g), bp=this.battlePower(mem);
+      const ov=document.getElementById('ov'); ov.className='ov on';
+      ov.onclick=(e)=>{ if(e.target===ov){ ov.className='ov'; ov.onclick=null; } };
+      ov.innerHTML=`<div class="ev-card" style="text-align:center;max-width:300px">
+        <div style="font-size:44px;line-height:1">🎉</div>
+        <div class="ev-title" style="margin-top:4px">벌써 3번째 대결!</div>
+        <div class="muted" style="font-size:13px;margin:8px 3px 14px">우리 <b>${esc(g.name)}</b> 어때요? 친구한테 자랑해봐요 📣</div>
+        <button class="btn" onclick="var o=document.getElementById('ov');o.className='ov';o.onclick=null;DG.shareGroupText(${JSON.stringify(g.name)},${JSON.stringify(g.grade||'')},${bp.power},${bp.syn})">🔗 자랑하기</button>
+        <button class="btn ghost" style="margin-top:8px" onclick="var o=document.getElementById('ov');o.className='ov';o.onclick=null">나중에</button></div>`;
+      try{ sfx('sparkle'); }catch(e){}
     },
     openFoe(i){ const f=(this._foes||[])[i]; if(!f) return; this.openBattle(f.name, f.logo, f.score); },
     openBattle(oppName, oppLogo, oppScore){ this.load();
