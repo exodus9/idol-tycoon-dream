@@ -3822,7 +3822,18 @@ window.addEventListener("popstate", ()=>{
       }
       return gs; },
     battleSeason(){ const gid=this.repGroupGid(); return gid==null ? {no:this.seasonNo(),pts:0,w:0,l:0} : this.battleSeasonOf(gid); },  // 대표그룹 기준(홈·정산)
-    battleTier(pts){ let t=BATTLE_TIERS[0]; for(const x of BATTLE_TIERS){ if(pts>=x.min)t=x; } return t; },
+    battleTier(pts){ const tiers=this._tierCuts||BATTLE_TIERS; let t=tiers[0]; for(const x of tiers){ if(pts>=x.min)t=x; } return t; },
+    // 밸런스2: 티어컷을 리더보드 pts 분포의 상대 백분위로(시너지 인플레로 고정컷이 헐거워지는 것 방지). 표본 적으면 고정 유지
+    computeTierCuts(list){ try{
+      const pts=(list||[]).map(o=>+o.pts||0).filter(p=>p>=0);
+      try{ const my=this.battleSeason(); if(my&&my.pts>=0)pts.push(my.pts); }catch(e){}
+      if(pts.length<8) return null;
+      const arr=pts.sort((a,b)=>b-a), n=arr.length, at=pc=>arr[Math.min(n-1,Math.floor(n*pc))]||0;
+      const raw=[[0.75,'🥈','실버'],[0.45,'🥇','골드'],[0.20,'💎','플래티넘'],[0.05,'👑','다이아']];
+      const cuts=[{min:0,ic:'🥉',nm:'브론즈'}]; let prev=0;
+      raw.forEach(([pc,ic,nm])=>{ const m=Math.max(prev+1, at(pc)); cuts.push({min:m,ic,nm}); prev=m; });
+      return cuts;
+    }catch(e){ return null; } },
     battleAllOf(gid){ if(!this.data.groupAll) this.data.groupAll={}; if(!this.data.groupAll[gid]) this.data.groupAll[gid]={w:0,l:0,best:0}; return this.data.groupAll[gid]; },
     battleAll(){ const gid=this.repGroupGid(); return gid==null ? {w:0,l:0,best:0} : this.battleAllOf(gid); },   // 통산(시즌 리셋 안 됨, 그룹별) = 역대 세그
     // ===== 시너지 조합 (경쟁전②) — 4축 합산, 상한 없음(수치 대폭↓으로 다양성 유도). members 미지정=현재 편성, trend 미지정=이번 시즌 =====
@@ -5153,7 +5164,7 @@ window.addEventListener("popstate", ()=>{
             const parts=end.split(':');   // 'GRP:n[:pts]' — pts=시즌 승점(구버전 문서는 없음→0)
             return {name:g("name"), logo:g("emoji")||"🎤", score:+g("fans")||0, n:+parts[1]||0, pts:+parts[2]||0, agency:g("player"), _grp:parts[0]==='GRP', server:true}; })
             .filter(r=>r._grp);   // GRP: 마커 문서(그룹)만 — 개인명전·잔존 테스트문서 자동 제외
-          this._leagueServer=true; return list;
+          this._leagueServer=true; this._tierCuts=this.computeTierCuts(list); return list;   // 티어컷 상대 백분위 갱신
         }
       }catch(e){}
       this._leagueServer=false; return null;
