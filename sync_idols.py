@@ -31,10 +31,21 @@ if os.path.exists(IDOLS_JS):
         for o in json.loads(m.group(1)):
             existing[o['id']] = o.get('spec')
 
-# 2) 미러DB 조회 (개인 아이돌 type='S', 얼굴사진 있음)
-rows = q("SELECT i.id, i.name, i.name_en, i.category, i.face_image_url, g.name AS grp_name, g.name_en AS grp_en "
-         "FROM app_idol i LEFT JOIN app_idol g ON i.group_id=g.id "
-         "WHERE i.type='S' AND i.face_image_url IS NOT NULL AND i.face_image_url<>''")
+# 2) 미러DB 조회
+#    - 개인 아이돌 type='S', 얼굴사진 있음
+#    - ⭐활성만: is_viewable='Y'(노출) AND is_retired='N'(비은퇴) — DB 전체덤프 금지(재율애비 0727)
+#    - ⭐정렬: '전일(직전 크롤) 하트투표 순위' = 최신 refdate app_trend.heart DESC.
+#      (app_trend.heart는 그날 하트=일별값, rank컬럼은 죽어서 heart로 직접 정렬. 크롤 없는 활성돌은 0=맨뒤)
+#      → idols.js 배열을 이 순서로 미리 정렬 = 게임 picker(검색어 없을 때 상위 60)가 하트순위대로 노출.
+rows = q("SELECT i.id, i.name, i.name_en, i.category, i.face_image_url, "
+         "g.name AS grp_name, g.name_en AS grp_en, COALESCE(t.heart,0) AS day_heart "
+         "FROM app_idol i "
+         "LEFT JOIN app_idol g ON i.group_id=g.id "
+         "LEFT JOIN app_trend t ON t.idol_id=i.id AND t.type='S' "
+         "  AND t.refdate=(SELECT MAX(refdate) FROM app_trend WHERE type='S') "
+         "WHERE i.type='S' AND i.face_image_url IS NOT NULL AND i.face_image_url<>'' "
+         "  AND i.is_viewable='Y' AND i.is_retired='N' "
+         "ORDER BY day_heart DESC, i.id ASC")
 
 idols = []
 for r in rows:
