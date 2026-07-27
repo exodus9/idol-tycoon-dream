@@ -659,10 +659,10 @@
     <div class="home-profile" id="homeProfile"></div>
     <div id="homeTrend"></div>
     <div id="homeHero"></div>
+    <div id="homeWidgets"></div>
+    <div class="home-cta" id="homeCta"></div>
     <div id="dgGroup"></div>
     <div id="dgGroups"></div>
-    <div class="home-cta" id="homeCta"></div>
-    <div id="homeWidgets"></div>
   </section>
 
   <!-- SELECT -->
@@ -3364,6 +3364,20 @@ window.addEventListener("popstate", ()=>{
   .hw-wide-m{flex:1;min-width:0}
   .hw-wide .hw-bar{margin-top:7px}
   .hw-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+  /* ⭐다음 목표 엔진(장기 리텐션 훅) */
+  .goals-box{margin-top:13px;background:linear-gradient(135deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:16px;padding:12px 14px;box-shadow:var(--shadow-sm)}
+  .goals-h{font-size:13px;font-weight:800;color:var(--txt);margin-bottom:9px}
+  .goal-row{display:flex;align-items:center;gap:11px;padding:7px 0;cursor:pointer;border-top:1px solid var(--line)}
+  .goal-row:first-of-type{border-top:none}
+  .goal-ic{font-size:20px;flex:none;width:26px;text-align:center}
+  .goal-m{flex:1;min-width:0}
+  .goal-nm{font-size:13px;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .goal-c{color:var(--sub);font-weight:800;font-size:11.5px;margin-left:3px}
+  .goal-bar{height:5px;background:var(--bg);border-radius:3px;margin-top:5px;overflow:hidden}
+  .goal-bar>i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent2),var(--gold))}
+  .goal-go{color:var(--sub);font-weight:800;flex:none}
+  .goal-claim{display:flex;align-items:center;gap:10px;margin-top:13px;padding:11px 14px;border-radius:14px;cursor:pointer;
+    background:linear-gradient(135deg,rgba(255,194,71,.16),rgba(255,77,114,.1));border:1px solid var(--gold);font-size:13.5px;color:var(--txt)}
   .rank-seg{margin:2px 0 13px}
   .rank-seg2{margin:-6px 0 13px}
   .rank-seg2 .seg{padding:8px 8px;font-size:13px}
@@ -4725,32 +4739,23 @@ window.addEventListener("popstate", ()=>{
       if(_resume){ _cta=`<button class="btn ghost" onclick="Game.goSelect()">＋ 새 연습생 육성 <span class="muted" style="font-size:11px">(진행 중인 육성은 사라져)</span></button>`; }
       else if(!_onboard && !rep){ _cta=`<button class="btn" onclick="Game.goSelect()">＋ 새 연습생 육성</button>`; }   // 대표 있으면 히어로에 '육성' 버튼이 있어 중복 제거
       document.getElementById('homeCta').innerHTML=_cta;
-      // ── 첫 육성 가이드 미션: 첫 육성을 한 뒤(roster>0)부터 데뷔 전까지만. 진짜 첫 화면은 히어로만(near-empty) ──
-      if(groups.length===0 && roster.length>0){
-        const steps=[
-          {ic:'✨', nm:'연습생 1명 육성 완주', done:roster.length>0, go:"Game.goSelect()"},
-          {ic:'📋', nm:'데뷔조 3명 편성',      done:gi.n>=3,          go:"DG.goRoster()"},
-          {ic:'🎬', nm:'첫 그룹 데뷔',          done:false,            go:gi.n>=3?"DG.doDebut()":"DG.goRoster()"},
-        ];
-        const doneN=steps.filter(s=>s.done).length;
-        document.getElementById('homeCta').innerHTML+=
-          `<div class="hw hw-wide" style="margin-top:10px;flex-direction:column;align-items:stretch;cursor:default">
-            <div class="hw-t" style="margin-bottom:6px">🚩 데뷔 로드맵 <span class="muted">${doneN}/3</span></div>
-            ${steps.map(s=>`<div style="display:flex;align-items:center;gap:8px;padding:4px 0;cursor:pointer;${s.done?'opacity:.55':''}" onclick="${s.done?'':s.go}">
-              <span>${s.done?'✅':'⬜'}</span><span style="flex:1;font-size:13px;${s.done?'text-decoration:line-through':''}">${s.ic} ${s.nm}</span>${s.done?'':'<span class="muted">›</span>'}</div>`).join('')}
-          </div>`;
-      }
-      const achvD=this.achvDone(), achvT=ACHV.length, achvPct=achvT?Math.round(achvD/achvT*100):0;
-      // ㉖ 차트·카드 위젯은 하단탭과 중복 진입이라 제거(이동은 탭바로). 업적(탭 아님)만 홈 위젯 유지.
-      // E. 업적은 메뉴가 본진 — 홈은 '새 달성 있을 때만' 넛지 배너(중복 제거·홈 정리). 평소엔 비움.
-      const _newAchv = roster.length>0 && this.achvClaimable();   // 첫 육성 후 + 미수령 보상 있을 때만 넛지
-      document.getElementById('homeWidgets').innerHTML = _newAchv
-        ? `<div class="hw hw-wide" onclick="DG.showMenu()" style="border-color:var(--accent);cursor:pointer">
-             <span class="hw-ic">🏅</span>
-             <div class="hw-wide-m"><div class="hw-t">새 업적 달성! <span class="muted" style="font-weight:400;font-size:12px">메뉴에서 확인 ›</span></div></div>
-             <span class="tab-dot" style="position:static;margin-left:auto"></span>
-           </div>`
-        : '';
+      // ⭐다음 목표 엔진: 완성 근접 목표 3개를 항상 노출 → 매 순간 "거의 다 됐다, 한 판 더"의 장기 리텐션 훅.
+      //   (기존 데뷔 로드맵을 흡수 — 첫 실행부터 끝까지 하나의 목표 사다리)
+      const _newAchv = roster.length>0 && this.achvClaimable();   // 미수령 보상 있음
+      const goals = this.nextGoals(3);
+      const claimNudge = _newAchv
+        ? `<div class="goal-claim" onclick="DG.showMenu()"><span class="hw-ic">🎁</span>
+             <b>업적 보상이 기다려요</b><span class="tab-dot" style="position:static;margin-left:auto"></span></div>` : '';
+      const goalsHTML = goals.length ? `<div class="goals-box">
+          <div class="goals-h">🎯 다음 목표</div>
+          ${goals.map(g=>{ const pct=Math.min(100,Math.round((g.val||0)/g.a.goal*100));
+            return `<div class="goal-row" onclick="DG.showMenu()">
+              <span class="goal-ic">${g.a.ic}</span>
+              <div class="goal-m"><div class="goal-nm">${esc(g.a.nm)}${g.a.goal>1?` <span class="goal-c">${g.val||0}/${g.a.goal}</span>`:''}</div>
+                <div class="goal-bar"><i style="width:${Math.max(4,pct)}%"></i></div></div>
+              <span class="goal-go">›</span></div>`; }).join('')}
+        </div>` : '';
+      document.getElementById('homeWidgets').innerHTML = claimNudge + goalsHTML;
 
       // 홈 진입 시 새 업적 감지
       this.checkAchv();
@@ -4875,6 +4880,11 @@ window.addEventListener("popstate", ()=>{
     // ===== 업적 =====
     achvState(){ return ACHV.map(a=>{ const val=a.cur(this), done=val>=a.goal; return {a, val, done, pct:Math.min(100,Math.round(val/a.goal*100))}; }); },
     achvDone(){ return this.achvState().filter(x=>x.done).length; },
+    // ⭐다음 목표: 미완성 업적 중 "완성까지 남은 양 적은 순"(코앞의 목표). 동률이면 진척률 높은 것. 히든/먼 목표 자동 배제.
+    nextGoals(n){ const st=this.achvState().filter(x=>!x.done && !x.a.hidden);
+      st.forEach(x=>{ x._rem=x.a.goal-(x.val||0); x._r=(x.val||0)/x.a.goal; });
+      st.sort((a,b)=> (a._rem - b._rem) || (b._r - a._r) );
+      return st.slice(0, n||3); },
     // E. 업적 보상 = 클리어당 육성카드(주요 위주 차등). 큰 마일스톤만 SR(genius), 자잘 초반=N(effort), 기본=R 랜덤스탯. ⚠️합성경제 붕괴 방지(SR 소수)
     achvReward(a){ const id=a.id||'', nm=a.nm||'';
       if(/^(dexfull|star5|star5x3|ssr1|ur1|urboth|hyb15|cards20|win50|max800|roster20)$/.test(id)) return 'genius';   // SR
