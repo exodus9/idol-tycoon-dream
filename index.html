@@ -722,7 +722,7 @@
       <button class="menu-btn" onclick="DG.go()" aria-label="back" title="뒤로">←</button>
       <h2 id="assignTitle">배치</h2>
     </div>
-    <p class="muted" style="margin:2px 0 6px">이 자리에 세울 연습생을 골라 (적합도 높은 순). 이미 다른 자리에 있으면 눌러서 옮길 수 있어.</p>
+    <p class="muted" style="margin:2px 0 6px">이 자리에 세울 연습생을 골라 (적합도 높은 순). 자리마다 <b>능력치 2개 이상</b>이 반영돼 — 뭐가 맞을진 직접 찾는 재미! 이미 다른 자리에 있으면 눌러서 옮길 수 있어.</p>
     <div id="assignList"></div>
   </section>
 
@@ -3752,6 +3752,8 @@ window.addEventListener("popstate", ()=>{
       return (idx<PRE.length? PRE[idx] : (idx+1)+'번')+base; },   // 메인보컬·리드보컬·서브보컬·4번보컬…
     filledCount(){ let n=0; this.slots().forEach(s=>{ if(this.rosterById(this.data.lineup[s.sid])) n++; }); return n; },
     groupInfo(){ let sum=0,n=0; this.slots().forEach(s=>{ const r=this.rosterById(this.data.lineup[s.sid]); if(r){ sum+=this.posScore(r.stats,s.type); n++; } }); return {sum,n,grade:n?grade(Math.round(sum/n)):'–'}; },
+    // K. 포지션 적합도 = posScore 숫자 대신 3단계 등급표현(어떤 능력치인지도 비공개 — 탐색의 재미)
+    fitLabel(val){ const L = val>=520?['최적','#ffd35c'] : val>=320?['우수','#5fc9ff'] : ['적합','#c3b6dd']; return `<b style="color:${L[1]}">${L[0]}</b>`; },
     // ===== 트렌드 (경쟁전③) = 2주 시즌 '대세' =====
     seasonNo(){ return Math.max(0, Math.floor((Date.now()-SEASON_EPOCH)/SEASON_MS)); },
     currentTrend(){ return TRENDS[this.seasonNo()%TRENDS.length]; },
@@ -4222,7 +4224,7 @@ window.addEventListener("popstate", ()=>{
         if(r){ const val=this.posScore(r.stats,s.type), av=r.img?`style="background-image:url('${r.img}')"`:'';
           return `<div class="dg-slot filled" onclick="DG.openAssign('${s.sid}')"><div class="dg-pos">${ic} ${nm}</div>
             <span class="dg-av" ${av}>${r.img?'':'🎤'}</span>
-            <div class="dg-nm">${esc(r.name)}</div><div class="dg-gr">${grade(val)} · ${val}</div></div>`; }
+            <div class="dg-nm">${esc(r.name)}</div><div class="dg-gr">${this.fitLabel(val)}</div></div>`; }
         const canClose=(s.type!=='leader' && shown.length>MIN_SLOTS);
         return `<div class="dg-slot" onclick="DG.openAssign('${s.sid}')">${canClose?`<span class="dg-slot-x" onclick="event.stopPropagation();DG.removeSlot('${s.sid}')" title="이 자리 닫기">✕</span>`:''}<div class="dg-pos">${ic} ${nm}</div>
           <span class="dg-av empty">＋</span><div class="dg-nm muted">배치</div></div>`;
@@ -4281,7 +4283,7 @@ window.addEventListener("popstate", ()=>{
         // #22 아바타/이름 탭 → 카드 정보 팝업(스탯·육각) 확인 후 배치
         return `<div class="ros-row${isCur?' cur':''}"><span class="ros-av" ${av} onclick="event.stopPropagation();DG.assignInfo(${r.rid})" style="cursor:pointer">${r.img?'':'🎤'}</span>
           <div class="ros-m" onclick="DG.assignInfo(${r.rid})" style="cursor:pointer"><div class="ros-nm">${esc(r.name)} <span class="muted" style="font-size:12px">${r.grade}</span> <span style="font-size:11px;opacity:.6">ⓘ</span>${dup&&!isCur?` <span style="color:#18b06e;font-size:11px">● ${esc(otherPos)}</span>`:''}</div>
-            <div class="muted" style="font-size:12px">${snm} 적합 <b style="color:#ec3a5c">${grade(val)}·${val}</b></div></div>
+            <div class="muted" style="font-size:12px">${snm} ${this.fitLabel(val)}</div></div>
           <button class="cr-btn" onclick="DG.pickForSlot(${r.rid})">${label}</button></div>`;}).join('');
       document.getElementById('assignList').innerHTML=html;
     },
