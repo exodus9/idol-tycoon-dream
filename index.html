@@ -2711,6 +2711,8 @@ function sfx(k){
     case 'tick':  tone(N.C6,n,0.03,{type:'square',gain:0.05,release:0.03}); break;      // 순위 리빌 서스펜스
     case 'sparkle': [N.C6,N.E6,N.G6].forEach((f,i)=>tone(f,n+i*0.04,0.10,{type:'sine',gain:0.08,release:0.10})); break;
     case 'whoosh': tone(600,n,0.22,{type:'sine',gain:0.06,glideTo:1500,release:0.1}); break;  // 화면 전환
+    case 'drumroll': for(let i=0;i<9;i++){ tone(180+i*10,n+i*(0.05-i*0.003),0.04,{type:'square',gain:0.035+i*0.006,release:0.03}); } break;  // 카드 공개 긴장감(점점 빨라지는 롤)
+    case 'cardpop': bell(N.G5,n,0.22,0.17); bell(N.C6,n+0.06,0.30,0.15); tone(N.C5,n+0.02,0.32,{type:'triangle',gain:0.08,release:0.26}); break;  // 카드 공개 임팩트
     default: tone(N.C5,n,0.1,{gain:0.1});
   }
 }
@@ -3182,6 +3184,8 @@ window.addEventListener("popstate", ()=>{
     background:linear-gradient(160deg,#2d2350,#171128);border:2px solid #5a4a86;display:flex;align-items:center;justify-content:center;
     box-shadow:0 10px 24px -8px rgba(0,0,0,.6);animation:tbackPulse 1.6s ease-in-out infinite}
   .tback::before{content:"";position:absolute;inset:8px;border:1.5px dashed rgba(255,255,255,.22);border-radius:11px}
+  .tback.tsuspense{animation:tbackShake .28s ease-in-out infinite}   /* 카드 공개 직전 긴장 흔들림 */
+  @keyframes tbackShake{0%,100%{transform:translateX(0) rotate(0)}25%{transform:translateX(-2px) rotate(-.6deg)}75%{transform:translateX(2px) rotate(.6deg)}}
   .tback .tb-em{font-size:38px;filter:drop-shadow(0 3px 8px rgba(0,0,0,.5))}
   .tback .tb-tap{position:absolute;bottom:9px;left:0;right:0;text-align:center;font-size:10px;color:#c3b6dd;font-weight:700}
   @keyframes tbackPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
@@ -4847,6 +4851,9 @@ window.addEventListener("popstate", ()=>{
     revealDrop(el, id, isNew){
       if(el.dataset.revealed) return; el.dataset.revealed='1';
       const rr=this.rrOf(id);
+      // 카드 깔 때 긴장감(재율애비): 드럼롤 + 뜸들이기(고레어일수록 김) + 흔들림 + 햅틱
+      try{ sfx('drumroll'); if(navigator.vibrate)navigator.vibrate(rr>=3?[15,25,15,25,35]:[12,20]); }catch(e){}
+      el.classList.add('tsuspense');
       const doReveal=()=>{
         const wrap=document.createElement('div');
         wrap.innerHTML=this.tcardHTML(id,{star:1, cls:'tpop', attr:`onclick="DG.showCardDetail('${id}')"`,
@@ -4854,13 +4861,12 @@ window.addEventListener("popstate", ()=>{
         const card=wrap.firstElementChild;
         el.replaceWith(card);
         setTimeout(()=>{ card.classList.remove('tpop'); card.classList.add('tilt'); }, 620);   // 손맛④ 팝 후 살랑 틸트(홀로가 빛 각도 따라 반짝)
-        try{ sfx(rr>=3?'fanfare':(rr>=2?'win':'sparkle')); if(rr>=3&&Game.confetti) Game.confetti(40,false);
+        try{ sfx('cardpop'); setTimeout(()=>sfx(rr>=3?'fanfare':(rr>=2?'win':'sparkle')), 120);   // 공개 임팩트 → 레어도별 팡파레
+          if(rr>=3&&Game.confetti) Game.confetti(rr>=4?60:40,false);
           if(navigator.vibrate) navigator.vibrate(rr>=3?[50,60,80]:20); }catch(e){}
       };
-      if(rr>=3){ const fl=document.createElement('span'); fl.className='tflash'; el.appendChild(fl);
-        try{ sfx('tick'); }catch(e){}
-        setTimeout(doReveal, 480); }
-      else doReveal();
+      if(rr>=3){ const fl=document.createElement('span'); fl.className='tflash'; el.appendChild(fl); }
+      setTimeout(doReveal, rr>=4?740:(rr>=3?560:340));   // 고레어일수록 뜸들이기 길게(긴장감)
     },
     // ③ 육성카드 렌더 = card-demo '때깔' 컴포넌트. o={star,meta,foot,tag,cls,attr,locked,noStars}
     tcardCat(id){ const c=CARDS[id]; if(!c) return '';
