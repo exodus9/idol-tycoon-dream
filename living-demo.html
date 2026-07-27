@@ -1,44 +1,28 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>살아있는 무대 프로토</title>
+<title>살아있는 무대 v2 (포트레이트 카드)</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   :root{--gold:#ffd35c;--accent:#ff4d72}
-  body{background:#07040f;font-family:-apple-system,'Apple SD Gothic Neo',sans-serif;color:#fff;display:flex;justify-content:center;padding:20px}
-  .phone{width:390px;height:820px;border-radius:34px;overflow:hidden;position:relative;box-shadow:0 30px 90px -20px #000;border:1px solid #241a38}
-
-  /* ===== 무대(공간) ===== */
+  body{background:#07040f;font-family:-apple-system,'Apple SD Gothic Neo',sans-serif;color:#fff;display:flex;gap:30px;justify-content:center;flex-wrap:wrap;padding:20px}
+  .phone{width:384px;height:812px;border-radius:34px;overflow:hidden;position:relative;box-shadow:0 30px 90px -20px #000;border:1px solid #241a38}
+  .cap-top{position:absolute;top:-24px;left:2px;font-size:13px;color:#b3a7d6;font-weight:800}
   .stage{position:absolute;inset:0;overflow:hidden;
-    background:
-      radial-gradient(120% 70% at 50% 8%, rgba(255,180,220,.28), transparent 55%),
-      radial-gradient(100% 120% at 50% 120%, rgba(120,90,220,.35), transparent 60%),
+    background:radial-gradient(120% 65% at 50% 6%, rgba(255,180,220,.26), transparent 52%),
+      radial-gradient(100% 120% at 50% 118%, rgba(120,90,220,.34), transparent 58%),
       linear-gradient(180deg,#2a1c48 0%,#1a1030 45%,#120a24 100%)}
-  /* 빛줄기 */
-  .rays{position:absolute;top:-10%;left:50%;width:180%;height:90%;transform:translateX(-50%);
-    background:repeating-conic-gradient(from 0deg at 50% 0%, rgba(255,255,255,.05) 0deg 3deg, transparent 3deg 9deg);
-    mix-blend-mode:screen;opacity:.5;animation:raySpin 40s linear infinite}
+  .rays{position:absolute;top:-10%;left:50%;width:180%;height:88%;transform:translateX(-50%);
+    background:repeating-conic-gradient(from 0deg at 50% 0%, rgba(255,255,255,.045) 0deg 3deg, transparent 3deg 9deg);
+    mix-blend-mode:screen;opacity:.5;animation:raySpin 46s linear infinite}
   @keyframes raySpin{to{transform:translateX(-50%) rotate(8deg)}}
-  /* 바닥 무대광 */
-  .floor{position:absolute;left:50%;bottom:150px;width:300px;height:70px;transform:translateX(-50%);
-    background:radial-gradient(ellipse at center, rgba(255,170,220,.55), transparent 70%);filter:blur(6px)}
-  .floor2{position:absolute;left:50%;bottom:120px;width:210px;height:14px;transform:translateX(-50%);border-radius:50%;
-    background:radial-gradient(ellipse,rgba(255,255,255,.5),transparent 70%);filter:blur(3px)}
-  /* 파티클 */
-  .p{position:absolute;bottom:-10px;width:6px;height:6px;border-radius:50%;background:rgba(255,220,150,.9);
-    box-shadow:0 0 8px rgba(255,220,150,.9);animation:rise linear infinite}
+  .p{position:absolute;bottom:-10px;border-radius:50%;background:rgba(255,220,150,.9);box-shadow:0 0 8px rgba(255,220,150,.9);animation:rise linear infinite}
   @keyframes rise{0%{transform:translateY(0) scale(.6);opacity:0}15%{opacity:1}100%{transform:translateY(-680px) scale(1);opacity:0}}
 
-  /* ===== 캐릭터(컷아웃) ===== */
-  .char{position:absolute;left:50%;bottom:112px;height:60%;transform:translateX(-50%);z-index:3;
-    filter:drop-shadow(0 18px 26px rgba(0,0,0,.55));animation:breathe 4.5s ease-in-out infinite}
-  @keyframes breathe{0%,100%{transform:translateX(-50%) translateY(0) scale(1)}50%{transform:translateX(-50%) translateY(-6px) scale(1.012)}}
-
-  /* ===== HUD 상단 ===== */
+  /* HUD */
   .hud{position:absolute;top:0;left:0;right:0;z-index:6;padding:14px 14px 0}
   .hud-row{display:flex;align-items:center;gap:8px}
-  .rank{display:flex;align-items:center;gap:7px;background:linear-gradient(135deg,#ff6a9a,#c93a6a);border-radius:12px;padding:5px 11px;box-shadow:0 4px 12px -3px rgba(255,61,104,.6),inset 0 1px 0 rgba(255,255,255,.3)}
-  .rank .rk{font-size:17px;font-weight:900;font-style:italic;letter-spacing:.5px}
-  .rank .rp{font-size:10px;opacity:.85;font-weight:700}
+  .rank{display:flex;align-items:center;background:linear-gradient(135deg,#ff6a9a,#c93a6a);border-radius:12px;padding:5px 11px;box-shadow:0 4px 12px -3px rgba(255,61,104,.6),inset 0 1px 0 rgba(255,255,255,.3)}
+  .rank .rk{font-size:17px;font-weight:900;font-style:italic}.rank .rp{font-size:10px;opacity:.85;font-weight:700}
   .res{flex:1;display:flex;flex-direction:column;gap:4px}
   .resbar{display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.35);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.13);border-radius:999px;padding:2px 9px;font-size:11px;font-weight:800}
   .resbar .track{flex:1;height:6px;background:rgba(255,255,255,.14);border-radius:6px;overflow:hidden}
@@ -47,35 +31,41 @@
   .coin{background:rgba(0,0,0,.35);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.13);border-radius:999px;padding:4px 11px;font-size:12px;font-weight:800}
   .coin b{color:var(--gold)}
   .side{position:absolute;right:12px;top:150px;z-index:6;display:flex;flex-direction:column;gap:11px}
-  .sicon{width:44px;height:44px;border-radius:50%;background:rgba(20,14,34,.62);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 10px -3px #000}
+  .sicon{width:42px;height:42px;border-radius:50%;background:rgba(20,14,34,.62);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 4px 10px -3px #000}
 
-  /* 말풍선 */
-  .bubble{position:absolute;left:16px;right:78px;top:220px;z-index:5;background:rgba(255,255,255,.96);color:#2a2036;border-radius:18px 18px 18px 4px;padding:12px 15px;font-size:14px;font-weight:700;line-height:1.4;box-shadow:0 8px 22px -6px rgba(0,0,0,.5);animation:bubbleIn .5s cubic-bezier(.3,1.5,.5,1) both}
+  /* ⭐ 포트레이트 카드(얼굴 늘리지 않고 프레임에) */
+  .floor{position:absolute;left:50%;bottom:236px;width:250px;height:46px;transform:translateX(-50%);background:radial-gradient(ellipse,rgba(255,170,220,.5),transparent 70%);filter:blur(7px);z-index:2}
+  .card{position:absolute;left:50%;top:196px;transform:translateX(-50%);width:246px;height:320px;border-radius:26px;z-index:3;
+    background-image:url('https://dcyuonzxltfl2140514.gcdn.ntruss.com/faces/20260726/556/55617c84b7e0d62284eef8862e28eaf26a8c18a88db29cc2ad53bb8a1afaac565a57_o_st.webp');
+    background-size:cover;background-position:center 22%;
+    border:3px solid transparent;background-clip:padding-box;
+    box-shadow:0 0 0 3px rgba(255,211,92,.9), 0 22px 44px -12px rgba(0,0,0,.7), 0 0 40px -6px rgba(255,180,120,.5);
+    animation:floaty 5s ease-in-out infinite}
+  .card::after{content:"";position:absolute;inset:0;border-radius:23px;background:linear-gradient(180deg,transparent 55%,rgba(18,10,36,.55) 100%);pointer-events:none}
+  .card .shine{position:absolute;inset:0;border-radius:23px;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.22) 48%,transparent 56%);animation:shine 5s ease-in-out infinite;pointer-events:none}
+  @keyframes floaty{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-7px)}}
+  @keyframes shine{0%,70%{background-position:-200% 0}100%{background-position:200% 0}}
+  .nplate{position:absolute;left:50%;top:532px;transform:translateX(-50%);z-index:4;text-align:center;width:290px}
+  .nplate .n{font-size:27px;font-weight:900;text-shadow:0 2px 12px #000}
+  .nplate .g{display:inline-block;margin-top:6px;font-size:11px;font-weight:800;background:var(--gold);color:#1a1226;padding:3px 11px;border-radius:999px}
+  .bubble{position:absolute;left:20px;right:96px;top:150px;z-index:5;background:rgba(255,255,255,.96);color:#2a2036;border-radius:16px 16px 16px 4px;padding:11px 14px;font-size:13.5px;font-weight:700;line-height:1.4;box-shadow:0 8px 22px -6px rgba(0,0,0,.5)}
   .bubble::after{content:"";position:absolute;left:16px;bottom:-8px;border:8px solid transparent;border-top-color:rgba(255,255,255,.96);border-bottom:0}
-  @keyframes bubbleIn{from{opacity:0;transform:translateY(8px) scale(.9)}to{opacity:1;transform:none}}
-  .bname{position:absolute;left:16px;bottom:200px;z-index:5}
-  .bname .n{font-size:26px;font-weight:900;text-shadow:0 2px 12px #000}
-  .bname .g{display:inline-block;margin-top:5px;font-size:11px;font-weight:800;background:var(--gold);color:#1a1226;padding:3px 10px;border-radius:999px}
 
-  /* 하단 */
-  .dock{position:absolute;left:0;right:0;bottom:70px;z-index:6;padding:0 16px}
+  .dock{position:absolute;left:0;right:0;bottom:74px;z-index:6;padding:0 16px}
   .cta{width:100%;padding:17px;border-radius:19px;border:none;font-size:18px;font-weight:900;color:#fff;
-    background:linear-gradient(135deg,#ff5f8f,#ff3d68);box-shadow:0 12px 28px -8px rgba(255,61,104,.75),inset 0 1px 0 rgba(255,255,255,.28);cursor:pointer;
-    animation:ctaPulse 2.4s ease-in-out infinite}
-  @keyframes ctaPulse{0%,100%{box-shadow:0 12px 28px -8px rgba(255,61,104,.75),inset 0 1px 0 rgba(255,255,255,.28)}50%{box-shadow:0 12px 40px -6px rgba(255,61,104,.95),inset 0 1px 0 rgba(255,255,255,.28)}}
+    background:linear-gradient(135deg,#ff5f8f,#ff3d68);box-shadow:0 12px 28px -8px rgba(255,61,104,.75),inset 0 1px 0 rgba(255,255,255,.28);cursor:pointer;animation:ctaPulse 2.4s ease-in-out infinite}
+  @keyframes ctaPulse{0%,100%{box-shadow:0 12px 28px -8px rgba(255,61,104,.75),inset 0 1px 0 rgba(255,255,255,.28)}50%{box-shadow:0 12px 42px -6px rgba(255,61,104,.98),inset 0 1px 0 rgba(255,255,255,.28)}}
   .cta .k{font-size:12px;opacity:.85;font-weight:700;display:block;margin-bottom:1px}
   .nav{position:absolute;left:0;right:0;bottom:0;height:66px;z-index:7;background:rgba(14,9,26,.92);backdrop-filter:blur(10px);border-top:1px solid #241a38;display:flex}
   .nav .t{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:10.5px;color:#7d7099;font-weight:700}
-  .nav .t.on{color:#fff}.nav .t.on .i{filter:drop-shadow(0 0 6px var(--accent))}
-  .nav .t .i{font-size:20px}
-  .cap{position:absolute;bottom:74px;left:0;right:0;text-align:center;font-size:10px;color:rgba(255,255,255,.4);z-index:8}
+  .nav .t.on{color:#fff}.nav .t.on .i{filter:drop-shadow(0 0 6px var(--accent))}.nav .t .i{font-size:20px}
 </style></head><body>
+<div style="position:relative"><div class="cap-top">v2 · 포트레이트 카드 (얼굴 안 늘림 · 수집 정체성)</div>
 <div class="phone">
-  <div class="stage">
-    <div class="rays"></div>
-    <div class="floor"></div><div class="floor2"></div>
-    <img class="char" src="https://pikaso.cdnpk.net/private/production/4995675907/render.png?token=exp=1785369600~hmac=1663932c235ebb1a530b5ab3c269dee012faac968dd2ce345a122919ed0ae3ee&w=1024&preview=1" alt="">
-  </div>
+  <div class="stage"><div class="rays"></div></div>
+  <div class="floor"></div>
+  <div class="card"><div class="shine"></div></div>
+  <div class="nplate"><div class="n">셔누</div><div class="g">🏆 우리 대표 그룹 · 네온플래시</div></div>
 
   <div class="hud">
     <div class="hud-row">
@@ -85,41 +75,21 @@
         <div class="resbar">⚡ <span>기력</span><div class="track"><i style="width:64%;background:linear-gradient(90deg,#5fc9ff,#4a8fe0)"></i></div><b>0:41</b></div>
       </div>
     </div>
-    <div class="coins">
-      <span class="coin">💎 <b>12</b></span>
-      <span class="coin">🩷 <b>259,360</b></span>
-    </div>
+    <div class="coins"><span class="coin">💎 <b>12</b></span><span class="coin">🩷 <b>259,360</b></span></div>
   </div>
-
-  <div class="side">
-    <div class="sicon">✉️</div><div class="sicon">📋</div><div class="sicon">🎁</div>
-  </div>
-
+  <div class="side"><div class="sicon">✉️</div><div class="sicon">📋</div><div class="sicon">🎁</div></div>
   <div class="bubble">해피 데뷔! 프로듀서님 덕분에 여기까지 왔어요 — 오늘도 잘 부탁해요! ✨</div>
-  <div class="bname"><div class="n">셔누</div><div class="g">🏆 우리 대표 그룹 · 네온플래시</div></div>
 
-  <div class="dock">
-    <button class="cta"><span class="k">🥈 실버 · 승점 138P</span>⚔️ 무대 대결하러 가기</button>
-  </div>
-  <div class="cap">컷아웃 캐릭터 · 무대 조명 · 파티클 · idle 호흡 · 말풍선 — 전부 HTML/CSS</div>
+  <div class="dock"><button class="cta"><span class="k">🥈 실버 · 승점 138P</span>⚔️ 무대 대결하러 가기</button></div>
   <div class="nav">
-    <div class="t on"><span class="i">🏠</span>홈</div>
-    <div class="t"><span class="i">🛏️</span>숙소</div>
-    <div class="t"><span class="i">🎴</span>카드</div>
-    <div class="t"><span class="i">🏆</span>차트</div>
-    <div class="t"><span class="i">☰</span>메뉴</div>
+    <div class="t on"><span class="i">🏠</span>홈</div><div class="t"><span class="i">🛏️</span>숙소</div>
+    <div class="t"><span class="i">🎴</span>카드</div><div class="t"><span class="i">🏆</span>차트</div><div class="t"><span class="i">☰</span>메뉴</div>
   </div>
-</div>
-
+</div></div>
 <script>
-  // 파티클 생성
-  const stage=document.querySelector('.stage');
-  for(let i=0;i<16;i++){ const p=document.createElement('span'); p.className='p';
-    p.style.left=(6+Math.random()*88)+'%';
-    p.style.animationDuration=(5+Math.random()*5)+'s';
-    p.style.animationDelay=(-Math.random()*8)+'s';
-    const sz=3+Math.random()*5; p.style.width=p.style.height=sz+'px';
-    p.style.opacity=(.4+Math.random()*.5);
-    stage.appendChild(p); }
+  const st=document.querySelector('.stage');
+  for(let i=0;i<15;i++){const p=document.createElement('span');p.className='p';p.style.left=(6+Math.random()*88)+'%';
+    p.style.animationDuration=(5+Math.random()*5)+'s';p.style.animationDelay=(-Math.random()*8)+'s';
+    const s=3+Math.random()*4;p.style.width=p.style.height=s+'px';p.style.opacity=(.4+Math.random()*.5);st.appendChild(p);}
 </script>
 </body></html>
