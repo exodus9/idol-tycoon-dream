@@ -4094,7 +4094,7 @@ window.addEventListener("popstate", ()=>{
           <span class="sc" style="color:${b.delta>=0?'#4fd6a0':'#ff7d95'}">${b.delta>=0?'+':''}${b.delta}P</span></div>`).join('');
       document.getElementById('battleTiers').innerHTML=
         `<div class="dg-sub" style="margin-top:15px"><b>🏅 티어 기준</b><span class="muted">시즌 승점 · 2주마다 리셋</span></div>
-         <div class="tier-strip">${BATTLE_TIERS.map(tr=>`<span class="tier-chip ${tr.nm===tier.nm?'on':''}">${tr.ic} ${tr.nm} <small>${tr.min}P+</small></span>`).join('')}</div>
+         <div class="tier-strip">${(this._tierCuts||BATTLE_TIERS).map(tr=>`<span class="tier-chip ${tr.nm===tier.nm?'on':''}">${tr.ic} ${tr.nm} <small>${tr.min}P+</small></span>`).join('')}</div>
          ${_log?`<div class="dg-sub" style="margin-top:13px"><b>📜 최근 전적</b></div><div class="lb">${_log}</div>`:''}`;
       this.startMicTick();   // 마이크 00:00 카운트다운 매초 갱신(로비 이탈 시 자동정지)
       // F. 온보딩: 경쟁전 3판 후 1회 공유 유도(성취 직후). ov 비어있을 때만(배틀 결과 닫힌 뒤) 표시
@@ -5416,7 +5416,7 @@ window.addEventListener("popstate", ()=>{
       if(sub)sub.style.display='';                                  // 그룹 탭에서만 [시즌|역대]
       if(this._leagueSub==='alltime'){ this.renderAllTime(); return; }
       this.renderLeague();
-      this.fetchGroupBoard().then(list=>{ if(this._rankTab==='group'&&this._leagueSub!=='alltime') this.renderLeague(list); });
+      this.fetchGroupBoard().then(list=>{ if(this._rankTab==='group'&&this._leagueSub!=='alltime'){ this.renderLeague(list); this.renderLeagueBattle(); } });   // 티어컷(_tierCuts) 갱신 후 상단 배틀카드도 재렌더 = 상단/차트 티어 일치
     },
     setRankSub(sub){ this._leagueSub=sub;
       const a=document.getElementById('rsub-season'), b=document.getElementById('rsub-all');
