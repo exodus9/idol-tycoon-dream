@@ -59,17 +59,22 @@ assert all(x['img'].startswith('http') and x['name'] and x['spec'] in SPECS for 
 
 payload = 'window.IDOL_DB=' + json.dumps(idols, ensure_ascii=False) + ';\n'
 kept = sum(1 for x in idols if x['id'] in existing)
-out_path = '/tmp/idols_new.js' if DRY else IDOLS_JS
-open(out_path, 'w', encoding='utf-8').write(payload)
-print(f"{'[DRY] ' if DRY else ''}{len(idols)}명 동기화 (spec 보존 {kept}·신규 {len(idols)-kept}) → {out_path}")
+if DRY:
+    open('/tmp/idols_new.js', 'w', encoding='utf-8').write(payload)
+    print(f"[DRY] {len(idols)}명 (spec 보존 {kept}·신규 {len(idols)-kept}) → /tmp/idols_new.js")
+    raise SystemExit
 
-# 캐시버스터 갱신 (안 올리면 폰이 옛 idols.js 캐시) — dry 아닐 때만
-if not DRY:
-    import datetime
-    idx_path = os.path.join(GAME, 'index.html')
-    idx = open(idx_path, encoding='utf-8').read()
-    newver = 'sync' + datetime.datetime.now().strftime('%Y%m%d%H%M')
-    idx2 = re.sub(r'idols\.js\?v=[0-9a-zA-Z]+', 'idols.js?v=' + newver, idx)
-    if idx2 != idx:
-        open(idx_path, 'w', encoding='utf-8').write(idx2)
-        print('캐시버스터 →', newver)
+# 내용 실제로 바뀔 때만 쓰기+캐시버스터(안 그러면 매일 동일데이터 재배포 낭비)
+cur = open(IDOLS_JS, encoding='utf-8').read() if os.path.exists(IDOLS_JS) else ''
+if payload == cur:
+    print(f"변경 없음 ({len(idols)}명) — 갱신 생략")
+    raise SystemExit
+open(IDOLS_JS, 'w', encoding='utf-8').write(payload)
+import datetime
+idx_path = os.path.join(GAME, 'index.html')
+idx = open(idx_path, encoding='utf-8').read()
+newver = 'sync' + datetime.datetime.now().strftime('%Y%m%d%H%M')
+idx2 = re.sub(r'idols\.js\?v=[0-9a-zA-Z]+', 'idols.js?v=' + newver, idx)
+if idx2 != idx:
+    open(idx_path, 'w', encoding='utf-8').write(idx2)
+print(f"{len(idols)}명 동기화 (spec 보존 {kept}·신규 {len(idols)-kept}) · 캐시버스터 {newver}")
