@@ -279,10 +279,7 @@
   .hcard.dim{opacity:.4;pointer-events:none;filter:grayscale(.5)}
   .hcard .hc-ic{width:42px;height:42px;flex:none;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:23px;
     background:linear-gradient(160deg,var(--tc,#5a4a8f),rgba(0,0,0,.4));box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
-  .hcard .hc-body{flex:1;min-width:0}
-  .hcard .hc-nm{display:block;font-size:14.5px;font-weight:900;line-height:1.1}
-  .hcard .hc-desc{display:block;font-size:11.5px;color:var(--sub);margin-top:3px;line-height:1.35}
-  .hcard .hc-desc em{color:#ffe0a0;font-style:normal;font-weight:800}
+  .hcard .hc-nm{flex:1;min-width:0;font-size:15.5px;font-weight:900;line-height:1.1}
   .hcard .hc-cost{flex:none;font-size:11.5px;font-weight:900;color:#7fd6ff;font-variant-numeric:tabular-nums;white-space:nowrap}
   .hcard .hc-cost.no{color:#ff7a7a}
   .hcard.spec{border-color:var(--gold)}
@@ -1753,40 +1750,34 @@ const Game = {
        <div class="pr-info">
          <div class="pr-goal">🎯 <b>${t(nx.k)}</b> ${dday>0?`D-${dday}`:"지금!"} ${foreChip}</div>
          <div class="pr-track"><i style="width:${prog}%"></i></div>
-         <div class="pr-coach">🐰 ${this.coachLine(s, dday, fore)}</div>
        </div>`;
     // ⭐손패: 이번 주 3장 중 1택 (기력을 재고 특기·컨디션을 계산 = 매 턴 판단). 학마스식 카드 선택 루프.
     if(!s.hand || !s.hand.length) s.hand = drawHand(s.stam!=null?s.stam:100);
     const stc=k=>((STATS.find(x=>x.k===k)||{}).c)||"#5a4a8f";
     const stnm=k=>((STATS.find(x=>x.k===k)||{}).n)||"";
     const cardById=id=>(id==="special"?RARE_CARD:TRAIN_CARDS.find(c=>c.id===id));
+    // 카드 = 아이콘 + 이름 + ⚡코스트. 설명 문장 없음(암묵지 — 특수 카드는 뱃지·색으로, 나머진 플레이로 학습)
     const cardHTML=(id,i)=>{ const c=cardById(id); if(!c) return "";
       const spec=c.stat && c.stat===s.idol.spec;
       const tc = c.kind==="rest"?"#3a4a6a":c.kind==="live"?"#6a4a6a":c.kind==="rare"?"#b98a2a":c.kind==="burst"?"#c9482a":c.kind==="buff"?"#2a8a7a":stc(c.stat);
-      let desc;
-      if(c.kind==="lesson")     desc=`<em>${stnm(c.stat)} 크게↑</em>${spec?' · <em style="color:#ffd35c">⭐특기!</em>':''}`;
-      else if(c.kind==="light") desc=`${stnm(c.stat)} 조금↑ · 기력 적게${spec?' · <em style="color:#ffd35c">⭐특기</em>':''}`;
-      else if(c.kind==="rest")  desc=`기력 <em>회복</em> + 컨디션 <em>↑</em>`;
-      else if(c.kind==="live")  desc=`팬 <em>대폭↑</em> · 랜덤 스탯 소폭`;
-      else if(c.kind==="rare")  desc=`<em>특기 스탯 폭발</em> + 컨디션 好調`;
-      else if(c.kind==="burst") desc=`<em>${stnm(s.idol.spec)} 폭발 성장</em> · 기력·컨디션 크게↓`;
-      else if(c.kind==="buff")  desc=`다음 <em>3턴</em> 레슨 <em>+30%</em> (몰입)`;
       const stamNow=(s.stam!=null?s.stam:100);
       const noStam = c.cost>0 && stamNow < c.cost;
-      const costTx = c.cost>0?`기력 -${c.cost}`:c.cost<0?`기력 +${-c.cost}`:`기력 -20`;
+      const costTx = c.cost>0?`−${c.cost}`:`+${-c.cost}`;
+      const badge = c.kind==="rare"?'<span class="hc-tag">RARE ✦</span>'
+        : c.kind==="burst"?'<span class="hc-tag" style="color:#ff7a4d">RISK ⚠</span>'
+        : (spec?'<span class="spk">⭐</span>':'');
       return `<button class="hcard act${c.kind==="rare"?' rare':''}${c.kind==="burst"?' burst':''}${spec?' spec':''}${noStam?' dim':''}" style="--tc:${tc}" onclick="Game.playCard(${i})">
-        ${c.kind==="rare"?'<span class="hc-tag">RARE ✦</span>':(c.kind==="burst"?'<span class="hc-tag" style="color:#ff7a4d">RISK ⚠</span>':(spec?'<span class="spk">⭐</span>':''))}
+        ${badge}
         <span class="hc-ic">${c.ic}</span>
-        <span class="hc-body"><span class="hc-nm">${c.nm}</span><span class="hc-desc">${desc}</span></span>
-        <span class="hc-cost${noStam?' no':''}">${costTx}</span></button>`;
+        <span class="hc-nm">${c.nm}</span>
+        <span class="hc-cost${noStam?' no':''}">⚡ ${costTx}</span></button>`;
     };
-    // 상태 칩: 콤보(연속 같은스탯) + 몰입(지속버프) — 빌드 감각 시각화
+    // 상태 칩(콤보·몰입) — 숫자 없이 최소 표기. 효과는 결과로 체감.
     let chips='';
-    if(s.combo>=2){ const cn=(STATS.find(x=>x.k===s.comboStat)||{}).n||''; chips+=`<span class="tstat-chip combo">🔥 ${s.combo}연속 ${cn} <small>+${Math.round(Math.min(0.6,(s.combo-1)*0.15)*100)}%</small></span>`; }
-    if(s.buff && s.buff.turns>0){ chips+=`<span class="tstat-chip buff">🧘 몰입 ${s.buff.turns}턴 <small>+30%</small></span>`; }
+    if(s.combo>=2) chips+=`<span class="tstat-chip combo">🔥 ${s.combo}연속</span>`;
+    if(s.buff && s.buff.turns>0) chips+=`<span class="tstat-chip buff">🧘 몰입 ${s.buff.turns}턴</span>`;
     document.getElementById("actionBox").innerHTML=
       `${chips?`<div class="tstat-row">${chips}</div>`:''}
-       <div class="hand-cap">🎴 이번 주, 뭘 할까? <small>3장 중 하나</small></div>
        <div class="hand">${s.hand.map((id,i)=>cardHTML(id,i)).join("")}</div>`;
   },
 
