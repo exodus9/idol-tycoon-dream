@@ -2635,6 +2635,7 @@ function show(id){
   // 폰 뒤로가기 가드: 서브화면(선택·도감·명전·결과) 진입 시 히스토리 확보 → popstate로 가로채 타이틀 복귀(게임 밖 이탈 방지). 플레이화면은 armBackGuard가 담당.
   if(id==="s-select"||id==="s-dex"||id==="s-end"||id==="s-office"||id==="s-cardpick"||id==="s-cards"||id==="s-forge"||id==="s-agency"||id==="s-debut"||id==="s-roster"||id==="s-assign"||id==="s-league"||id==="s-battle"||id==="s-achv"||id==="s-menu"){ try{ history.pushState({scr:id},""); }catch(e){} }
   updateTabbar(id);
+  try{ setBgmTheme(id==='s-battle'?'battle':(/^s-(play|select|cardpick|end)$/.test(id)?'train':'home')); }catch(e){}   // BGM 3종: 배틀=강렬·육성=경쾌·그외=차분
 }
 // 하단 탭바: 어느 화면이 어느 탭에 속하는지 (없으면 탭바 숨김 = 육성 몰입/서브화면)
 const TAB_OF={ 's-office':'home','s-roster':'roster','s-cards':'cards','s-forge':'cards','s-league':'ranking','s-battle':'home','s-achv':'menu','s-dex':'menu','s-menu':'menu' };
@@ -2742,7 +2743,12 @@ function sfx(k){
 // ── ㉙ BGM: 곡 구조 확장(4마디 루프→32마디 약 69초 송폼) + 회차 변주. Web Audio 스케줄러 ──
 // 송폼: 전주(4) → 벌스(8) → 빌드(4) → 후렴(8) → 브릿지(4) → 후렴 아웃트로(4). 반복마다 아르페지오 패턴 랜덤 픽.
 let BGM_ON=false, bgmTimer=null, bgmStep=0, bgmNextTime=0;
-const BGM_BPM=112, EIGHTH=60/BGM_BPM/2;
+const BGM_BPM=112, BGM_EIGHTH_BASE=60/BGM_BPM/2; let EIGHTH=BGM_EIGHTH_BASE;
+// ㉙-2 BGM 3종(재율애비): 홈=차분 · 육성=경쾌(빠름) · 배틀=강렬(더 빠름·큼). 템포·강도로 차별(피치변조 X=화음 유지)
+const BGM_THEMES={ home:{rate:1.0,gain:0.6}, train:{rate:1.13,gain:0.62}, battle:{rate:1.27,gain:0.72} };
+let BGM_THEME='home';
+function setBgmTheme(th){ if(!BGM_THEMES[th]||th===BGM_THEME) return; BGM_THEME=th; EIGHTH=BGM_EIGHTH_BASE/BGM_THEMES[th].rate;
+  if(BGM_ON&&AC){ bgmStep=0; bgmNextTime=AC.currentTime+0.05; try{ BGMBUS.gain.setTargetAtTime(BGM_THEMES[th].gain,AC.currentTime,0.35); }catch(e){} } }
 // 코드 팔레트 (C장조): 0=I 1=V 2=vi 3=IV 4=ii 5=iii
 const BGM_CH=[[NOTE.C4,NOTE.E4,NOTE.G4],[NOTE.G4,NOTE.B4,NOTE.D5],[NOTE.A4,NOTE.C5,NOTE.E5],[NOTE.F4,NOTE.A4,NOTE.C5],[NOTE.D4,NOTE.F4,NOTE.A4],[NOTE.E4,NOTE.G4,NOTE.B4]];
 const BGM_BS=[NOTE.C3,NOTE.G3,NOTE.A3,NOTE.F3,NOTE.D3,NOTE.E3];
@@ -2794,7 +2800,7 @@ function startBgm(){
   BGM_ON=true; bgmStep=0; bgmNextTime=ac.currentTime+0.1;
   try{ BGMBUS.gain.cancelScheduledValues(ac.currentTime);
        BGMBUS.gain.setValueAtTime(Math.max(0.0001,BGMBUS.gain.value),ac.currentTime);
-       BGMBUS.gain.exponentialRampToValueAtTime(0.6,ac.currentTime+1.2); }catch(e){}
+       BGMBUS.gain.exponentialRampToValueAtTime(BGM_THEMES[BGM_THEME].gain,ac.currentTime+1.2); }catch(e){}
   bgmSchedule();
 }
 function stopBgm(){
