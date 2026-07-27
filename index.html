@@ -4241,9 +4241,17 @@ window.addEventListener("popstate", ()=>{
     repGroup(){ const gid=this.repGroupGid(); return gid==null?null:(this.data.groups||[]).find(g=>g.gid===gid); },
     setRep(gid){ this.load(); this.data.repGid=gid; this.persist(); const g=(this.data.groups||[]).find(x=>x.gid===gid); if(g)this.submitGroup(g); this.renderOffice(); try{toast('⭐ 대표 데뷔조 지정 · 순위전 출전');}catch(e){} },
     disbandGroup(gid){ this.load(); const g=(this.data.groups||[]).find(x=>x.gid===gid); if(!g)return;
-      this.confirmModal({title:'그룹 해체', body:`<b>${esc(g.name)}</b> 을(를) 해체할까?<br>멤버는 다시 무소속(숙소)으로 돌아가.`, ok:'해체', cancel:'취소', danger:true,
+      const bs=this.battleSeasonOf(gid), hasRank=((bs.w||0)+(bs.l||0))>0 || (bs.pts||0)>0;
+      const warn = hasRank
+        ? `⚠️ <b>이번 시즌 랭킹 기록(승점 ${bs.pts||0}P · 티어)이 사라지고 되살릴 수 없어요.</b><br>멤버는 무소속(숙소)으로 돌아가.`
+        : `멤버는 다시 무소속(숙소)으로 돌아가.`;
+      this.confirmModal({title:'대표 그룹 해체', body:`<b>${esc(g.name)}</b> 을(를) 해체할까?<br>${warn}`, ok:'해체', cancel:'취소', danger:true,
         onOk:()=>{ this.load();
           this.data.groups=(this.data.groups||[]).filter(x=>x.gid!==gid);
+          // 해체 = 이번 시즌 랭킹 기록도 소멸(경고 고지대로, 되살리기 불가)
+          try{ if(this.data.groupSeasons) delete this.data.groupSeasons[gid];
+               if(this.data.groupAll) delete this.data.groupAll[gid];
+               if(this.data.groupLog) delete this.data.groupLog[gid]; }catch(e){}
           if(this.data.repGid===gid) this.data.repGid=(this.data.groups[0]&&this.data.groups[0].gid)||null;
           this.persist(); this.renderOffice(); try{toast('그룹 해체됨 · 멤버 무소속 복귀');}catch(e){} }}); },
     assign(slotId, rid){ this.load(); const r=this.rosterById(rid); if(!r)return {err:'noidol'};
@@ -5412,40 +5420,89 @@ window.addEventListener("popstate", ()=>{
       this.renderRankTab(); },
     renderRankTab(){
       const sub=document.getElementById('rankSub');
-      if(this._rankTab==='trainee'){ if(sub)sub.style.display='none'; this.renderTraineeBoard(); return; }
+      if(this._rankTab==='trainee'){ if(sub)sub.style.display=''; this.renderTraineeBoard(); return; }   // 연습생도 [이번 시즌|역대] 세그 노출(헤드박스=내 최고 연습생)
       if(sub)sub.style.display='';                                  // 그룹 탭에서만 [시즌|역대]
       if(this._leagueSub==='alltime'){ this.renderAllTime(); return; }
       this.renderLeague();
-      this.fetchGroupBoard().then(list=>{ if(this._rankTab==='group'&&this._leagueSub!=='alltime'){ this.renderLeague(list); this.renderLeagueBattle(); } });   // 티어컷(_tierCuts) 갱신 후 상단 배틀카드도 재렌더 = 상단/차트 티어 일치
+      this.fetchGroupBoard().then(list=>{ if(list) this._updateChampions(list); if(this._rankTab==='group'&&this._leagueSub!=='alltime'){ this.renderLeague(list); this.renderLeagueBattle(); } });   // 티어컷(_tierCuts) 갱신 후 상단 배틀카드도 재렌더 = 상단/차트 티어 일치 · 챔피언(진행중 선두) 캡처
     },
     setRankSub(sub){ this._leagueSub=sub;
       const a=document.getElementById('rsub-season'), b=document.getElementById('rsub-all');
       if(a)a.classList.toggle('on',sub==='season'); if(b)b.classList.toggle('on',sub==='alltime');
       this.renderRankTab(); },
-    // 역대 세그 = 통산 전적(시즌 리셋 안 됨) + 데뷔시킨 그룹 명예
+    // 챔피언 캡처(근사): 리더보드 현재 1위를 이번 시즌 선두로 기록. 시즌이 넘어가면 직전 시즌 선두를 챔피언으로 확정.
+    // ⚠️서버가 과거 시즌을 안 남겨서(고정ID upsert) 클라 관측 기반 근사 — 차트 안 본 시즌은 누락 가능.
+    _updateChampions(list){
+      if(!list||!list.length) return;
+      this.load();
+      const curNo=this.seasonNo();
+      let top=null;
+      list.forEach(r=>{ const p=+r.pts||0; if(!top||p>top.pts) top={name:r.name, logo:r.logo||'🎤', pts:p, mine:false}; });
+      try{ const g=this.repGroup(); if(g){ const bs=this.battleSeasonOf(g.gid); if((bs.pts||0)>(top?top.pts:-1)) top={name:g.name, logo:g.logo||'🎤', pts:bs.pts||0, mine:true}; } }catch(e){}
+      if(!top) return;
+      if(!this.data.champions) this.data.champions=[];
+      const sl=this.data.seasonLeader;
+      if(sl && sl.no<curNo && !this.data.champions.some(c=>c.no===sl.no)){
+        this.data.champions.push({no:sl.no, name:sl.name, logo:sl.logo, pts:sl.pts, mine:!!sl.mine});   // 직전 시즌 선두=챔피언 확정
+      }
+      this.data.seasonLeader={no:curNo, name:top.name, logo:top.logo, pts:top.pts, mine:!!top.mine};
+      this.persist();
+    },
+    // 역대 세그 = 매 시즌 1위(챔피언) 누적 명예의 전당. 진행 중 시즌 선두는 최상단에 따로.
     renderAllTime(){
-      const ba=this.battleAll(), tier=this.battleTier(ba.best);
+      this.load();
       const head=document.getElementById('leagueHead'), note=document.getElementById('leagueNote'), box=document.getElementById('leagueBoard');
       if(note) note.textContent='';
-      const total=ba.w+ba.l, rate=total?Math.round(ba.w/total*100):0;
-      if(head) head.innerHTML=`<div class="lg-head"><div class="lg-tier-ic">${tier.ic}</div>
-        <div class="lg-tier-nm">최고 ${esc(tier.nm)}</div>
-        <div class="lg-tier-sub">통산 <b>${ba.w}</b>승 ${ba.l}패${total?' · 승률 '+rate+'%':''}</div>
-        <div class="lg-rank-badge">최고 승점 ${ba.best}</div></div>`;
-      const groups=(this.data.groups||[]).slice().sort((a,b)=>(b.sum||0)-(a.sum||0));
-      if(box) box.innerHTML= groups.length?
-        `<div class="lb-cap">🏆 데뷔시킨 그룹 ${groups.length}팀</div>`+groups.map((g,i)=>
-          `<div class="lb-row"><span class="r">${i+1}</span><span class="who"><span class="lg-logo">${this.logoHtml(g.logo,24)}</span> ${esc(g.name)}<small>${g.grade}·${g.n}/9</small></span><span class="sc">${(g.sum||0).toLocaleString()}</span></div>`).join('')
-        : `<div class="lb-row"><span class="who muted">아직 데뷔시킨 그룹이 없어</span></div>`;
+      const render=()=>{
+        const curNo=this.seasonNo(), sl=this.data.seasonLeader, dday=this.seasonEndsInDays();
+        if(head){
+          if(sl && sl.no===curNo){
+            head.innerHTML=`<div class="lg-head">
+              <div class="lg-tier-sub" style="margin-bottom:5px">👑 진행 중 · 시즌 ${curNo+1} 선두 · D-${dday}</div>
+              <div class="lg-tier-nm" style="font-size:18px">${this.logoHtml(sl.logo,22)} ${esc(sl.name)}${sl.mine?' <small style="color:var(--gold)">우리 그룹!</small>':''}</div>
+              <div class="lg-tier-sub">승점 <b style="color:var(--accent)">${sl.pts}</b>P · 시즌 종료 시 챔피언 확정</div></div>`;
+          } else {
+            head.innerHTML=`<div class="lg-head"><div class="lg-tier-ic">👑</div><div class="lg-tier-nm">역대 챔피언</div>
+              <div class="lg-tier-sub">매 시즌 1위가 명예의 전당에 남아요 · 이번 시즌 D-${dday}</div></div>`;
+          }
+        }
+        const champs=(this.data.champions||[]).slice().sort((a,b)=>b.no-a.no);
+        if(box) box.innerHTML = champs.length?
+          `<div class="lb-cap">👑 역대 시즌 챔피언</div>`+champs.map(c=>
+            `<div class="lb-row"><span class="r">S${c.no+1}</span><span class="who">${this.logoHtml(c.logo,24)} ${esc(c.name)}${c.mine?' <small style="color:var(--gold)">우리</small>':''}</span><span class="sc">${(c.pts||0).toLocaleString()}P</span></div>`).join('')
+          : `<div class="lb-row"><span class="who muted">아직 마감된 시즌이 없어.<br>첫 시즌이 끝나면 그 시즌 1위가 여기 챔피언으로 남아요.</span></div>`;
+      };
+      render();
+      // 최신 리더보드로 진행 중 선두 갱신(+시즌 넘어갔으면 직전 챔피언 확정) 후 재렌더
+      this.fetchGroupBoard().then(list=>{ if(list) this._updateChampions(list); if(this._rankTab==='group'&&this._leagueSub==='alltime') render(); });
     },
     // 연습생 랭킹 = 전설의 연습생(개인 팬 리더보드). Game.fetchBoard 데이터 재활용, s-league에 렌더.
     renderTraineeBoard(){
       const head=document.getElementById('leagueHead'), note=document.getElementById('leagueNote'), box=document.getElementById('leagueBoard');
       if(note) note.textContent='';
-      if(head) head.innerHTML=`<div class="lg-head"><div class="lg-tier-ic">🏅</div>
-        <div class="lg-tier-nm">전설의 연습생</div>
-        <div class="lg-tier-sub">전 세계 프로듀서가 키운 최고의 연습생들</div></div>`;
-      if(box) box.innerHTML=`<div class="lb-row"><span class="who muted">${t("hall_loading")}</span></div>`;
+      // 헤드박스 = 내 최고 연습생(팬 기준). 세그: 이번 시즌(joinedAt이 이번 시즌) / 역대(전체). 아래 목록은 글로벌 유지.
+      const seasonMode=this._leagueSub!=='alltime';
+      const mine=(this.data.roster||[]);
+      const pool = seasonMode ? mine.filter(r=>Math.floor(((r.joinedAt||0)-SEASON_EPOCH)/SEASON_MS)===this.seasonNo()) : mine;
+      const best = pool.slice().sort((a,b)=>(b.fans||0)-(a.fans||0))[0];
+      const lbl = seasonMode ? '이번 시즌 내 최고 연습생' : '역대 내 최고 연습생';
+      if(head){
+        if(best){
+          head.innerHTML=`<div class="lg-head" style="cursor:pointer" onclick="DG.showRosterDetail(${best.rid})">
+            <div class="lg-tier-sub" style="margin-bottom:6px">🏅 ${lbl}</div>
+            <div style="display:flex;align-items:center;gap:11px;justify-content:center">
+              <span style="width:52px;height:52px;border-radius:50%;background:#3a3350 center/cover;${best.img?`background-image:url('${best.img}')`:''};border:2px solid var(--gold);flex:none"></span>
+              <div style="text-align:left;min-width:0">
+                <div class="lg-tier-nm" style="font-size:17px">${esc(best.name)} <small style="font-size:12px;color:var(--sub)">${best.grade}등급</small></div>
+                <div class="lg-tier-sub">💗 팬 <b style="color:var(--accent)">${fmt(best.fans||0)}</b>${(best.titles&&best.titles.length)?` · 🏅 칭호 ${best.titles.length}개`:''}</div>
+              </div></div></div>`;
+        } else {
+          head.innerHTML=`<div class="lg-head"><div class="lg-tier-ic">🏅</div>
+            <div class="lg-tier-nm">${lbl}</div>
+            <div class="lg-tier-sub">${seasonMode?'이번 시즌 완주한 연습생이 아직 없어':'아직 완주한 연습생이 없어'}</div></div>`;
+        }
+      }
+      if(box) box.innerHTML=`<div class="lb-cap">🏅 전설의 연습생 — 전 세계 프로듀서의 최고 연습생</div><div class="lb-row"><span class="who muted">${t("hall_loading")}</span></div>`;
       Game.fetchBoard().then(()=>{
         if(this._rankTab!=='trainee') return;
         const src=Game._boardCache||Game.localBoard();
@@ -5454,7 +5511,7 @@ window.addEventListener("popstate", ()=>{
         if(!box) return;
         if(!list.length){ box.innerHTML=`<div class="lb-row"><span class="who muted">${t("hall_empty")}</span></div>`; return; }
         this._tboard=list;   // ⑫ 탭→카드팝업용
-        box.innerHTML=list.map((r,i)=>{
+        box.innerHTML=`<div class="lb-cap">🏅 전설의 연습생 — 전 세계 프로듀서의 최고 연습생</div>`+list.map((r,i)=>{
           const me=r._me || (meName&&r.name===meName);
           const medal=["🥇","🥈","🥉"][i]||`${i+1}`;
           return `<div class="lb-row ${me?'me':''}" style="cursor:pointer" onclick="DG.openTraineeCard(${i})"><span class="r">${medal}</span>
@@ -5521,7 +5578,9 @@ window.addEventListener("popstate", ()=>{
           <div class="fb-rows">${syn.list.map(s=>`<span style="display:inline-block;margin:0 5px 4px 0;padding:1.5px 8px;border-radius:999px;background:rgba(255,255,255,.1);font-size:11px">${esc(s.nm)} +${s.pct}%</span>`).join('')}</div></div>`:''}`;
       // 공유는 텍스트+링크(재율애비: 이미지 생성 제거). 카드 앞뒷면 뷰가 기본, 하단 공유 버튼.
       const shareArgs=[JSON.stringify(g.name||'데뷔조'),JSON.stringify(g.grade||''),bp.power,bp.syn].join(',');
-      const actions=`<button class="btn ghost" style="flex:1" onclick='DG.shareGroupText(${shareArgs})'>🔗 공유하기</button>`;
+      // 카드 밑 액션: 공유 + (저장된 내 그룹이면) 해체. 해체는 disbandGroup에서 랭킹 기록 소실 경고+확인.
+      const disbandBtn = (g.gid!=null) ? `<button class="btn ghost" style="flex:0 0 auto;color:#ff7d95" onclick="var o=document.getElementById('ov');o.className='ov';o.onclick=null;DG.disbandGroup(${g.gid})">🗑️ 해체</button>` : '';
+      const actions=`<button class="btn ghost" style="flex:1" onclick='DG.shareGroupText(${shareArgs})'>🔗 공유하기</button>${disbandBtn}`;
       this.showFlipCard(front, back, actions, null);
     },
     // 그룹 공유 = 텍스트 요약 + 게임 링크(이미지 생성 안 함)
