@@ -268,6 +268,35 @@
   .ttile.t-rest{background:linear-gradient(160deg,#3a4a6a,#28324a)}
   .ttile.t-care{background:linear-gradient(160deg,#6a4a6a,#4a2f4a)}
 
+  /* ⭐로그라이트 육성: 손패(매 턴 3장 드로우 → 1택). 학마스식 카드 선택 루프 */
+  .hand-cap{font-size:12.5px;font-weight:800;color:var(--txt);margin:2px 2px 8px;display:flex;align-items:center;gap:6px}
+  .hand-cap small{color:var(--sub);font-weight:600}
+  .hand{display:flex;flex-direction:column;gap:9px}
+  .hcard{position:relative;display:flex;align-items:center;gap:11px;text-align:left;border:1.5px solid var(--line);border-radius:15px;
+    padding:12px 13px;cursor:pointer;color:#fff;background:linear-gradient(135deg,#1d1236,#170e2b);overflow:hidden;
+    box-shadow:0 4px 0 rgba(0,0,0,.28);transition:transform .1s,border-color .12s}
+  .hcard:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.28)}
+  .hcard.dim{opacity:.4;pointer-events:none;filter:grayscale(.5)}
+  .hcard .hc-ic{width:42px;height:42px;flex:none;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:23px;
+    background:linear-gradient(160deg,var(--tc,#5a4a8f),rgba(0,0,0,.4));box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
+  .hcard .hc-body{flex:1;min-width:0}
+  .hcard .hc-nm{display:block;font-size:14.5px;font-weight:900;line-height:1.1}
+  .hcard .hc-desc{display:block;font-size:11.5px;color:var(--sub);margin-top:3px;line-height:1.35}
+  .hcard .hc-desc em{color:#ffe0a0;font-style:normal;font-weight:800}
+  .hcard .hc-cost{flex:none;font-size:11.5px;font-weight:900;color:#7fd6ff;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .hcard .hc-cost.no{color:#ff7a7a}
+  .hcard.spec{border-color:var(--gold)}
+  .hcard.spec .spk{position:absolute;top:7px;right:10px;font-size:12px}
+  .hcard.rare{border-color:var(--gold);background:linear-gradient(135deg,#2a2140,#1e1636);box-shadow:0 0 18px -5px rgba(255,211,92,.55),0 4px 0 rgba(0,0,0,.28)}
+  .hcard.rare::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.16) 49%,transparent 56%);background-size:250% 100%;animation:hcShine 3.2s ease-in-out infinite}
+  @keyframes hcShine{0%,60%{background-position:180% 0}100%{background-position:-120% 0}}
+  .hcard .hc-tag{position:absolute;top:6px;right:10px;font-size:8.5px;font-weight:900;color:var(--gold);letter-spacing:.5px}
+  /* 기력/컨디션 HUD */
+  .cond-face{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:52px}
+  .cond-face .cf{font-size:24px;line-height:1}
+  .cond-face .ct{font-size:9.5px;font-weight:900;margin-top:1px}
+  .cond-face.good .ct{color:var(--good)}.cond-face.norm .ct{color:var(--sub)}.cond-face.bad .ct{color:var(--bad)}
+
   /* overlay */
   .ov{position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:rgba(14,10,24,.9);backdrop-filter:blur(6px);
     display:none;flex-direction:column;justify-content:center;align-items:center;padding:26px;z-index:20;text-align:center}
@@ -950,6 +979,39 @@ const TRAININGS = [
 ];
 const REST = {k:"rest", ico:"😴", t:"휴식", d:"컨디션 회복 + 멘탈 ↑"};
 
+// ⭐로그라이트 육성 — 행동 카드 풀. 매 턴 3장 드로우 → 1택(학마스식 선택 루프).
+//  kind: lesson(스탯↑) / light(싼 스탯↑) / rest(기력·컨디션 회복) / live(팬++·랜덤스탯) / rare(스페셜)
+//  base=스탯 상승 기준치(성장곡선 growthMult·컨디션배수·트렌드보정 곱해짐) / cost=기력 소모(음수=회복)
+const TRAIN_CARDS = [
+  {id:"l_vocal",   kind:"lesson", stat:"vocal",   ic:"🎵", nm:"발성 레슨",   base:36, cost:27},
+  {id:"l_acting",  kind:"lesson", stat:"acting",  ic:"🎤", nm:"리듬 레슨",   base:36, cost:27},
+  {id:"l_dance",   kind:"lesson", stat:"dance",   ic:"💪", nm:"체력 단련",   base:36, cost:27},
+  {id:"l_visual",  kind:"lesson", stat:"visual",  ic:"✨", nm:"스타일 관리", base:36, cost:25},
+  {id:"l_charm",   kind:"lesson", stat:"charm",   ic:"💬", nm:"화술 훈련",   base:34, cost:25},
+  {id:"l_creative",kind:"lesson", stat:"creative",ic:"🎼", nm:"창작 작업",   base:34, cost:27},
+  {id:"g_vocal",   kind:"light",  stat:"vocal",   ic:"🎧", nm:"가벼운 발성", base:20, cost:13},
+  {id:"g_dance",   kind:"light",  stat:"dance",   ic:"🩰", nm:"스트레칭",     base:20, cost:13},
+  {id:"g_charm",   kind:"light",  stat:"charm",   ic:"🗣️", nm:"수다 연습",    base:19, cost:12},
+  {id:"rest",      kind:"rest",   stat:null,      ic:"🛌", nm:"휴식",        base:0,  cost:-44},
+  {id:"live",      kind:"live",   stat:null,      ic:"📺", nm:"라이브 출연",  base:0,  cost:22},
+];
+const RARE_CARD = {id:"special", kind:"rare", stat:null, ic:"🌟", nm:"스페셜 레슨", base:66, cost:22};
+// 컨디션 → 결과 배수(好調/보통/부진). 카드 성장의 손맛 레버.
+function condBucket(cond){ return cond>=66 ? "good" : cond>=34 ? "norm" : "bad"; }
+const COND_INFO = { good:{cf:"🤩",ct:"好調",mult:1.4}, norm:{cf:"🙂",ct:"보통",mult:1.0}, bad:{cf:"😵",ct:"부진",mult:0.6} };
+// 매 턴 손패 3장: 중복 없이 뽑고, 22% 확률로 레어 1장 섞음. 기력 부족하면 휴식 보장.
+function drawHand(stam){
+  const pool = TRAIN_CARDS.filter(c=>c.id!=="rest" && c.id!=="live");
+  const hand = [];
+  const bag = pool.slice();
+  while(hand.length<2 && bag.length){ hand.push(bag.splice(Math.floor(Math.random()*bag.length),1)[0]); }
+  // 3번째 자리: 상황 카드(휴식/라이브) 또는 레슨
+  hand.push(Math.random()<0.5 ? TRAIN_CARDS.find(c=>c.id==="live") : bag.splice(Math.floor(Math.random()*bag.length),1)[0]);
+  if(Math.random()<0.22) hand[Math.floor(Math.random()*hand.length)] = RARE_CARD;   // 레어 등장(좋은 카드 뽑는 손맛)
+  if(stam<27 && !hand.find(c=>c.id==="rest")) hand[hand.length-1] = TRAIN_CARDS.find(c=>c.id==="rest");   // 기력 바닥이면 휴식 보장
+  return hand.map(c=>c.id);
+}
+
 // 에셋 캐시버스터: 애니/스프라이트 갱신이 브라우저·Pages 하드캐시에 막혀 구버전 표시되던 문제 방지.
 // 애니 바꿀 때마다 이 값 갱신(날짜+접미).
 const ASSET_VER = "20260723a";   // 버디=레티 교체(서사 정합: 연습실 코치=레티)
@@ -1551,7 +1613,7 @@ const Game = {
     this._finished=false;   // 새 판 = finish 멱등 가드 해제
     const mode=(this.trainMode==="quick")?"quick":"full";
     const {base} = talentOf(idol.spec);
-    this.st = {idol, ...base, cond:100, fans:0, week:1, busy:false, log:[], mode, trainCount:{}};   // mode=full(24턴)/quick(12턴 간이) · trainCount=영역별 훈련 횟수
+    this.st = {idol, ...base, cond:100, stam:100, hand:[], fans:0, week:1, busy:false, log:[], mode, trainCount:{}};   // mode=full(24턴)/quick(12턴 간이) · stam=기력(카드 자원)/hand=이번 주 손패 · trainCount=영역별 훈련 횟수
     DG.applyEquipped(this.st);   // 드림그룹: 장착한 육성카드 시작 보정
     { const _e=DG.effOf(DG.equipped); this.st.cardGrowth=1+(_e.growth||0); this.st.cardGate=1+(_e.gate||0);
       this.st.condSave=_e.condSave||0; this.st.mentalSave=_e.mentalSave||0; this.st.earlyGrow=_e.earlyGrow||0; }   // 특수효과: SSR/UR 배수 + N 성향(개근/긍정/근성)
@@ -1621,15 +1683,14 @@ const Game = {
     this.setFans(s.fans);   // 팬 수 카운트업(변할 때 숫자가 굴러오며 강조)
     document.getElementById("pWeek").textContent="턴 "+s.week+" / "+this.sch().total;
     document.getElementById("pAct").textContent=this.actName(s.week);
-    // 활력 2열: 컨디션 + 멘탈 (한눈에 두 핵심 자원)
-    const cond=Math.max(0,Math.round(s.cond)), mv=Math.max(0,Math.round(s.mental));
-    const condC = s.cond>55?"var(--good)":s.cond>25?"var(--visual)":"var(--bad)";
-    const menC  = s.mental>55?"var(--good)":s.mental>25?"var(--visual)":"var(--bad)";
+    // 활력: 기력(카드 소모 자원) 바 + 컨디션 얼굴(결과 배수 레버). 로그라이트 = 기력을 재며 카드를 쓴다.
+    const stam=Math.max(0,Math.round(s.stam!=null?s.stam:100));
+    const cb=condBucket(s.cond), ci=COND_INFO[cb];
+    const stamC = stam>55?"var(--good)":stam>25?"var(--visual)":"var(--bad)";
     document.getElementById("vitalsBox").innerHTML=
-      `<div class="vital"><div class="vlbl"><span>⚡ ${t("p_cond")}</span><b>${cond}</b></div>
-        <div class="bar"><i style="width:${Math.min(100,cond)}%;background:${condC}"></i></div></div>
-       <div class="vital"><div class="vlbl"><span>${MENTAL.ico} ${t("st_mental")}</span><b>${mv}</b></div>
-        <div class="bar"><i style="width:${Math.min(100,mv)}%;background:${menC}"></i></div></div>`;
+      `<div class="vital"><div class="vlbl"><span>⚡ 기력</span><b>${stam}/100</b></div>
+        <div class="bar"><i style="width:${Math.min(100,stam)}%;background:${stamC}"></i></div></div>
+       <div class="cond-face ${cb}" title="컨디션 — 결과 배수"><div class="cf">${ci.cf}</div><div class="ct">${ci.ct}</div></div>`;
     // 스탯 = 색 스트립(숫자·라벨 제거, 이모지+색바+등급만). 정보 다이어트. data-k 유지(bumpStat 손맛)
     document.getElementById("statBox").innerHTML=STATS.map(st=>{
       const p=Math.round(s[st.k]); const g=grade(p); const prog=progOf(p); const maxed=p>=800;
@@ -1658,16 +1719,86 @@ const Game = {
          <div class="pr-track"><i style="width:${prog}%"></i></div>
          <div class="pr-coach">🐰 ${this.coachLine(s, dday, fore)}</div>
        </div>`;
-    // 훈련 = 큰 색 아이콘 타일(설명 제거, 학マス식). 특기 스탯은 금빛 강조. 색=스탯 고유색.
+    // ⭐손패: 이번 주 3장 중 1택 (기력을 재고 특기·컨디션을 계산 = 매 턴 판단). 학마스식 카드 선택 루프.
+    if(!s.hand || !s.hand.length) s.hand = drawHand(s.stam!=null?s.stam:100);
     const stc=k=>((STATS.find(x=>x.k===k)||{}).c)||"#5a4a8f";
-    const tile=(k,ico,label,cls)=>`<button class="ttile ${cls||''}${k===s.idol.spec?' spec':''}" style="--tc:${stc(k)}" onclick="Game.train('${k}')">
-        <span class="ico">${ico}</span><span class="tl">${label}</span>${k===s.idol.spec?'<span class="spk">⭐</span>':''}</button>`;
+    const stnm=k=>((STATS.find(x=>x.k===k)||{}).n)||"";
+    const cardById=id=>(id==="special"?RARE_CARD:TRAIN_CARDS.find(c=>c.id===id));
+    const cardHTML=(id,i)=>{ const c=cardById(id); if(!c) return "";
+      const spec=c.stat && c.stat===s.idol.spec;
+      const tc = c.kind==="rest"?"#3a4a6a":c.kind==="live"?"#6a4a6a":c.kind==="rare"?"#b98a2a":stc(c.stat);
+      let desc;
+      if(c.kind==="lesson")     desc=`<em>${stnm(c.stat)} 크게↑</em>${spec?' · <em style="color:#ffd35c">⭐특기!</em>':''}`;
+      else if(c.kind==="light") desc=`${stnm(c.stat)} 조금↑ · 기력 적게${spec?' · <em style="color:#ffd35c">⭐특기</em>':''}`;
+      else if(c.kind==="rest")  desc=`기력 <em>회복</em> + 컨디션 <em>↑</em>`;
+      else if(c.kind==="live")  desc=`팬 <em>대폭↑</em> · 랜덤 스탯 소폭`;
+      else if(c.kind==="rare")  desc=`<em>특기 스탯 폭발</em> + 컨디션 好調`;
+      const stamNow=(s.stam!=null?s.stam:100);
+      const noStam = c.cost>0 && stamNow < c.cost;
+      const costTx = c.cost>0?`기력 -${c.cost}`:c.cost<0?`기력 +${-c.cost}`:`기력 -20`;
+      return `<button class="hcard act${c.kind==="rare"?' rare':''}${spec?' spec':''}${noStam?' dim':''}" style="--tc:${tc}" onclick="Game.playCard(${i})">
+        ${c.kind==="rare"?'<span class="hc-tag">RARE ✦</span>':(spec?'<span class="spk">⭐</span>':'')}
+        <span class="hc-ic">${c.ic}</span>
+        <span class="hc-body"><span class="hc-nm">${c.nm}</span><span class="hc-desc">${desc}</span></span>
+        <span class="hc-cost${noStam?' no':''}">${costTx}</span></button>`;
+    };
     document.getElementById("actionBox").innerHTML=
-      `<div class="tgrid">
-        ${TRAININGS.map(tr=>tile(tr.k, tr.ico, t("st_"+tr.k))).join("")}
-        <button class="ttile t-rest" onclick="Game.train('rest')"><span class="ico">${REST.ico}</span><span class="tl">휴식</span></button>
-        <button class="ttile t-care" onclick="Game.train('care')"><span class="ico">${CARE.ico}</span><span class="tl">멘탈</span></button>
-      </div>`;
+      `<div class="hand-cap">🎴 이번 주, 뭘 할까? <small>3장 중 하나</small></div>
+       <div class="hand">${s.hand.map((id,i)=>cardHTML(id,i)).join("")}</div>`;
+  },
+
+  // ⭐카드 실행(로그라이트 턴): 손패에서 1장 선택 → 자원·컨디션·특기 반영 결과 → 다음 주(손패 리드로우)
+  playCard(i){
+    const s=this.st; if(s.busy) return;
+    const id=(s.hand||[])[i]; const c=(id==="special"?RARE_CARD:TRAIN_CARDS.find(x=>x.id===id));
+    if(!c) return;
+    if(c.cost>0 && (s.stam!=null?s.stam:100) < c.cost){ toast("기력이 부족해 — 휴식으로 회복하자"); return; }
+    try{ if(window.Tut && Tut.on && Tut.on()){ Tut.clear&&Tut.clear(); } }catch(e){}   // 카드 탭 시 코치마크 정리(잔존 방지)
+    s.busy=true;
+    const cb=condBucket(s.cond), mult=COND_INFO[cb].mult;
+    sfx(c.kind==="rest"?"rest":"click");
+    // 자원 처리
+    if(c.cost<0) s.stam=Math.min(100, (s.stam!=null?s.stam:100) - c.cost);   // 회복(cost 음수)
+    else s.stam=Math.max(0, (s.stam!=null?s.stam:100) - c.cost);
+
+    if(c.kind==="rest"){
+      s.cond=Math.min(100, s.cond+22); s.mental=Math.min(100,(s.mental||60)+4);
+      this.trainReveal(s.idol,"rest","ok",{cls:"s",label:"휴식",emoji:"😌"},
+        `기력 <b>회복</b> · 컨디션 <b>↑</b>`, "푹 쉬었더니 개운해요!",
+        ()=>{ this.render(); this.afterTurn(); });
+      return;
+    }
+    if(c.kind==="live"){
+      const fan=140+Math.round(Math.random()*140); s.fans+=fan;
+      const k=STATS[Math.floor(Math.random()*STATS.length)].k, g=Math.round(12*mult*growthMult(s[k]));
+      const oldV=Math.round(s[k]); s[k]=Math.max(0,Math.min(800,s[k]+g)); s.cond=Math.max(0,s.cond-6);
+      this.trainReveal(s.idol,"charm","great",{cls:"dg",label:"무대!",emoji:"📺"},
+        `팬 <b>+${fmt(fan)}</b> · ${(STATS.find(x=>x.k===k)||{}).n} <b>+${g}</b>`, "무대 반응 최고였어요!",
+        ()=>{ this.render(); this.bumpStat(k,oldV,Math.round(s[k]),grade(oldV),grade(Math.round(s[k]))); setTimeout(()=>this.afterTurn(),700); });
+      return;
+    }
+    // lesson / light / rare → 스탯 성장
+    const stat = c.kind==="rare" ? s.idol.spec : c.stat;
+    const spec = stat===s.idol.spec;
+    const rndv = 0.88+Math.random()*0.24;   // ±12% 텍스처
+    const talent = spec ? 1.25 : 1.0;
+    let g = Math.round(c.base * mult * growthMult(s[stat]) * talent * (s.cardGrowth||1) * rndv);
+    const oldV=Math.round(s[stat]), oldG=grade(oldV), oldL=levelOf(oldV);
+    s[stat]=Math.max(0,Math.min(800,s[stat]+g));
+    if(!s.trainCount)s.trainCount={}; s.trainCount[stat]=(s.trainCount[stat]||0)+1;
+    const fanGain=Math.round((28+s[stat]*0.5)*(c.kind==="light"?0.6:1)); s.fans+=fanGain;
+    if(c.kind==="rare"){ s.cond=Math.min(100,s.cond+30); }   // 스페셜=好調 부여
+    else { s.cond=Math.max(0, s.cond - (c.kind==="light"?4:8)); }   // 레슨은 컨디션 소모(휴식으로 관리)
+    const newV=Math.round(s[stat]), newG=grade(newV), newL=levelOf(newV);
+    if(newL>oldL) this.logWeek(t("gradeup_log",{ico:(STATS.find(x=>x.k===stat)||{}).ico,stat:t("st_"+stat),from:oldG,to:newG}));
+    const jk = c.kind==="rare"?"perfect":(cb==="good"?"great":cb==="bad"?"fail":"ok");
+    const J = JUDGE[jk]||JUDGE.ok;
+    const sname=(STATS.find(x=>x.k===stat)||{}).n, sico=(STATS.find(x=>x.k===stat)||{}).ico;
+    const bloomLine = c.kind==="rare" ? `<div class="bloom-line">✨ 스페셜 레슨! 특기가 만개했다</div>` : "";
+    this.trainReveal(s.idol, stat, jk, J,
+      bloomLine + `${sico} ${sname} <b>+${g}</b> · 팬 +${fmt(fanGain)}${spec?' · ⭐특기':''}${cb==="good"?' · 好調!':cb==="bad"?' · 부진…':''}`,
+      t("say_"+jk),
+      ()=>{ this.render(); this.bumpStat(stat,oldV,newV,oldG,newG); setTimeout(()=>this.afterTurn(),820); });
   },
 
   train(kind){
@@ -1860,6 +1991,8 @@ const Game = {
     if(sc.compets[w]){ this.render(); return this.runCompet(w); }
     // 안전망: 관문 주차를 건너뛴 세이브(스케줄 변경 후 이어하기 등)가 총 턴을 넘겨도 영원히 안 끝나던 잠복버그 → 최종 관문 즉시 실행
     if(w>sc.total){ s.week=sc.total; this.render(); return this.runCompet(sc.total); }
+    if(s.stam==null) s.stam=100;        // 옛 세이브 이어하기 안전망(기력 없던 판)
+    s.hand = drawHand(s.stam);          // ⭐이번 주 손패 3장 드로우(매 주 새 판단)
     this.render();
     try{ if(window.Tut) Tut.onPlay(w); }catch(e){}
     if(w>=3 && Math.random()<0.25){ s.busy=true; this.showEvent(()=>{ s.busy=false; this.render(); }); }
@@ -6087,8 +6220,8 @@ window.addEventListener("popstate", ()=>{
       if(w===1 && !this.did('s2_train1')){
         return this.spot({ id:'s2_train1', mascot:'🐰', place:'above',
           get:()=>document.querySelector('#actionBox .act.spec')||document.querySelector('#actionBox .act'),
-          body:`트레이닝 시작! <b>⭐특기</b> 훈련은 특히 잘 오르는 영역이에요. 눌러서 첫 훈련을 해봐요.`,
-          tap:'훈련 버튼 누르기', step:'2/5' });
+          body:`트레이닝 시작! 매주 <b>카드 3장</b> 중 하나를 골라요. <b>⭐특기</b> 카드는 특히 잘 커요. 눌러서 첫 훈련!`,
+          tap:'카드 눌러 훈련', step:'2/5' });
       }
       if(w===2 && !this.did('s2_train2')){
         return this.spot({ id:'s2_train2', mascot:'🐰', place:'above',
