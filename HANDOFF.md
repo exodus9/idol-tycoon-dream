@@ -52,12 +52,16 @@
 - **연출 무대화**: `_showBattle` 전투력 숫자만 카운트업 → 내 멤버들 기여(posScore) 큰 순 순차 등장(`.bt-stage`/`.bts-mem`)+무대점수 합산+시너지 → VS·전투력 → 결과. openBattle이 mem 전달
 - **효과음**: `drumroll`/`cardpop` sfx 추가, revealDrop 전 카드 긴장감(드럼롤+`.tsuspense` 흔들림+뜸들이기 레어도별 340/560/740ms+cardpop 임팩트+햅틱)
 
-### 🔜 남은 것 (착수순서) — 검증난이도/설계 필요라 다음 세션(안티그래비티 포함)
-1. **온보딩 튜토 상세화**: `Tut` 모듈(스포트라이트 코치마크) 페이지별 상세화 — 그것만 따라하면 전 기능 숙지 (中, 바운디드)
-2. **BGM 3종**: 홈/육성/배틀 각 다른 절차적 BGM(기존 `BGM_SONG`/`ARPS`/`MELS` 엔진 파라미터화 — 템포/키/분위기, 화면별 전환). 첫 탭 후 재생. ⚠️음악 품질은 귀로 튜닝(재율애비 체감)
-3. **밸런스 2단계**: 티어 승점컷(120/300 고정)을 **상대 백분위**로 재조정 (⚠️시너지 인플레로 컷 헐거워짐 — 시뮬/데이터 필요)
-4. **데이터(선행확인)**: 검색 연습생을 최애돌 앱DB와 일 1회 동기화+프사 교체 — ⚠️정적사이트+사내망DB라 브라우저 직결 불가, 별도 배치(스냅샷→idols.js 갱신) 설계 필요 · 연습생 특성은 나무위키 수작업 매핑
-5. **최애돌 서사 침투(상시)**: 게임 속 연예계가 최애돌 앱 중심(하트픽·테마픽·이달의기적·기부요정·프리톡) — 매판 나열 금지, 이벤트당 1개 로테이션 + 실앱 이름/아이콘 통일 (일부 이벤트 이미 있음: ev_heartpick·ev_fairy·ev_birthday)
+- **온보딩 상세화**: Tut.onForge(조합소 강화/합성)·onBattleLobby(마이크/티어) 코치마크 추가
+- **BGM 3종**: `BGM_THEMES`(home/train/battle 템포·강도), show()가 화면별 전환. ⚠️멜로디 품질은 귀로 튜닝
+- **밸런스 티어컷 백분위**: `computeTierCuts`(리더보드 pts 분포 백분위, 표본<8 고정폴백), fetchGroupBoard서 갱신 → 인플레로 컷 자동 상승
+- **최애돌 서사**: 앱요소 이벤트 추가(themepick·freetalk·miracle) + 기존(heartpick·fairy·awards·birthday), showEvent 로테이션
+- **데이터 동기화**: `sync_idols.py`(app_idol type=S→idols.js, ⭐spec은 기존서 id로 보존=나무위키 매핑 유지, 내용변경시만 캐시버스터) + `sync_and_deploy.sh` + launchd `com.myloveidol.idolsync`(매일 05:20 sync→변경시 commit+push). 초기 763→1517명 배포
+
+### ✅ 개선 마스터리스트 A~L 전부 완료. 잔여 = 폴리시/수동(기능 아님)
+- 신규 아이돌 754명 spec=임시 id배분 → **나무위키 수작업 매핑** 대기(sync는 기존 spec 보존하니 매핑하면 유지됨)
+- BGM 멜로디·밸런스 수치 = 재율애비 체감으로 튜닝
+- 데이터 동기화 launchd = **회사맥 켜져 있어야** 매일 실행(로그 ~/idol-tycoon-dream/sync.log)
 
 ## 코드 구조 힌트
 - 게임 로직 대부분 `index.html` 하단 `DG` 모듈(그룹 메타) + `Game` 객체(육성 엔진, 라이브서 재활용).
