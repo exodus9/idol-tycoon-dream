@@ -3977,7 +3977,7 @@ window.addEventListener("popstate", ()=>{
     battleTier(pts){ const tiers=this._tierCuts||BATTLE_TIERS; let t=tiers[0]; for(const x of tiers){ if(pts>=x.min)t=x; } return t; },
     // 밸런스2: 티어컷을 리더보드 pts 분포의 상대 백분위로(시너지 인플레로 고정컷이 헐거워지는 것 방지). 표본 적으면 고정 유지
     computeTierCuts(list){ try{
-      const pts=(list||[]).map(o=>+o.pts||0).filter(p=>p>=0);
+      const pts=(list||[]).map(o=>+o.pts||0).filter(p=>p>0);   // 승점>0인 그룹만 표본(0점 더미 다수일 때 동적컷이 실버 1P로 붕괴 방지 → 표본 부족하면 아래서 정적 폴백)
       try{ const my=this.battleSeason(); if(my&&my.pts>=0)pts.push(my.pts); }catch(e){}
       if(pts.length<8) return null;
       const arr=pts.sort((a,b)=>b-a), n=arr.length, at=pc=>arr[Math.min(n-1,Math.floor(n*pc))]||0;
@@ -4642,10 +4642,15 @@ window.addEventListener("popstate", ()=>{
       // #17 편성여부 필터
       const lu=new Set(this.lineupRids());
       const eDefs=[['all','전체'],['in','📋 편성됨'],['out','무소속']];
-      const fbar=`<div class="cfilter" style="margin-bottom:6px;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch">${gDefs.map(d=>chip('g',d[0],d[1],F.g===d[0])).join('')}</div>
-        <div class="cfilter" style="margin-bottom:6px;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch">${pDefs.map(d=>chip('p',d[0],d[1],F.p===d[0])).join('')}</div>
-        <div class="cfilter" style="margin-bottom:6px">${eDefs.map(d=>chip('e',d[0],d[1],(F.e||'all')===d[0])).join('')}</div>
-        <div class="cfilter" style="margin-bottom:8px">${sDefs.map(d=>`<button class="cf-chip ${_srt===d[0]?'on':''}" style="flex:0 0 auto" onclick="DG.setRosSort('${d[0]}')">${d[1]}</button>`).join('')}</div>`;
+      // 필터 간소화(4행→2행): 포지션은 칩(주 사용), 등급·상태·정렬은 컴팩트 드롭다운 한 줄
+      const selCss="flex:1;min-width:0;background:var(--panel);color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:7px 8px;font-size:12.5px;font-weight:600;-webkit-appearance:none;appearance:none";
+      const sel=(onch,defs,cur)=>`<select onchange="${onch}" style="${selCss}">${defs.map(d=>`<option value="${d[0]}"${cur===d[0]?' selected':''}>${d[1]}</option>`).join('')}</select>`;
+      const fbar=`<div class="cfilter" style="margin-bottom:6px;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch">${pDefs.map(d=>chip('p',d[0],d[1],F.p===d[0])).join('')}</div>
+        <div style="display:flex;gap:6px;margin-bottom:9px">
+          ${sel("DG.setRosFilter('g',this.value)",gDefs,F.g)}
+          ${sel("DG.setRosFilter('e',this.value)",eDefs,F.e||'all')}
+          ${sel("DG.setRosSort(this.value)",sDefs,_srt)}
+        </div>`;
       if(F.g!=='all') list=list.filter(r=>{ const rk=grank(r.grade);
         return F.g==='S'?rk>=6 : F.g==='A'?rk===5 : F.g==='B'?rk===4 : rk<=3; });
       if(F.p!=='all') list=list.filter(r=>this.idolTop(r.stats).type===F.p);
@@ -5844,6 +5849,7 @@ window.addEventListener("popstate", ()=>{
           <div style="text-align:center;margin-top:10px"><span class="tut-skip" style="position:static;display:inline-block" id="tutSkip">튜토리얼 건너뛰기</span></div>
         </div>`;
       document.body.appendChild(root);
+      this.mark('welcome');   // 표시 즉시 '봤음' 마킹 = 버튼 안 누르고 화면전환으로 닫혀도 재등장 안 함(튜토는 off 아니라 계속 진행)
       document.getElementById('tutGo').onclick=()=>{ try{ sfx('sparkle'); }catch(e){} this.mark('welcome'); this.clear(); setTimeout(()=>this.onHome(),70); };
       document.getElementById('tutSkip').onclick=()=>this.quit();
       try{ sfx('fanfare'); }catch(e){}
