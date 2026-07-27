@@ -840,7 +840,7 @@
   <section class="screen" id="s-menu">
     <div class="sub-head"><h2 style="margin:0">☰ 메뉴</h2></div>
     <div class="menu-list">
-      <button class="menu-item" onclick="DG.goAchv()"><span class="mi-ic">🏅</span><span class="mi-t">업적</span><span class="mi-v muted" id="menuAchv"></span><span class="mi-ar">›</span></button>
+      <button class="menu-item" onclick="DG.goAchv()"><span class="mi-ic">🏅</span><span class="mi-t">업적</span><span id="menuAchvDot" style="display:none;width:8px;height:8px;border-radius:50%;background:#ff3b5c;box-shadow:0 0 6px #ff3b5c;margin-left:6px;flex:0 0 auto"></span><span class="mi-v muted" id="menuAchv"></span><span class="mi-ar">›</span></button>
       <button class="menu-item" onclick="DG.showGroupDex()"><span class="mi-ic">📖</span><span class="mi-t">그룹 도감</span><span class="mi-ar">›</span></button>
       <button class="menu-item" onclick="Game.showManual('intro')"><span class="mi-ic">❓</span><span class="mi-t">게임 소개</span><span class="mi-ar">›</span></button>
       <button class="menu-item" onclick="DG.go(); if(window.Tut)Tut.replay();"><span class="mi-ic">🎓</span><span class="mi-t">튜토리얼 다시 보기</span><span class="mi-ar">›</span></button>
@@ -2772,7 +2772,7 @@ function updateTabbar(id){
   if(active){ tb.style.display='flex'; tb.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on', t.dataset.tab===active));
     // 알림 도트: 카드=NEW 카드 있음 · 메뉴=업적 화면 미확인 달성 있음
     try{ const d=DG.data||{};
-      const dots={cards:Object.keys(d.newCards||{}).length>0, menu:DG.achvDone()>(d.achvViewed||0)};
+      const dots={cards:Object.keys(d.newCards||{}).length>0, menu:(function(){try{return DG.achvClaimable();}catch(e){return false;}})()};   // 메뉴 도트 = 미수령 업적 보상 있음(수령하면 꺼짐)
       tb.querySelectorAll('.tab').forEach(t=>{ const on=!!dots[t.dataset.tab];
         let dot=t.querySelector('.tab-dot');
         if(on && !dot){ dot=document.createElement('span'); dot.className='tab-dot'; t.appendChild(dot); }
@@ -4582,12 +4582,21 @@ window.addEventListener("popstate", ()=>{
       if(/^(dexfull|star5|star5x3|ssr1|ur1|urboth|hyb15|cards20|win50|max800|roster20)$/.test(id)) return 'genius';   // SR
       if(/^(card1|hyb1|battle1|win1|name1)$/.test(id) || /몸풀기|첫 카드|첫 편성|첫걸음/.test(nm)) return 'effort';        // N
       return STATCARD[ORDER[Math.floor(Math.random()*ORDER.length)]]; },                                                // R 기본
-    checkAchv(){ this.load(); if(!this.data.achvSeen) this.data.achvSeen={};
-      const newly=[]; ACHV.forEach(a=>{ if(a.cur(this)>=a.goal && !this.data.achvSeen[a.id]){ this.data.achvSeen[a.id]=1; newly.push(a); } });
-      if(newly.length){
-        newly.forEach(a=>{ const rw=this.achvReward(a); if(rw && CARDS[rw]){ const wasNew=!this.owned(rw); this.add(rw,1,1);
-          if(wasNew){ if(!this.data.newCards)this.data.newCards={}; this.data.newCards[rw]=1; } a._rw=rw; } });
-        this.persist(); newly.forEach(a=>this.queueAchvFx(a)); }
+    _ensureAchv(){ if(!this.data.achvSeen)this.data.achvSeen={}; if(!this.data.achvRw)this.data.achvRw={};
+      if(!this.data.achvClaimed){ this.data.achvClaimed={}; this.achvState().forEach(x=>{ if(x.done) this.data.achvClaimed[x.a.id]=1; }); this.persist(); } },   // 마이그레이션: 기존 달성분은 이미 자동지급됐으니 '수령완료'로
+    achvClaimable(){ this.load(); this._ensureAchv(); return this.achvState().some(x=>x.done && this.data.achvRw[x.a.id] && !this.data.achvClaimed[x.a.id]); },
+    claimAchvReward(id){ this.load(); this._ensureAchv(); const rw=this.data.achvRw[id];
+      if(!rw || this.data.achvClaimed[id] || !CARDS[rw]) return;
+      this.data.achvClaimed[id]=1; const wasNew=!this.owned(rw); this.add(rw,1,1);
+      if(wasNew){ if(!this.data.newCards)this.data.newCards={}; this.data.newCards[rw]=1; }
+      this.persist(); try{ sfx('sparkle'); if(navigator.vibrate)navigator.vibrate(15); }catch(e){}
+      toast(`🎴 ${this.rarBadge(rw)} ${esc(this.nmOf(rw))} 획득!`);   // 어떤 업적→어떤 카드인지 명확히
+      this.renderAchv(); try{ updateTabbar('s-achv'); }catch(e){} },
+    // 달성 시엔 보상을 '고정'만(achvRw) + 배너 알림 — 실제 카드 지급은 업적 페이지 '보상받기'에서(우르르 쏟아짐 방지)
+    checkAchv(){ this.load(); this._ensureAchv();
+      const newly=[]; ACHV.forEach(a=>{ if(a.cur(this)>=a.goal && !this.data.achvSeen[a.id]){ this.data.achvSeen[a.id]=1;
+        const rw=this.achvReward(a); if(rw && CARDS[rw]) this.data.achvRw[a.id]=rw; newly.push(a); } });
+      if(newly.length){ this.persist(); newly.forEach(a=>this.queueAchvFx(a)); }
       return newly; },
     // A) 업적 달성 연출 — 상단 배너 슬라이드인(뱃지 회전·색종이·햅틱). 여러 개면 큐로 순차.
     queueAchvFx(a){ if(!this._achvQ)this._achvQ=[]; this._achvQ.push(a); if(!this._achvBusy)this._nextAchvFx(); },
@@ -4595,7 +4604,7 @@ window.addEventListener("popstate", ()=>{
       let host=document.getElementById('achvFx'); if(!host){ host=document.createElement('div'); host.id='achvFx'; document.body.appendChild(host); }
       host.className='achv-fx in';
       host.innerHTML=`<div class="afx-badge">${a.ic}</div>
-        <div class="afx-txt"><div class="afx-h">🏅 업적 달성!</div><div class="afx-nm">${esc(a.nm)}</div><div class="afx-desc">${a._rw?`🎴 ${this.rarBadge(a._rw)} ${esc(this.nmOf(a._rw))} 획득!`:esc(a.desc)}</div></div>`;
+        <div class="afx-txt"><div class="afx-h">🏅 업적 달성!</div><div class="afx-nm">${esc(a.nm)}</div><div class="afx-desc">${(this.data.achvRw&&this.data.achvRw[a.id])?`🎁 보상 도착! 업적에서 받기`:esc(a.desc)}</div></div>`;
       // 색종이
       const pal=['#ffd35c','#ff5fa2','#5fc9ff','#8b5cff','#4fd6a0'];
       for(let i=0;i<14;i++){ const s=document.createElement('span'); s.className='afx-conf'; s.style.left=(8+Math.random()*84)+'%'; s.style.background=pal[i%pal.length]; s.style.animationDelay=(Math.random()*0.35)+'s'; host.appendChild(s); setTimeout(()=>s.remove(),1600); }
@@ -4605,8 +4614,11 @@ window.addEventListener("popstate", ()=>{
         setTimeout(()=>{ host.className='achv-fx'; this._nextAchvFx(); }, 380); }, 2200);
     },
     goAchv(){ this.load(); this.checkAchv(); this.data.achvViewed=this.achvDone(); this.persist(); this.renderAchv(); show('s-achv'); },   // 메뉴 도트 해제 기준
-    showMenu(){ this.load(); const m=document.getElementById('menuAchv'); if(m){ try{ m.textContent=this.achvDone()+' / '+ACHV.length; }catch(e){} } show('s-menu'); },
+    showMenu(){ this.load(); const m=document.getElementById('menuAchv'); if(m){ try{ m.textContent=this.achvDone()+' / '+ACHV.length; }catch(e){} }
+      const dot=document.getElementById('menuAchvDot'); if(dot){ try{ dot.style.display=this.achvClaimable()?'':'none'; }catch(e){} }   // 업적 항목 빨간불 = 미수령 보상
+      show('s-menu'); },
     renderAchv(){ const box=document.getElementById('achvList'); if(!box) return;
+      this._ensureAchv();
       const st=this.achvState(), done=st.filter(x=>x.done).length;
       const head=document.getElementById('achvHead'); if(head) head.innerHTML=`달성 <b style="color:var(--accent)">${done} / ${st.length}</b>`;
       box.innerHTML=st.map(x=>{ const a=x.a;
@@ -4618,7 +4630,10 @@ window.addEventListener("popstate", ()=>{
             <div class="muted" style="font-size:12px">${hid?'숨겨진 업적 — 뭘 하면 열릴까?':a.desc}</div>
             ${hid?'':`<div style="height:6px;background:var(--bg);border-radius:4px;margin-top:6px;overflow:hidden"><div style="height:100%;width:${x.pct}%;background:${x.done?'#f0a01e':'#ec3a5c'}"></div></div>`}
           </div>
-          <span class="muted" style="flex:0 0 auto;font-size:12px;font-weight:bold">${hid?'?':`${Math.min(x.val,a.goal)}/${a.goal}`}</span>
+          ${x.done ? ((this.data.achvRw[a.id] && !this.data.achvClaimed[a.id])
+              ? `<button class="btn" style="flex:0 0 auto;width:auto;padding:7px 12px;font-size:12px;white-space:nowrap" onclick="event.stopPropagation();DG.claimAchvReward('${a.id}')">🎁 보상받기</button>`
+              : `<span style="flex:0 0 auto;font-size:11px;color:var(--sub);font-weight:bold">🎁 수령완료</span>`)
+            : `<span class="muted" style="flex:0 0 auto;font-size:12px;font-weight:bold">${hid?'?':`${Math.min(x.val,a.goal)}/${a.goal}`}</span>`}
         </div>`; }).join('');
     },
     goRoster(){ this.load(); this._rosFilter={g:'all',p:'all'}; this._rosSort=this._rosSort||'grade'; this.renderRoster(); show('s-roster'); },
