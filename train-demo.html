@@ -1,0 +1,104 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  :root{--bg:#150e22;--panel:#241a38;--line:#3a2d52;--txt:#f3ecff;--sub:#a99cc6;--accent:#ff4d72;--gold:#ffd35c}
+  body{background:#0c0817;font-family:-apple-system,'Apple SD Gothic Neo',sans-serif;color:var(--txt);display:flex;gap:34px;justify-content:center;padding:26px;flex-wrap:wrap}
+  .phone{width:380px;height:800px;background:var(--bg);border-radius:30px;overflow:hidden;position:relative;box-shadow:0 30px 80px -20px #000;border:1px solid #2a2140}
+  .label{position:absolute;top:-24px;left:0;font-size:13px;color:#8a7fb0;font-weight:700}
+  /* ===== 캐릭터 스테이지 (상단 58%) ===== */
+  .stage{position:relative;height:56%;background:#000 center/cover no-repeat}
+  .stage::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(12,8,23,.55) 0%,transparent 22%,transparent 55%,rgba(12,8,23,.9) 100%)}
+  /* 상단 최소 HUD */
+  .hud{position:absolute;top:14px;left:14px;right:14px;display:flex;align-items:center;justify-content:space-between;z-index:3}
+  .turn-pill{background:rgba(0,0,0,.42);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:6px 13px;font-size:13px;font-weight:800;letter-spacing:.3px}
+  .turn-pill b{color:var(--gold)}
+  .vitals{display:flex;gap:8px}
+  .vital{width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.42);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.14);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;position:relative}
+  .vital .ic{font-size:15px}
+  .vital .rg{position:absolute;inset:-1px;border-radius:50%;border:2.5px solid transparent}
+  .vital.cond .rg{border-color:#4fd6a0;border-right-color:transparent;border-bottom-color:transparent;transform:rotate(45deg)}
+  .vital.men .rg{border-color:#ff9de0;border-right-color:transparent;transform:rotate(120deg)}
+  /* 이름 오버레이 */
+  .nm-ov{position:absolute;left:18px;bottom:64px;z-index:3}
+  .nm-ov .nm{font-size:26px;font-weight:900;text-shadow:0 2px 12px #000}
+  .nm-ov .ty{display:inline-block;margin-top:5px;font-size:12px;font-weight:800;color:#fff;background:rgba(255,77,114,.9);padding:3px 10px;border-radius:999px}
+  /* 손맛: 플로팅 +N */
+  .pop{position:absolute;right:34px;top:34%;z-index:4;font-size:30px;font-weight:900;color:var(--gold);text-shadow:0 2px 10px #000;transform:rotate(-8deg)}
+  /* 목표 말풍선 (한 줄) */
+  .goal{position:absolute;left:14px;right:14px;bottom:14px;z-index:3;display:flex;align-items:center;gap:9px;background:rgba(20,14,34,.72);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:10px 13px}
+  .goal .face{font-size:24px;flex:none}
+  .goal .tx{font-size:14px;font-weight:700;line-height:1.32}
+  .goal .tx b{color:var(--gold)}
+  /* 다음 무대까지 진행 링 */
+  .nextbar{position:absolute;right:14px;bottom:70px;z-index:3;display:flex;align-items:center;gap:7px;background:rgba(0,0,0,.4);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:800}
+  .nextbar b{color:var(--accent)}
+  /* ===== 하단: 스탯 스트립 + 훈련 아이콘 ===== */
+  .bottom{position:absolute;left:0;right:0;bottom:0;top:56%;padding:14px 14px 18px;display:flex;flex-direction:column}
+  /* 스탯 = 색 바 6개(숫자 없음) + 펼치기 */
+  .statstrip{display:flex;align-items:center;gap:6px;margin-bottom:14px}
+  .sbar{flex:1;height:34px;border-radius:9px;background:#1c1430;position:relative;overflow:hidden;border:1px solid #2c2242}
+  .sbar i{position:absolute;left:0;bottom:0;width:100%;border-radius:0 0 8px 8px}
+  .sbar .se{position:absolute;top:5px;left:0;right:0;text-align:center;font-size:14px}
+  .sbar.up{box-shadow:0 0 0 2px var(--gold),0 0 14px rgba(255,211,92,.5)}
+  .more{flex:none;font-size:11px;color:var(--sub);font-weight:700;padding:0 4px;text-align:center}
+  /* 훈련 = 큰 단색 아이콘 타일(색분리, 설명 없음) */
+  .tgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;flex:1}
+  .tile{border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1px solid rgba(255,255,255,.08);box-shadow:0 5px 0 rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.13);position:relative;cursor:pointer}
+  .tile .ic{font-size:27px;line-height:1}
+  .tile .t{font-size:12px;font-weight:800}
+  .tile.target{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold),0 6px 16px -4px rgba(255,211,92,.5)}
+  .tile.target::after{content:"↑";position:absolute;top:5px;right:9px;color:var(--gold);font-weight:900;font-size:15px}
+  .t-voc{background:linear-gradient(160deg,#ff6a9a,#c93a6a)}
+  .t-rap{background:linear-gradient(160deg,#8b5cff,#5a3aa8)}
+  .t-sta{background:linear-gradient(160deg,#5fc9ff,#2f7fb8)}
+  .t-sty{background:linear-gradient(160deg,#ffb454,#c9822a)}
+  .t-cha{background:linear-gradient(160deg,#4fd6a0,#2a8f6a)}
+  .t-cre{background:linear-gradient(160deg,#c084fc,#8a4fc0)}
+  .t-rest{background:linear-gradient(160deg,#3a4a6a,#28324a)}
+  .t-care{background:linear-gradient(160deg,#6a4a6a,#4a2f4a)}
+  /* 캡션 */
+  .cap{position:absolute;bottom:8px;left:0;right:0;text-align:center;font-size:11px;color:#6a5f88}
+</style></head><body>
+
+<!-- ===== NEW: 학マス식 재설계 ===== -->
+<div class="phone">
+  <div class="label">▶ NEW · 캐릭터 퍼스트 + 정보 다이어트</div>
+  <div class="stage" style="background-image:url('https://dcyuonzxltfl2140514.gcdn.ntruss.com/faces/20260725/386/3861a3190520cde5226e9af45d014881b3fc465edeefebd3f34c3c226cb1f28dff6a_o_st.webp')">
+    <div class="hud">
+      <div class="turn-pill">🎬 <b>5</b>주차</div>
+      <div class="vitals">
+        <div class="vital cond"><span class="rg"></span><span class="ic">⚡</span></div>
+        <div class="vital men"><span class="rg"></span><span class="ic">💗</span></div>
+      </div>
+    </div>
+    <div class="pop">발성 +14</div>
+    <div class="nextbar">다음 무대 <b>D-3</b></div>
+    <div class="nm-ov"><div class="nm">지민</div><div class="ty">🎤 발성형</div></div>
+    <div class="goal"><span class="face">🐰</span><div class="tx">다음 무대까지 <b>발성</b>을 끌어올리자! 지민이는 발성이 특기야 ✨</div></div>
+  </div>
+  <div class="bottom">
+    <div class="statstrip">
+      <div class="sbar up"><i style="height:78%;background:#ff6a9a"></i><span class="se">🎤</span></div>
+      <div class="sbar"><i style="height:42%;background:#8b5cff"></i><span class="se">🎧</span></div>
+      <div class="sbar"><i style="height:55%;background:#5fc9ff"></i><span class="se">💪</span></div>
+      <div class="sbar"><i style="height:33%;background:#ffb454"></i><span class="se">✨</span></div>
+      <div class="sbar"><i style="height:60%;background:#4fd6a0"></i><span class="se">💬</span></div>
+      <div class="sbar"><i style="height:28%;background:#c084fc"></i><span class="se">🎼</span></div>
+      <div class="more">▾<br>수치</div>
+    </div>
+    <div class="tgrid">
+      <div class="tile t-voc target"><span class="ic">🎤</span><span class="t">발성</span></div>
+      <div class="tile t-rap"><span class="ic">🎧</span><span class="t">리듬</span></div>
+      <div class="tile t-sta"><span class="ic">💪</span><span class="t">체력</span></div>
+      <div class="tile t-sty"><span class="ic">✨</span><span class="t">스타일</span></div>
+      <div class="tile t-cha"><span class="ic">💬</span><span class="t">화술</span></div>
+      <div class="tile t-cre"><span class="ic">🎼</span><span class="t">창작</span></div>
+      <div class="tile t-rest"><span class="ic">😴</span><span class="t">휴식</span></div>
+      <div class="tile t-care"><span class="ic">💗</span><span class="t">멘탈</span></div>
+    </div>
+  </div>
+  <div class="cap">텍스트 최소 · 캐릭터 大 · 색+아이콘으로 반사적 선택</div>
+</div>
+
+</body></html>
