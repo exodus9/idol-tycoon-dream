@@ -4719,6 +4719,23 @@ window.addEventListener("popstate", ()=>{
       this.renderOffice(); show('s-office'); },
     editLineup(){ this._showGrid=true; this.renderOffice(); try{ setTimeout(()=>{ const g=document.querySelector('#dgGroup .dg-grid'); if(g) g.scrollIntoView({block:'center',behavior:'smooth'}); },50); }catch(e){} },
     closeLineup(){ this._showGrid=false; this.renderOffice(); },
+    // ⭐실제 순위 위협: 리더보드에서 나보다 위(pts 높은) 라이벌이 있으면 그 팀명으로 히어로 버블 갱신(거짓 위협 X)
+    _checkRivalThreat(rep){ try{
+      const myPts=this.battleSeason().pts||0;
+      const myAgency=(this.agency&&this.agency().name)||'';
+      this.fetchGroupBoard().then(list=>{
+        if(!list || !document.querySelector('#s-office.on')) return;
+        const rivals=list.filter(g=> g && g.pts!=null && !(g.name===rep.name && (g.agency===myAgency||!g.agency)));
+        const above=rivals.filter(g=>(g.pts||0)>myPts).sort((a,b)=>(a.pts||0)-(b.pts||0));
+        const el=document.querySelector('#homeHero .hs2-bubble'); if(!el) return;
+        if(above.length){
+          const chaser=above[0], n=above.length;
+          el.innerHTML = n>=3
+            ? `🐰 지금 우리 위에 <b>${n}팀</b>! 순위 뺏어와요 🔥`
+            : `🐰 <b>${esc(chaser.name)}</b>이(가) 우리 위에 있어요! 제쳐요 🔥`;
+        }
+      }).catch(()=>{});
+    }catch(e){} },
     _spawnStagePx(){ try{
       const box=document.querySelector('#homeHero .hs2-particles'); if(!box) return;
       box.innerHTML='';
@@ -4804,15 +4821,8 @@ window.addEventListener("popstate", ()=>{
         const _rest=_rmem.filter(m=>m!==_lead).slice(0,2);
         const _cards=[_lead,..._rest].filter(Boolean).map(m=>({img:m.r.img}));
         const _bpts=this.battleSeason().pts||0, _tidx=BATTLE_TIERS.filter(x=>_bpts>=x.min).length-1;
-        // ⭐복귀 훅: 자리 비웠다 돌아오면 '순위 방어' 프레이밍 → 매일 대결하러 돌아오는 D2 루프
-        const _awayMs = this.data.lastOffice ? (Date.now()-this.data.lastOffice) : 0;
-        const _returning = _awayMs > 2*3600*1000;   // 2시간+ 비움 = 새 방문 세션
         let _greet;
-        if(_returning && _bpts>0){
-          const _mics=(typeof this.mics==='function')?this.mics():5;
-          _greet = _mics>=3 ? '자리 비운 사이 라이벌들이 바짝 쫓아왔어요! 방어하러 가요 🔥' : '돌아오셨네요! 우리 순위 지키러 가요 💪';
-        }
-        else if(_tdays<=2) _greet='이번 시즌 곧 끝나요 — 마지막 무대! ⏳';
+        if(_tdays<=2) _greet='이번 시즌 곧 끝나요 — 마지막 무대! ⏳';
         else if(_bpts===0) _greet='첫 무대, 같이 올라가요! ✨';
         else if(_tidx>=3) _greet='정상이 코앞이에요! 🔥';
         else _greet=['무대에서 만나요! ✨','오늘도 준비 완료!','우리 무대 보러 오셨죠? 💪'][this.seasonNo()%3];
@@ -4835,8 +4845,9 @@ window.addEventListener("popstate", ()=>{
           cta: freeCount? {on:'DG.autoFill()', label:'🎯 자동 편성'} : {on:'Game.goSelect()', label:'✨ 연습생 육성'} });
       }
       document.getElementById('homeHero').innerHTML=hero;
-      this.data.lastOffice=Date.now(); this.persist();   // 복귀 훅용 방문시각 기록(위 _returning 판정에 사용)
+      this.data.lastOffice=Date.now(); this.persist();
       this._spawnStagePx();   // 살아있는 무대: 상승 파티클 주입(대표그룹 히어로일 때만)
+      if(rep) this._checkRivalThreat(rep);   // ⭐실제 리더보드 기반 순위 위협(거짓 위협 아님) — 대표 히어로 버블 비동기 갱신
 
       // ── 육성 CTA + 위젯 ── 이어하기는 히어로가 담당(중복 노출 금지) → CTA는 새 육성만. 온보딩(연습생0·그룹0)엔 히어로 CTA와 중복이라 숨김
       const _onboard=(roster.length===0 && groups.length===0);
