@@ -4726,17 +4726,15 @@ window.addEventListener("popstate", ()=>{
     // ⭐실제 순위 위협: 리더보드에서 나보다 위(pts 높은) 라이벌이 있으면 그 팀명으로 히어로 버블 갱신(거짓 위협 X)
     _checkRivalThreat(rep){ try{
       const myPts=this.battleSeason().pts||0;
+      if(myPts<=0) return;   // 갓 데뷔한 0P 루키는 '다 나보다 위'라 위협 프레이밍이 김빠짐 — 격려 인사 유지
       const myAgency=(this.agency&&this.agency().name)||'';
       this.fetchGroupBoard().then(list=>{
         if(!list || !document.querySelector('#s-office.on')) return;
         const rivals=list.filter(g=> g && g.pts!=null && !(g.name===rep.name && (g.agency===myAgency||!g.agency)));
         const above=rivals.filter(g=>(g.pts||0)>myPts).sort((a,b)=>(a.pts||0)-(b.pts||0));
         const el=document.querySelector('#homeHero .hs2-bubble'); if(!el) return;
-        if(above.length){
-          const chaser=above[0], n=above.length;
-          el.innerHTML = n>=3
-            ? `🐰 지금 우리 위에 <b>${n}팀</b>! 순위 뺏어와요 🔥`
-            : `🐰 <b>${esc(chaser.name)}</b>이(가) 우리 위에 있어요! 제쳐요 🔥`;
+        if(above.length){   // 항상 '바로 위 한 팀'(잡을 수 있는 구체적 라이벌). 'N팀' 숫자 겁주기 제거 = 좌절 아닌 목표.
+          el.innerHTML = `🐰 <b>${esc(above[0].name)}</b> 딱 위에 있어요! 제쳐요 🔥`;
         }
       }).catch(()=>{});
     }catch(e){} },
