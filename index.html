@@ -2201,12 +2201,19 @@ const Game = {
 
   // ⭐클라이맥스 인터랙션: 심사 직전 마지막 전략(침착 vs 올인)을 플레이어가 고름 → 결과에 실제 영향.
   //   24턴 도박 끝의 정점에서 '구경'이 아니라 '내 손'으로 승부를 건다.
-  stageChoice(title, onPick){
+  stageChoice(title, onPick, fore){
     const ov=document.getElementById("ov"); ov.className="ov on"; ov.onclick=null;
+    // ⭐지금 내 상태(안전/아슬/위험)를 보여줘 '감'이 아닌 '계산'으로 걸게 → 숙련·학습 루프(중독 요소)
+    const foreMap={ safe:{ic:'🧘',cls:'safe',msg:'이미 여유 있어요 — 안정으로 충분!'},
+      tight:{ic:'⚖️',cls:'tight',msg:'아슬아슬… 승부수도 고려해봐요'},
+      risk:{ic:'🔥',cls:'risk',msg:'위태로워요 — 올인 아니면 어려워요'} };
+    const fi=foreMap[fore]||null;
+    const foreChip = fi?`<div class="sc-fore ${fi.cls}">${fi.ic} ${fi.msg}</div>`:'';
     ov.innerHTML=`<div class="ev-card" style="text-align:center;max-width:330px">
       <div class="ev-emoji">🎤</div><div class="ev-title">${title}</div>
-      <p class="muted" style="margin:6px 3px 15px;font-size:13px">마지막 무대 직전 — 어떻게 갈까?</p>
-      <div style="display:flex;flex-direction:column;gap:10px">
+      <p class="muted" style="margin:6px 3px 10px;font-size:13px">마지막 무대 직전 — 어떻게 갈까?</p>
+      ${foreChip}
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
         <button class="btn ghost" id="scSafe" style="text-align:left;padding:14px 16px">🧘 <b>침착하게</b><br><small class="muted" style="font-size:12px">안정 · 점수 +8% 확정</small></button>
         <button class="btn" id="scAllin" style="text-align:left;padding:14px 16px;background:linear-gradient(135deg,#ff8a3d,#ff4d72)">🔥 <b>다 걸고!</b><br><small style="font-size:12px;opacity:.9">올인 · 대박(+38%) 아니면 긴장(−22%)</small></button>
       </div></div>`;
@@ -2224,7 +2231,7 @@ const Game = {
     if(mult>=1.2){ try{ this.confetti(30,false); }catch(e){} }
     document.getElementById("scGo").onclick=()=>{ ov.className="ov"; ov.onclick=null; onPick(mult); };
   },
-  debutJudge(){ this.stageChoice("🎬 데뷔 무대", (mult)=>this._debutResolve(mult)); },
+  debutJudge(){ let fore=null; try{ fore=this.gateForecast(this.st, this.sch().debut); }catch(e){} this.stageChoice("🎬 데뷔 무대", (mult)=>this._debutResolve(mult), fore); },
   _debutResolve(mult){
     const s=this.st, cut=this.sch().debutCut;
     const total=STATS.reduce((a,st)=>a+s[st.k],0) * mult;   // ⭐마지막 전략 반영
@@ -2248,7 +2255,8 @@ const Game = {
   runCompet(week){
     const c=this.sch().compets[week];
     const title = c.final?"👑 글로벌 대상 무대":c.gate?"✈️ 월드 진출 심사":"🎤 무대 대결";
-    this.stageChoice(title, (mult)=>this._competResolve(week, mult));
+    let fore=null; try{ fore=this.gateForecast(this.st, week); }catch(e){}
+    this.stageChoice(title, (mult)=>this._competResolve(week, mult), fore);
   },
   _competResolve(week, mult){
     const c=this.sch().compets[week], s=this.st;
@@ -3439,6 +3447,11 @@ window.addEventListener("popstate", ()=>{
   .goal-go{color:var(--sub);font-weight:800;flex:none}
   .goal-claim{display:flex;align-items:center;gap:10px;margin-top:13px;padding:11px 14px;border-radius:14px;cursor:pointer;
     background:linear-gradient(135deg,rgba(255,194,71,.16),rgba(255,77,114,.1));border:1px solid var(--gold);font-size:13.5px;color:var(--txt)}
+  /* 클라이맥스 전략 모달 — 상태(안전/아슬/위험) 칩 */
+  .sc-fore{display:inline-block;font-size:12.5px;font-weight:800;padding:6px 13px;border-radius:999px;border:1px solid}
+  .sc-fore.safe{color:#4fd6a0;border-color:#2a5a44;background:rgba(79,214,160,.12)}
+  .sc-fore.tight{color:#ffca5f;border-color:#5a4a2a;background:rgba(255,202,95,.12)}
+  .sc-fore.risk{color:#ff7a7a;border-color:#5a2a2a;background:rgba(255,122,122,.14)}
   /* 결과 화면 다음-목표 티저(한 명 더 육성 훅) */
   .res-goals{margin-top:12px;background:var(--bg);border:1px solid var(--line);border-radius:13px;padding:11px 13px;text-align:left}
   .res-goals-h{font-size:12.5px;font-weight:800;color:var(--txt);margin-bottom:8px}
