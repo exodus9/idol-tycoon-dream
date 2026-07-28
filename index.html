@@ -3316,13 +3316,15 @@ window.addEventListener("popstate", ()=>{
   .hp-top.slim .hp-name{font-size:15px}
   .hp-coin{flex:0 0 auto;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px 11px;font-size:13px;font-weight:800;color:var(--sub)}
   .hp-coin b{color:var(--gold)}
+  .hp-trend{flex:0 0 auto;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:11.5px;font-weight:700;color:var(--sub);cursor:pointer;white-space:nowrap}
+  .hp-trend b{color:var(--txt)} .hp-trend .hp-td{color:var(--accent);font-weight:800}
   .trend-pill{display:inline-flex;align-items:center;gap:7px;margin-top:10px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 13px;font-size:12.5px;font-weight:700;color:var(--sub);cursor:pointer}
   .trend-pill b{color:var(--txt)}
   .trend-pill .tp-ic{font-size:15px}
   .trend-pill .tp-d{color:var(--accent);font-weight:800;margin-left:2px}
   /* ⭐대표 그룹 히어로 = "살아있는 무대" (회전광선·상승 파티클·부유 카드·무대조명) — QA 몰입0 처방 */
   .hero.hero-stage2{--sg1:rgba(255,140,200,.26);--sg2:rgba(120,90,220,.30);
-    padding:18px 16px 20px;text-align:center;position:relative;overflow:hidden;min-height:296px;
+    padding:14px 16px 16px;text-align:center;position:relative;overflow:hidden;min-height:248px;
     background:radial-gradient(120% 66% at 50% 4%, var(--sg1), transparent 54%),
       radial-gradient(100% 120% at 50% 122%, var(--sg2), transparent 58%),
       linear-gradient(180deg,#2a1c48 0%,#1a1030 60%,#140a26 100%)}
@@ -3334,25 +3336,26 @@ window.addEventListener("popstate", ()=>{
   .hs2-p{position:absolute;bottom:-6px;border-radius:50%;background:rgba(255,224,160,.9);box-shadow:0 0 7px rgba(255,220,150,.85);animation:hs2Rise linear infinite}
   @keyframes hs2Rise{0%{transform:translateY(0) scale(.5);opacity:0}14%{opacity:1}100%{transform:translateY(-270px) scale(1);opacity:0}}
   .hero.hero-stage2>*:not(.hs2-rays):not(.hs2-particles){position:relative;z-index:3}
-  .hs2-bubble{display:inline-block;background:rgba(255,255,255,.96);color:#2a2036;border-radius:15px;padding:8px 14px;font-size:13px;font-weight:700;margin-bottom:13px;max-width:92%;box-shadow:0 8px 20px -6px rgba(0,0,0,.55);animation:hs2Bub .5s ease both}
+  .hs2-bubble{display:inline-block;background:rgba(255,255,255,.96);color:#2a2036;border-radius:15px;padding:7px 13px;font-size:12.5px;font-weight:700;margin-bottom:10px;max-width:92%;box-shadow:0 8px 20px -6px rgba(0,0,0,.55);animation:hs2Bub .5s ease both}
   @keyframes hs2Bub{0%{opacity:0;transform:translateY(-6px)}100%{opacity:1;transform:none}}
-  .hs2-cards{position:relative;display:flex;justify-content:center;align-items:flex-end;gap:10px;margin-bottom:14px}
+  .hs2-cards{position:relative;display:flex;justify-content:center;align-items:flex-end;gap:9px;margin-bottom:9px}
   .hs2-cards::after{content:"";position:absolute;left:50%;bottom:-7px;width:206px;height:30px;transform:translateX(-50%);z-index:-1;
     background:radial-gradient(ellipse,var(--sg1),transparent 70%);filter:blur(9px);opacity:.95}
-  .hs2-card{position:relative;width:76px;height:100px;border-radius:14px;background:#322748 center 20%/cover no-repeat;flex:none;
-    display:flex;align-items:center;justify-content:center;font-size:26px;
+  .hs2-card{position:relative;width:70px;height:92px;border-radius:13px;background:#322748 center 20%/cover no-repeat;flex:none;
+    display:flex;align-items:center;justify-content:center;font-size:24px;
     box-shadow:0 0 0 2px rgba(180,140,220,.6),0 10px 20px -8px rgba(0,0,0,.6);animation:floaty2s 5.4s ease-in-out infinite}
   .hs2-card:nth-child(2){animation-delay:-1.8s}.hs2-card:nth-child(3){animation-delay:-3.4s}
-  .hs2-card.lead{width:94px;height:124px;box-shadow:0 0 0 2.5px var(--gold),0 14px 26px -8px rgba(0,0,0,.7),0 0 26px -6px rgba(255,180,120,.55);animation:floaty2 5s ease-in-out infinite}
+  .hs2-card.lead{width:86px;height:114px;box-shadow:0 0 0 2.5px var(--gold),0 14px 26px -8px rgba(0,0,0,.7),0 0 26px -6px rgba(255,180,120,.55);animation:floaty2 5s ease-in-out infinite}
+  .hs2-card.empty{align-items:center;justify-content:center;color:var(--sub);font-size:30px;background:rgba(255,255,255,.04);border:1px dashed var(--line)}
   .hs2-card.lead::after{content:"";position:absolute;inset:0;border-radius:14px;pointer-events:none;
     background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.30) 49%,transparent 56%);background-size:250% 100%;animation:hs2Shine 5s ease-in-out infinite}
   @keyframes hs2Shine{0%,66%{background-position:180% 0}100%{background-position:-120% 0}}
   @keyframes floaty2{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
   @keyframes floaty2s{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-  .hph-badge{display:inline-block;font-size:11px;font-weight:800;color:#1a1226;background:var(--gold);padding:3px 10px;border-radius:999px;margin-bottom:7px}
-  .hph-nm{font-size:26px;font-weight:900;line-height:1.05;text-shadow:0 2px 12px #000}
-  .hph-sub{margin-top:5px;font-size:13px;font-weight:600;color:#e7ddff}
-  .hero.hero-stage2 .hero-cta{margin-top:14px}
+  .hph-badge{display:inline-block;font-size:10.5px;font-weight:800;color:#1a1226;background:var(--gold);padding:2px 9px;border-radius:999px;margin-bottom:4px}
+  .hph-nm{font-size:21px;font-weight:900;line-height:1.05;text-shadow:0 2px 12px #000}
+  .hph-sub{margin-top:3px;font-size:12.5px;font-weight:600;color:#e7ddff}
+  .hero.hero-stage2 .hero-cta{margin-top:9px}
   .hs-row{display:flex;align-items:center;gap:13px}
   .hs-logo{font-size:34px;width:56px;height:56px;border-radius:16px;background:rgba(0,0,0,.28);display:flex;align-items:center;justify-content:center;flex:0 0 auto;box-shadow:var(--hi)}
   .hs-txt{flex:1;min-width:0}
@@ -3374,11 +3377,11 @@ window.addEventListener("popstate", ()=>{
   .hw-wide .hw-bar{margin-top:7px}
   .hw-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2))}
   /* ⭐다음 목표 엔진(장기 리텐션 훅) */
-  .goals-box{margin-top:13px;background:linear-gradient(135deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:16px;padding:12px 14px;box-shadow:var(--shadow-sm)}
-  .goals-h{font-size:13px;font-weight:800;color:var(--txt);margin-bottom:9px}
-  .goal-row{display:flex;align-items:center;gap:11px;padding:7px 0;cursor:pointer;border-top:1px solid var(--line)}
+  .goals-box{margin-top:11px;background:linear-gradient(135deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:15px;padding:9px 13px;box-shadow:var(--shadow-sm)}
+  .goals-h{font-size:12px;font-weight:800;color:var(--sub);margin-bottom:5px}
+  .goal-row{display:flex;align-items:center;gap:10px;padding:5px 0;cursor:pointer;border-top:1px solid var(--line)}
   .goal-row:first-of-type{border-top:none}
-  .goal-ic{font-size:20px;flex:none;width:26px;text-align:center}
+  .goal-ic{font-size:18px;flex:none;width:24px;text-align:center}
   .goal-m{flex:1;min-width:0}
   .goal-nm{font-size:13px;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .goal-c{color:var(--sub);font-weight:800;font-size:11.5px;margin-left:3px}
@@ -4643,7 +4646,9 @@ window.addEventListener("popstate", ()=>{
       return out.slice(0,3);
     },
 
-    go(){ this.load(); if(!this.data.agency){ this.renderAgency(); show('s-agency'); return; } this.renderOffice(); show('s-office'); },
+    go(){ this.load(); this._showGrid=false; if(!this.data.agency){ this.renderAgency(); show('s-agency'); return; } this.renderOffice(); show('s-office'); },
+    editLineup(){ this._showGrid=true; this.renderOffice(); try{ setTimeout(()=>{ const g=document.querySelector('#dgGroup .dg-grid'); if(g) g.scrollIntoView({block:'center',behavior:'smooth'}); },50); }catch(e){} },
+    closeLineup(){ this._showGrid=false; this.renderOffice(); },
     _spawnStagePx(){ try{
       const box=document.querySelector('#homeHero .hs2-particles'); if(!box) return;
       box.innerHTML='';
@@ -4654,6 +4659,23 @@ window.addEventListener("popstate", ()=>{
         const s=(2.5+Math.random()*3.5); p.style.width=p.style.height=s+'px';
         p.style.opacity=(.35+Math.random()*.5); box.appendChild(p); }
     }catch(e){} },
+    // ⭐홈 히어로 = 아이돌 얼굴이 지배하는 살아있는 무대(전 상태 공용). members=[{img,name}], cta={on,label}
+    _stageHero(o){
+      const cards=(o.members||[]).slice(0,3);
+      const sg=o.sg||STAGE_HUE.center;
+      const cardsHTML = cards.length
+        ? cards.map((m,i)=>`<span class="hs2-card${i===0?' lead':''}" ${m&&m.img?`style="background-image:url('${m.img}')"`:''}>${m&&m.img?'':'🎤'}</span>`).join('')
+        : `<span class="hs2-card lead empty">＋</span>`;
+      return `<div class="hero hero-stage2" style="--sg1:${sg[0]};--sg2:${sg[1]}">
+        <div class="hs2-rays"></div><div class="hs2-particles"></div>
+        ${o.greet?`<div class="hs2-bubble">${o.greet}</div>`:''}
+        <div class="hs2-cards">${cardsHTML}</div>
+        ${o.badge?`<span class="hph-badge">${o.badge}</span>`:''}
+        <div class="hph-nm">${o.nm||''}</div>
+        ${o.sub?`<div class="hph-sub">${o.sub}</div>`:''}
+        <button class="btn hero-cta" onclick="${o.cta.on}">${o.cta.label}</button>
+        ${o.extra||''}</div>`;
+    },
     renderOffice(){
       this.load();
       const a=this.agency();
@@ -4667,12 +4689,13 @@ window.addEventListener("popstate", ()=>{
 
       // ── 프로필 바(슬림) ── 대시보드 3타일 제거(정보는 각 탭으로). 로고+이름 + 마이크만.
       const _mics=(typeof this.mics==='function')?this.mics():null;
+      const _trend0=this.currentTrend(), _td0=this.seasonEndsInDays();
       document.getElementById('homeProfile').innerHTML=
         `<div class="hp-top slim">
-           <span class="hp-logo">${this.logoHtml(a.logo,28)}</span>
-           <div class="hp-id"><div class="hp-name">${esc(a.name)}</div></div>
+           <span class="hp-logo" onclick="DG.editAgency()">${this.logoHtml(a.logo,28)}</span>
+           <div class="hp-id" onclick="DG.editAgency()" style="cursor:pointer"><div class="hp-name">${esc(a.name)} <span style="font-size:11px;opacity:.5">✏️</span></div></div>
+           <span class="hp-trend" onclick="DG.showLeague&&DG.showLeague()" title="이번 시즌 트렌드">${_trend0.ic} <b>${esc(_trend0.nm)}</b> <span class="hp-td">D-${_td0}</span></span>
            ${_mics!=null?`<span class="hp-coin">🎤 <b>${_mics}</b></span>`:''}
-           <button class="hp-edit" onclick="DG.editAgency()" title="기획사 정보 수정">✏️</button>
          </div>`;
 
       // ── 트렌드 배너(경쟁전③): 마스코트 리니가 이번 시즌 대세 브리핑 ──
@@ -4682,70 +4705,57 @@ window.addEventListener("popstate", ()=>{
       const _next=TRENDS[(this.seasonNo()+1)%TRENDS.length];
       const _fore=_tdays<=3?`<div class="trend-desc" style="margin-top:3px;opacity:.85">🔮 리니 "다음 시즌은 <b>${esc(_next.nm)}</b>이 온대! 미리 준비해"</div>`:'';
       // 트렌드 = 한 줄 핀(대시보드 정리). 상세·예고는 차트/정산 모달로.
-      document.getElementById('homeTrend').innerHTML=
-        `<div class="trend-pill" onclick="DG.showLeague&&DG.showLeague()"><span class="tp-ic">${_trend.ic}</span> 이번 트렌드 <b>${esc(_trend.nm)}</b><span class="tp-d">D-${_tdays}</span></div>`;
+      document.getElementById('homeTrend').innerHTML='';   // 트렌드는 프로필 바로 접음(한 화면 압축)
 
       // ── 상태별 히어로 ──
       let hero='';
       // 육성 중단 세이브 있으면 이어하기 최우선(복귀 동선 — 기존엔 접근성 낮았음)
-      let _resume=null; try{ if(Game.hasSave()){ const sv=JSON.parse(localStorage.getItem('idol_save')); if(sv&&sv.idol) _resume={name:sv.idol.name, week:sv.week||1, total:(sv.mode==='quick'?12:24)}; } }catch(e){}
+      let _resume=null; try{ if(Game.hasSave()){ const sv=JSON.parse(localStorage.getItem('idol_save')); if(sv&&sv.idol) _resume={name:sv.idol.name, week:sv.week||1, total:(sv.mode==='quick'?12:24), img:sv.idol.img||''}; } }catch(e){}
+      // 편성/데뷔 대기 멤버 얼굴(공용) — 얼굴이 홈을 지배하게
+      const _lineMem = this.slots().map(s=>this.rosterById(this.data.lineup[s.sid])).filter(Boolean);
+      const _sgTrend = STAGE_HUE[_trend.pos]||STAGE_HUE.center;
       if(_resume){
-        hero=`<div class="hero hero-ready">
-           <div class="hero-badge">⏸️ 육성 진행 중</div>
-           <div class="hero-t">${esc(_resume.name)}</div>
-           <div class="hero-d">${_resume.week}/${_resume.total}턴에서 멈춰 있어 — 이어서 키우자!</div>
-           <button class="btn hero-cta" onclick="Game.continueGame()">▶️ 이어하기</button>
-           ${rep?`<button class="btn ghost" style="margin-top:8px" onclick="DG.showBattleLobby()">⚔️ ${esc(rep.name)} 대결하러 가기</button>`:''}
-         </div>`;
+        hero=this._stageHero({ members:[{img:_resume.img}], sg:_sgTrend,
+          greet:'저 아직 육성 중이에요 — 이어서 키워줘요! 🎤', badge:'⏸️ 육성 중',
+          nm:esc(_resume.name), sub:`${_resume.week}/${_resume.total}턴`,
+          cta:{on:'Game.continueGame()', label:'▶️ 이어하기'},
+          extra: rep?`<button class="btn ghost" style="margin-top:8px" onclick="DG.showBattleLobby()">⚔️ ${esc(rep.name)} 대결</button>`:'' });
       } else if(roster.length===0 && groups.length===0){
         hero=`<div class="hero on-boarding">
            <div class="hero-badge">🎬 프로듀서 데뷔</div>
            <div class="hero-t">첫 연습생을 발굴하자</div>
-           <div class="hero-d">원석을 찾아 키우고, 조합해 신인 그룹으로 데뷔시켜요.</div>
+           <div class="hero-d">원석을 찾아 키우고 신인 그룹으로 데뷔시켜요.</div>
            <button class="btn hero-cta" onclick="Game.goSelect()">✨ 첫 육성 시작</button>
          </div>`;
       } else if(rep){
-        const tier=this.battleTier(this.battleSeason().pts);   // 랭킹과 동일한 승점 티어로 통일
+        const tier=this.battleTier(this.battleSeason().pts);
         const _rmem=this.groupMembers(rep).filter(m=>m.r);
         const _lead=_rmem.find(m=>m.type==='leader')||_rmem[0];
         const _rest=_rmem.filter(m=>m!==_lead).slice(0,2);
-        const _cards=[_lead,..._rest].filter(Boolean);   // 대표 3인(리더+2) = 얼굴 확대 대신 프레임 카드
-        // 상황별 말풍선: 시즌 마감 임박·첫무대·상위티어 등 맥락 반영(재방문 감정선)
+        const _cards=[_lead,..._rest].filter(Boolean).map(m=>({img:m.r.img}));
         const _bpts=this.battleSeason().pts||0, _tidx=BATTLE_TIERS.filter(x=>_bpts>=x.min).length-1;
         let _greet;
-        if(_tdays<=2) _greet='이번 시즌 곧 끝나요 — 마지막 무대 같이 가요! ⏳';
-        else if(_bpts===0) _greet='첫 무대, 프로듀서님이랑 같이 올라가요! ✨';
-        else if(_tidx>=3) _greet='정상이 코앞이에요… 오늘도 부탁해요! 🔥';
-        else _greet=['무대에서 만나요, 프로듀서님! ✨','오늘도 대결 준비 완료예요!','우리 무대 보러 오셨죠? 💪'][this.seasonNo()%3];
-        const _sg=STAGE_HUE[_trend.pos]||STAGE_HUE.center;
-        hero=`<div class="hero hero-stage2" style="--sg1:${_sg[0]};--sg2:${_sg[1]}">
-           <div class="hs2-rays"></div><div class="hs2-particles"></div>
-           <div class="hs2-bubble">🐰 ${_greet}</div>
-           <div class="hs2-cards">${_cards.map((m,i)=>`<span class="hs2-card${i===0?' lead':''}" ${m.r.img?`style="background-image:url('${m.r.img}')"`:''}>${m.r.img?'':'🎤'}</span>`).join('')}</div>
-           <span class="hph-badge">🏆 우리 대표 그룹</span>
-           <div class="hph-nm">${esc(rep.name)}</div>
-           <div class="hph-sub">${tier.ic} ${esc(tier.nm)} · 승점 ${this.battleSeason().pts||0}P · ${rep.n}명</div>
-           <button class="btn hero-cta" onclick="DG.showBattleLobby()">⚔️ 무대 대결하러 가기</button>
-           <div class="hero-btns" style="margin-top:9px">
+        if(_tdays<=2) _greet='이번 시즌 곧 끝나요 — 마지막 무대! ⏳';
+        else if(_bpts===0) _greet='첫 무대, 같이 올라가요! ✨';
+        else if(_tidx>=3) _greet='정상이 코앞이에요! 🔥';
+        else _greet=['무대에서 만나요! ✨','오늘도 준비 완료!','우리 무대 보러 오셨죠? 💪'][this.seasonNo()%3];
+        hero=this._stageHero({ members:_cards, sg:STAGE_HUE[_trend.pos]||STAGE_HUE.center,
+          greet:'🐰 '+_greet, badge:'🏆 우리 대표 그룹', nm:esc(rep.name),
+          sub:`${tier.ic} ${esc(tier.nm)} · ${_bpts}P`,
+          cta:{on:'DG.showBattleLobby()', label:'⚔️ 대결하러 가기'},
+          extra:`<div class="hero-btns" style="margin-top:9px">
              <button class="btn ghost" style="flex:1" onclick="Game.goSelect()">✨ 육성</button>
-             <button class="btn ghost" style="flex:1" onclick="DG.shareSavedGroup(${rep.gid})">📸 그룹 정보</button>
-           </div>
-         </div>`;
+             <button class="btn ghost" style="flex:1" onclick="DG.goRoster()">📋 편성</button></div>` });
       } else if(gi.n>=3){
-        hero=`<div class="hero hero-ready">
-           <div class="hero-badge">🎤 데뷔 준비 완료</div>
-           <div class="hero-t">새 데뷔조</div>
-           <div class="hero-d">${gi.grade}등급 · ${gi.n}/9명 데뷔조가 무대를 기다려요.</div>
-           <button class="btn hero-cta" onclick="DG.doDebut()">🎬 데뷔시키기</button>
-         </div>`;
+        hero=this._stageHero({ members:_lineMem.map(r=>({img:r.img})), sg:_sgTrend,
+          greet:'우리 데뷔만 기다리고 있어요! 🎬', badge:'🎤 데뷔 준비 완료',
+          nm:'새 데뷔조', sub:`${gi.grade}등급 · ${gi.n}/9명`,
+          cta:{on:'DG.doDebut()', label:'🎬 데뷔시키기'} });
       } else {
-        hero=`<div class="hero hero-build">
-           <div class="hero-badge">📋 데뷔조 편성</div>
-           <div class="hero-t">데뷔조를 완성하자</div>
-           <div class="hero-d">아래에서 연습생을 포지션에 배치해 3명 이상 모으면 활동이 시작돼. (현재 ${gi.n}/최소 3명)</div>
-           ${freeCount?`<button class="btn hero-cta" onclick="DG.autoFill()">🎯 자동 편성</button>`
-             :`<button class="btn hero-cta" onclick="Game.goSelect()">✨ 연습생 육성하기</button>`}
-         </div>`;
+        hero=this._stageHero({ members:_lineMem.map(r=>({img:r.img})), sg:_sgTrend,
+          greet: _lineMem.length?'조금만 더 모으면 데뷔예요!':'연습생을 포지션에 배치해요',
+          badge:'📋 데뷔조 편성', nm:'데뷔조를 완성하자', sub:`${gi.n}/최소 3명`,
+          cta: freeCount? {on:'DG.autoFill()', label:'🎯 자동 편성'} : {on:'Game.goSelect()', label:'✨ 연습생 육성'} });
       }
       document.getElementById('homeHero').innerHTML=hero;
       this._spawnStagePx();   // 살아있는 무대: 상승 파티클 주입(대표그룹 히어로일 때만)
@@ -4754,7 +4764,7 @@ window.addEventListener("popstate", ()=>{
       const _onboard=(roster.length===0 && groups.length===0);
       let _cta='';
       if(_resume){ _cta=`<button class="btn ghost" onclick="Game.goSelect()">＋ 새 연습생 육성 <span class="muted" style="font-size:11px">(진행 중인 육성은 사라져)</span></button>`; }
-      else if(!_onboard && !rep){ _cta=`<button class="btn" onclick="Game.goSelect()">＋ 새 연습생 육성</button>`; }   // 대표 있으면 히어로에 '육성' 버튼이 있어 중복 제거
+      else if(!_onboard && !rep){ _cta=`<button class="btn ghost" onclick="Game.goSelect()">＋ 새 연습생 육성</button>`; }   // 주 CTA(데뷔)는 히어로 — 육성은 보조 슬림
       document.getElementById('homeCta').innerHTML=_cta;
       // ⭐다음 목표 엔진: 완성 근접 목표 3개를 항상 노출 → 매 순간 "거의 다 됐다, 한 판 더"의 장기 리텐션 훅.
       //   (기존 데뷔 로드맵을 흡수 — 첫 실행부터 끝까지 하나의 목표 사다리)
@@ -4812,9 +4822,12 @@ window.addEventListener("popstate", ()=>{
       // ── 편성 그리드 ── 대표 그룹 있고 편성 버퍼 비었으면 홈서 빈 슬롯 그리드 숨김(로비 정리)
       if(roster.length===0){ document.getElementById('dgGroup').innerHTML=''; document.getElementById('dgGroups').innerHTML=''; return; }
       const _lineupEmpty = Object.keys(this.data.lineup||{}).length===0;
-      if(rep && _lineupEmpty){
-        document.getElementById('dgGroup').innerHTML = freeCount>0
-          ? `<button class="btn ghost" style="margin-top:14px;width:100%" onclick="DG.goRoster()">＋ 새 데뷔조 만들기 <span class="muted" style="font-size:12px">(무소속 ${freeCount}명)</span></button>` : '';
+      const _building = !rep && gi.n<3;   // 첫 데뷔조 3명 채우는 중 = 인라인 그리드(현재 과제)
+      if(!_building && !this._showGrid){
+        // 한 화면 유지: 편성 그리드는 탭 한 번 뒤로 접음. 기본 홈은 컴팩트.
+        document.getElementById('dgGroup').innerHTML =
+          `<button class="btn ghost" style="margin-top:13px;width:100%" onclick="DG.editLineup()">📋 데뷔조 편성${gi.n>0?` · ${gi.n}/9명`:''} ›</button>`
+          + (freeCount>0 && rep ? `<button class="btn ghost" style="margin-top:8px;width:100%" onclick="DG.goRoster()">＋ 새 데뷔조 <span class="muted" style="font-size:12px">(무소속 ${freeCount})</span></button>` : '');
       } else {
       // 동적 슬롯: 리더 첫칸 고정 + 자유 편성(보컬그룹/힙합크루…). 최소 3칸·최대 9인
       const shown=this.slots();
@@ -4846,7 +4859,8 @@ window.addEventListener("popstate", ()=>{
            ${shown.length<MAX_MEMBERS? `<button class="btn ghost" style="flex:1;font-size:13px" onclick="DG.addSlot()">＋ 자리 추가 <span class="muted">(${shown.length}/9)</span></button>` : `<span class="muted" style="flex:1;text-align:center;font-size:12px;align-self:center">멤버 9명 꽉 참 (최대)</span>`}
            ${gi.n>=3? `<button class="btn ghost" style="flex:1" onclick="DG.previewLineupCard()">🔍 편성 미리보기</button>`:''}
          </div>
-         ${gi.n>=3? `<button class="btn" style="margin-top:8px" onclick="DG.doDebut()">🎬 이 데뷔조 데뷔시키기 <span style="opacity:.8;font-size:12px">(${gi.n}명 전속 확정)</span></button>`:''}`;
+         ${gi.n>=3? `<button class="btn" style="margin-top:8px" onclick="DG.doDebut()">🎬 이 데뷔조 데뷔시키기 <span style="opacity:.8;font-size:12px">(${gi.n}명 전속 확정)</span></button>`:''}
+         ${this._showGrid? `<button class="btn ghost" style="margin-top:8px;width:100%" onclick="DG.closeLineup()">▲ 편성 접기</button>`:''}`;
       }
       // ① 대표는 히어로에 1번만 표시 — 목록은 '다른 데뷔 그룹'(비대표)만. 대표 교체는 여기 ⭐로(대표 실수 해체 방지 겸).
       const _repGid=this.repGroupGid();
