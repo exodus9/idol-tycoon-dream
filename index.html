@@ -2199,10 +2199,36 @@ const Game = {
     setTimeout(()=>{ box.classList.remove("locked"); box.classList.add("ready"); try{sfx("whoosh");}catch(e){} }, 650);
   },
 
-  debutJudge(){
+  // ⭐클라이맥스 인터랙션: 심사 직전 마지막 전략(침착 vs 올인)을 플레이어가 고름 → 결과에 실제 영향.
+  //   24턴 도박 끝의 정점에서 '구경'이 아니라 '내 손'으로 승부를 건다.
+  stageChoice(title, onPick){
+    const ov=document.getElementById("ov"); ov.className="ov on"; ov.onclick=null;
+    ov.innerHTML=`<div class="ev-card" style="text-align:center;max-width:330px">
+      <div class="ev-emoji">🎤</div><div class="ev-title">${title}</div>
+      <p class="muted" style="margin:6px 3px 15px;font-size:13px">마지막 무대 직전 — 어떻게 갈까?</p>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button class="btn ghost" id="scSafe" style="text-align:left;padding:14px 16px">🧘 <b>침착하게</b><br><small class="muted" style="font-size:12px">안정 · 점수 +8% 확정</small></button>
+        <button class="btn" id="scAllin" style="text-align:left;padding:14px 16px;background:linear-gradient(135deg,#ff8a3d,#ff4d72)">🔥 <b>다 걸고!</b><br><small style="font-size:12px;opacity:.9">올인 · 대박(+38%) 아니면 긴장(−22%)</small></button>
+      </div></div>`;
+    document.getElementById("scSafe").onclick=()=>{ try{sfx('click');}catch(e){} this._stageResolve(1.08, "🧘 침착하게 — 흔들림 없이", onPick); };
+    document.getElementById("scAllin").onclick=()=>{ const win=Math.random()<0.55; const m=win?1.38:0.78;
+      try{sfx(win?'great':'fail'); if(navigator.vibrate)navigator.vibrate(win?[30,40,60]:[60,40,60]);}catch(e){}
+      this._stageResolve(m, win?"🔥 올인 대박! 관중이 뒤집혔다 (+38%)":"😬 올인… 손끝이 떨렸다 (−22%)", onPick); };
+  },
+  _stageResolve(mult, msg, onPick){
+    const ov=document.getElementById("ov");
+    ov.innerHTML=`<div class="ev-card" style="text-align:center;max-width:330px">
+      <div style="font-size:48px;line-height:1.1">${mult>=1.2?'💥':mult<1?'😰':'🌟'}</div>
+      <div class="ev-title" style="margin:8px 0 4px">${msg}</div>
+      <button class="btn" id="scGo" style="margin-top:12px">무대에 오른다 →</button></div>`;
+    if(mult>=1.2){ try{ this.confetti(30,false); }catch(e){} }
+    document.getElementById("scGo").onclick=()=>{ ov.className="ov"; ov.onclick=null; onPick(mult); };
+  },
+  debutJudge(){ this.stageChoice("🎬 데뷔 무대", (mult)=>this._debutResolve(mult)); },
+  _debutResolve(mult){
     const s=this.st, cut=this.sch().debutCut;
-    const total=STATS.reduce((a,st)=>a+s[st.k],0);
-    const peak=Math.max(...STATS.map(st=>s[st.k]));
+    const total=STATS.reduce((a,st)=>a+s[st.k],0) * mult;   // ⭐마지막 전략 반영
+    const peak=Math.max(...STATS.map(st=>s[st.k])) * mult;
     // 첫판 보호: 완주 경험 0이면 데뷔심사 컷 15% 완화(온보딩 첫 경험에서 1/3이 실패하는 가혹함 방지)
     let cm=1; try{ DG.load(); if(!(DG.data.runs>0)) cm=0.85; }catch(e){}
     const pass = peak>=cut.min*cm && (total>=cut.total*cm || peak>=cut.peak*cm);   // 올F 컷: 최소 한 스탯 F 탈출 없으면 데뷔 실패(훈련 안 하고 초기스탯·이벤트만으론 못 뚫음)
@@ -2220,6 +2246,11 @@ const Game = {
 
   // 라이벌과 순위 대결 (필수 경쟁 이벤트)
   runCompet(week){
+    const c=this.sch().compets[week];
+    const title = c.final?"👑 글로벌 대상 무대":c.gate?"✈️ 월드 진출 심사":"🎤 무대 대결";
+    this.stageChoice(title, (mult)=>this._competResolve(week, mult));
+  },
+  _competResolve(week, mult){
     const c=this.sch().compets[week], s=this.st;
     let mine;
     if(c.type==="stage"){
@@ -2231,7 +2262,7 @@ const Game = {
       const metric=Math.max(avg, peak*AWARD_PEAK_K);
       mine = metric * (1 + Math.min(0.45, s.fans/60000)) * (0.9 + Math.random()*0.2);
     }
-    mine *= (s.cardGate||1);   // 카드 특수효과: 관문 파워 보정 (SSR 초신성·UR 갓)
+    mine *= (s.cardGate||1) * (mult||1);   // 카드 보정 × ⭐마지막 전략(침착/올인)
     const idxs=[]; while(idxs.length<3){ const r=Math.floor(Math.random()*RIVAL_PEOPLE.length); if(!idxs.includes(r)) idxs.push(r); }
     const rivals=idxs.map(i=>({name:RIVAL_PEOPLE[i], emoji:PEOPLE_EMOJI[i], score:c.base*(0.75+Math.random()*0.5), me:false}));   // #14 개인 오디션 경쟁자
     const board=[{name:idolName(s.idol), emoji:"⭐", score:mine, me:true}, ...rivals].sort((a,b)=>b.score-a.score);
