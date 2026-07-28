@@ -1510,6 +1510,8 @@ const Game = {
 
   goSelect(){
     this.selIdol=null; this.customImg=null; this.customSpec=null; this.customGender="F";
+    // ⭐첫 플레이어는 간이(12턴)를 기본으로 = 짧고 확실한 첫 맛(간이는 오프닝 컷씬도 스킵). 완주 경험 있으면 마지막 선택 유지.
+    try{ DG.load(); if((DG.data.roster||[]).length===0) this.trainMode='quick'; }catch(e){}
     this.renderSpecPick();
     document.querySelectorAll("#genderPick .gsel").forEach(b=>b.classList.toggle("on", b.dataset.g==="F"));
     document.getElementById("idolSearch").value="";
@@ -1640,11 +1642,9 @@ const Game = {
         : this.selIdol.name;
       btn.textContent=t("sel_start_named",{name:nm});
     } else btn.textContent=t("sel_start");
-    // 육성 방식 세그: 로스터에 완주 연습생 있으면 '간이(12턴)' 언락(첫 육성은 24턴 풀=온보딩)
-    let hasRoster=false; try{ DG.load(); hasRoster=(DG.data.roster||[]).length>0; }catch(e){}
-    if(!hasRoster && this.trainMode==="quick") this.trainMode="full";   // 잠긴 모드 선택 잔존 방지
+    // 육성 방식 세그: 간이(12턴)를 첫 판부터 허용(까칠이: 첫 세션 강제 24턴이 최대 이탈원). 잠금 제거.
     const q=document.getElementById("mseg-quick"), qsub=document.getElementById("msegQuickSub");
-    if(q){ q.disabled=!hasRoster; if(qsub) qsub.textContent = hasRoster ? t("mode_quick_sub") : t("mode_quick_lock"); }
+    if(q){ q.disabled=false; if(qsub) qsub.textContent = t("mode_quick_sub"); }
     const f=document.getElementById("mseg-full"), mode=this.trainMode||"full";
     if(f) f.classList.toggle("on", mode==="full");
     if(q) q.classList.toggle("on", mode==="quick");
@@ -1652,9 +1652,7 @@ const Game = {
   },
   // 육성 방식 토글(정식 24턴 / 간이 12턴). 실행이 아니라 선택 → 오탭해도 화면전환 없음.
   setTrainMode(m){
-    if(m==="quick"){ let has=false; try{ DG.load(); has=(DG.data.roster||[]).length>0; }catch(e){}
-      if(!has){ toast(t("mode_quick_locktoast")); return; } }
-    this.trainMode=m; sfx("click");
+    this.trainMode=m; sfx("click");   // 간이 잠금 해제(첫 판부터 선택 가능)
     this.updateStartFab();
   },
   start(){
