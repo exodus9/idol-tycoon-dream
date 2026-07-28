@@ -151,12 +151,17 @@
   .gsel.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset;color:var(--accent)}
   #s-select .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;overflow-y:auto;padding:4px 0 12px}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;
-    cursor:pointer;transition:transform .1s,border-color .1s;position:relative}
+    cursor:pointer;transition:transform .12s,border-color .12s,box-shadow .15s;position:relative;box-shadow:0 6px 16px -10px rgba(0,0,0,.6)}
   .card:active{transform:scale(.97)}
-  .card.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
-  .card .ph{width:100%;aspect-ratio:1;background:#322748 center/cover no-repeat;display:block}
-  .card .nm{padding:8px 10px 4px;font-weight:700;font-size:14px;line-height:1.2}
-  .card .gp{padding:0 10px 10px;color:var(--sub);font-size:11px}
+  .card .ph{width:100%;aspect-ratio:.82;background:#322748 center 22%/cover no-repeat;display:block}
+  .card .ph::after{content:"";position:absolute;left:0;right:0;top:0;height:56%;background:linear-gradient(180deg,transparent,rgba(20,10,36,.66));pointer-events:none}
+  .card .nm{position:relative;padding:7px 10px 3px;font-weight:800;font-size:14.5px;line-height:1.15}
+  .card .gp{padding:0 10px 9px;color:var(--sub);font-size:11px}
+  /* ⭐선택 순간 = 골드 스포트라이트 + 찜 뱃지 (첫 훅) */
+  .card.sel{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold),0 12px 30px -8px rgba(255,180,120,.55);transform:translateY(-3px)}
+  .card.sel::before{content:"⭐ 찜!";position:absolute;top:8px;right:8px;z-index:3;background:var(--gold);color:#1a1226;font-size:11px;font-weight:900;padding:3px 9px;border-radius:999px;box-shadow:0 3px 8px -2px rgba(0,0,0,.5)}
+  .card.pickpop{animation:cardPickPop .42s cubic-bezier(.3,1.6,.5,1)}
+  @keyframes cardPickPop{0%{transform:translateY(-3px) scale(1)}40%{transform:translateY(-6px) scale(1.05)}100%{transform:translateY(-3px) scale(1)}}
   .card .tag{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);
     font-size:10px;padding:3px 7px;border-radius:20px;font-weight:700}
 
@@ -1513,6 +1518,13 @@ const Game = {
     document.getElementById("upPh").style.display="";
     this.mode("search");
     this.search();
+    // ⭐첫 사용자 감성 훅: 첫 아이돌이면 "네 최애를 찾아봐" 프레이밍 + 검색창 자동 포커스
+    let _first=false; try{ DG.load(); _first=(DG.data.roster||[]).length===0; }catch(e){}
+    const _h=document.querySelector('#s-select .sub-head h2');
+    if(_h) _h.textContent = _first ? '✨ 네 최애를 찾아봐' : '누구를 키울까?';
+    const _si=document.getElementById('idolSearch');
+    if(_si){ _si.placeholder = _first ? '최애 이름 검색 (예: 카리나, 뷔, 리사)' : '이름·그룹 검색 (예: 리사, BTS)';
+      if(_first) setTimeout(()=>{ try{ _si.focus(); }catch(e){} }, 400); }
     show("s-select");
     try{ if(window.Tut) Tut.onSelect(); }catch(e){}
   },
@@ -1540,7 +1552,9 @@ const Game = {
   },
   pick(id){
     this.selIdol = IDOLS.find(i=>i.id===id) || null;
-    document.querySelectorAll("#idolGrid .card").forEach(c=>c.classList.toggle("sel", +c.dataset.id===id));
+    document.querySelectorAll("#idolGrid .card").forEach(c=>{ const on=(+c.dataset.id===id); c.classList.toggle("sel", on);
+      if(on){ c.classList.remove("pickpop"); void c.offsetWidth; c.classList.add("pickpop"); } });
+    try{ sfx("sparkle"); if(navigator.vibrate)navigator.vibrate(12); }catch(e){}
     this.updateStartFab();
   },
   renderSpecPick(){
@@ -4646,7 +4660,14 @@ window.addEventListener("popstate", ()=>{
       return out.slice(0,3);
     },
 
-    go(){ this.load(); this._showGrid=false; if(!this.data.agency){ this.renderAgency(); show('s-agency'); return; } this.renderOffice(); show('s-office'); },
+    go(){ this.load(); this._showGrid=false;
+      if(!this.data.agency){
+        // ⭐첫 실행: 사무적 '기획사 이름 짓기' 폼 대신 최애(아이돌)부터 고르게. 기획사는 기본값 자동(프로필 ✏️로 편집·데뷔때 재확인)
+        const P=['스타','드림','네온','문라이트','오로라','샤이닝','미라클','비비드'];
+        this.data.agency={name:P[Math.floor(Math.random()*P.length)]+' 엔터', logo:'🌟', _auto:1}; this.persist();
+        try{ Game.goSelect(); return; }catch(e){}
+      }
+      this.renderOffice(); show('s-office'); },
     editLineup(){ this._showGrid=true; this.renderOffice(); try{ setTimeout(()=>{ const g=document.querySelector('#dgGroup .dg-grid'); if(g) g.scrollIntoView({block:'center',behavior:'smooth'}); },50); }catch(e){} },
     closeLineup(){ this._showGrid=false; this.renderOffice(); },
     _spawnStagePx(){ try{
