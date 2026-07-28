@@ -1814,7 +1814,7 @@ const Game = {
     else s.stam=Math.max(0, (s.stam!=null?s.stam:100) - c.cost);
 
     if(c.kind==="rest"){
-      s.cond=Math.min(100, s.cond+22); s.mental=Math.min(100,(s.mental||60)+4);
+      s.cond=Math.min(100, s.cond+30); s.mental=Math.min(100,(s.mental||60)+14);   // 컨디션·멘탈 둘 다 확실히 회복(리스크 관리 레버)
       s.combo=0; s.comboStat=null;   // 휴식=콤보 끊김
       this.trainReveal(s.idol,"rest","ok",{cls:"s",label:"휴식",emoji:"😌"},
         `기력 <b>회복</b> · 컨디션 <b>↑</b>`, "푹 쉬었더니 개운해요!",
@@ -1838,40 +1838,44 @@ const Game = {
         ()=>{ this.render(); this.bumpStat(k,oldV,Math.round(s[k]),grade(oldV),grade(Math.round(s[k]))); setTimeout(()=>this.afterTurn(),700); });
       return;
     }
-    // lesson / light / rare / burst → 스탯 성장 (콤보·몰입버프 반영)
+    // lesson / light / rare / burst → 스탯 성장 (⭐판정을 굴린다: 대실패~각성. 죽어있던 rollJudge/JUDGE 복원)
     const stat = (c.kind==="rare"||c.kind==="burst") ? s.idol.spec : c.stat;
     const spec = stat===s.idol.spec;
-    // 콤보: 같은 스탯 연속이면 누적(+15%/스택, 최대 +60%). 다른 스탯이면 리셋.
     if(s.comboStat===stat) s.combo=(s.combo||0)+1; else { s.combo=1; s.comboStat=stat; }
     const comboMult = 1 + Math.min(0.6, (s.combo-1)*0.15);
     const buffOn = !!(s.buff && s.buff.turns>0);
     const buffMult = buffOn ? s.buff.mult : 1;
-    const rndv = 0.88+Math.random()*0.24;   // ±12% 텍스처
+    const rndv = 0.9+Math.random()*0.2;
     const talent = spec ? 1.25 : 1.0;
-    // 시즌 트렌드 보너스: 이번 시즌 '대세' 스탯이면 +25%(매 시즌 유리한 빌드 변별)
     let trendStat=null; try{ if(window.DG&&DG.currentTrend) trendStat=TREND_STAT[DG.currentTrend().pos]; }catch(e){}
     const onTrend = stat===trendStat;
     const trendMult = onTrend ? 1.25 : 1.0;
-    let g = Math.round(c.base * mult * growthMult(s[stat]) * talent * trendMult * (s.cardGrowth||1) * comboMult * buffMult * rndv);
+    // ⭐판정: rare=각성 확정. 나머지는 컨디션·멘탈이 확률에 가중된 rollJudge(대실패/실패/성공/대성공/각성).
+    const jk = (c.kind==="rare") ? "perfect" : rollJudge(s.cond, s.mental);
+    const J = JUDGE[jk]||JUDGE.ok;
+    // gain: 판정 배율 태움. 실패계열=급감, 대실패(mult<0)=스탯 하락 = 진짜 리스크.
+    let g = J.mult>0
+      ? Math.round(c.base * J.mult * growthMult(s[stat]) * talent * trendMult * (s.cardGrowth||1) * comboMult * buffMult * rndv)
+      : Math.round(c.base * J.mult);
     const oldV=Math.round(s[stat]), oldG=grade(oldV), oldL=levelOf(oldV);
     s[stat]=Math.max(0,Math.min(800,s[stat]+g));
     if(!s.trainCount)s.trainCount={}; s.trainCount[stat]=(s.trainCount[stat]||0)+1;
-    const fanGain=Math.round((28+s[stat]*0.5)*(c.kind==="light"?0.6:1)); s.fans+=fanGain;
-    if(c.kind==="rare"){ s.cond=Math.min(100,s.cond+30); }              // 스페셜=好調 부여
-    else if(c.kind==="burst"){ s.cond=Math.max(0, s.cond-24); }        // 폭발=컨디션 급락(고위험)
-    else { s.cond=Math.max(0, s.cond - (c.kind==="light"?4:8)); }      // 레슨은 컨디션 소모(휴식으로 관리)
-    if(buffOn){ s.buff.turns--; if(s.buff.turns<=0) s.buff=null; }     // 몰입 1턴 소모
+    const fanGain=Math.max(0,Math.round((28+s[stat]*0.5)*(c.kind==="light"?0.6:1)*J.fanMult)); s.fans+=fanGain;
+    // 판정이 컨디션·멘탈에 피드백(대실패=급락→다음 판정 더 위험 = 긴장). rare만 好調 부여.
+    if(c.kind==="rare"){ s.cond=Math.min(100,s.cond+28); s.mental=Math.min(100,(s.mental||60)+3); }
+    else { s.cond=Math.max(0, s.cond + J.cond + (c.kind==="burst"?-12:0)); s.mental=Math.max(0,Math.min(100,(s.mental||60)+(MENTAL_DELTA[jk]||0))); }
+    if(buffOn){ s.buff.turns--; if(s.buff.turns<=0) s.buff=null; }
+    if(jk==='fail'||jk==='dbad'){ s.combo=0; s.comboStat=null; }        // 실패=콤보 끊김(리스크)
     const newV=Math.round(s[stat]), newG=grade(newV), newL=levelOf(newV);
     if(newL>oldL) this.logWeek(t("gradeup_log",{ico:(STATS.find(x=>x.k===stat)||{}).ico,stat:t("st_"+stat),from:oldG,to:newG}));
-    const jk = (c.kind==="rare")?"perfect":(c.kind==="burst")?"great":(cb==="good"?"great":cb==="bad"?"fail":"ok");
-    const J = JUDGE[jk]||JUDGE.ok;
     const sname=(STATS.find(x=>x.k===stat)||{}).n, sico=(STATS.find(x=>x.k===stat)||{}).ico;
-    const bloomLine = c.kind==="rare" ? `<div class="bloom-line">✨ 스페셜 레슨! 특기가 만개했다</div>` : (c.kind==="burst"?`<div class="bloom-line">🔥 혹독한 특훈! 한계를 넘었다</div>`:"");
-    const comboTag = s.combo>=2 ? ` · 🔥${s.combo}연속` : "";
-    const buffTag = buffOn ? ` · 🧘몰입` : "";
-    const trendTag = onTrend ? ` · 📈트렌드` : "";
+    const bloomLine = c.kind==="rare" ? `<div class="bloom-line">✨ 스페셜 레슨! 특기가 만개했다</div>` : (c.kind==="burst"&&J.mult>=2 ? `<div class="bloom-line">🔥 혹독한 특훈이 통했다! 한계를 넘었다</div>` : "");
+    const comboTag = (g>0&&s.combo>=2) ? ` · 🔥${s.combo}연속` : "";
+    const buffTag = (g>0&&buffOn) ? ` · 🧘몰입` : "";
+    const trendTag = (g>0&&onTrend) ? ` · 📈트렌드` : "";
+    const sign = g>=0?'+':'';
     this.trainReveal(s.idol, stat, jk, J,
-      bloomLine + `${sico} ${sname} <b>+${g}</b> · 팬 +${fmt(fanGain)}${spec?' · ⭐특기':''}${trendTag}${comboTag}${buffTag}${cb==="good"?' · 好調!':cb==="bad"?' · 부진…':''}`,
+      bloomLine + `${sico} ${sname} <b>${sign}${g}</b> · 팬 +${fmt(fanGain)}${spec?' · ⭐특기':''}${trendTag}${comboTag}${buffTag}`,
       t("say_"+jk),
       ()=>{ this.render(); this.bumpStat(stat,oldV,newV,oldG,newG); setTimeout(()=>this.afterTurn(),820); });
   },
