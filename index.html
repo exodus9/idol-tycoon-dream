@@ -2204,9 +2204,10 @@ const Game = {
   stageChoice(title, onPick, fore){
     const ov=document.getElementById("ov"); ov.className="ov on"; ov.onclick=null;
     // ⭐지금 내 상태(안전/아슬/위험)를 보여줘 '감'이 아닌 '계산'으로 걸게 → 숙련·학습 루프(중독 요소)
-    const foreMap={ safe:{ic:'🧘',cls:'safe',msg:'이미 여유 있어요 — 안정으로 충분!'},
-      tight:{ic:'⚖️',cls:'tight',msg:'아슬아슬… 승부수도 고려해봐요'},
-      risk:{ic:'🔥',cls:'risk',msg:'위태로워요 — 올인 아니면 어려워요'} };
+    // 서술형(상태만) — '이렇게 하세요' 지시 대신 '이 정도예요' 재료만. 계산은 플레이어 몫.
+    const foreMap={ safe:{ic:'🧘',cls:'safe',msg:'여유 있는 편이에요'},
+      tight:{ic:'⚖️',cls:'tight',msg:'반반이에요'},
+      risk:{ic:'🔥',cls:'risk',msg:'지금은 빠듯해요'} };
     const fi=foreMap[fore]||null;
     const foreChip = fi?`<div class="sc-fore ${fi.cls}">${fi.ic} ${fi.msg}</div>`:'';
     ov.innerHTML=`<div class="ev-card" style="text-align:center;max-width:330px">
@@ -4803,8 +4804,15 @@ window.addEventListener("popstate", ()=>{
         const _rest=_rmem.filter(m=>m!==_lead).slice(0,2);
         const _cards=[_lead,..._rest].filter(Boolean).map(m=>({img:m.r.img}));
         const _bpts=this.battleSeason().pts||0, _tidx=BATTLE_TIERS.filter(x=>_bpts>=x.min).length-1;
+        // ⭐복귀 훅: 자리 비웠다 돌아오면 '순위 방어' 프레이밍 → 매일 대결하러 돌아오는 D2 루프
+        const _awayMs = this.data.lastOffice ? (Date.now()-this.data.lastOffice) : 0;
+        const _returning = _awayMs > 2*3600*1000;   // 2시간+ 비움 = 새 방문 세션
         let _greet;
-        if(_tdays<=2) _greet='이번 시즌 곧 끝나요 — 마지막 무대! ⏳';
+        if(_returning && _bpts>0){
+          const _mics=(typeof this.mics==='function')?this.mics():5;
+          _greet = _mics>=3 ? '자리 비운 사이 라이벌들이 바짝 쫓아왔어요! 방어하러 가요 🔥' : '돌아오셨네요! 우리 순위 지키러 가요 💪';
+        }
+        else if(_tdays<=2) _greet='이번 시즌 곧 끝나요 — 마지막 무대! ⏳';
         else if(_bpts===0) _greet='첫 무대, 같이 올라가요! ✨';
         else if(_tidx>=3) _greet='정상이 코앞이에요! 🔥';
         else _greet=['무대에서 만나요! ✨','오늘도 준비 완료!','우리 무대 보러 오셨죠? 💪'][this.seasonNo()%3];
@@ -4827,6 +4835,7 @@ window.addEventListener("popstate", ()=>{
           cta: freeCount? {on:'DG.autoFill()', label:'🎯 자동 편성'} : {on:'Game.goSelect()', label:'✨ 연습생 육성'} });
       }
       document.getElementById('homeHero').innerHTML=hero;
+      this.data.lastOffice=Date.now(); this.persist();   // 복귀 훅용 방문시각 기록(위 _returning 판정에 사용)
       this._spawnStagePx();   // 살아있는 무대: 상승 파티클 주입(대표그룹 히어로일 때만)
 
       // ── 육성 CTA + 위젯 ── 이어하기는 히어로가 담당(중복 노출 금지) → CTA는 새 육성만. 온보딩(연습생0·그룹0)엔 히어로 CTA와 중복이라 숨김
