@@ -2210,10 +2210,14 @@ const Game = {
       risk:{ic:'🔥',cls:'risk',msg:'지금은 빠듯해요'} };
     const fi=foreMap[fore]||null;
     const foreChip = fi?`<div class="sc-fore ${fi.cls}">${fi.ic} ${fi.msg}</div>`:'';
+    // 첫 클라이맥스 1회성 코치: 이 승부처가 뭔지 설명(공들인 선택이 이해 못 된 채 스쳐가지 않게)
+    let _firstSC=false; try{ _firstSC=!localStorage.getItem('dg_seen_stagechoice'); }catch(e){}
+    const hint = _firstSC ? `<div class="sc-hint">🐰 <b>마지막 승부처</b>예요! 위 <b>상태</b>를 보고 — 안정하게 갈지, 크게 걸어볼지 골라봐요.<br><small>거는 만큼 결과가 커지고, 아쉬우면 손해도 커요.</small></div>` : '';
+    try{ localStorage.setItem('dg_seen_stagechoice','1'); }catch(e){}
     ov.innerHTML=`<div class="ev-card" style="text-align:center;max-width:330px">
       <div class="ev-emoji">🎤</div><div class="ev-title">${title}</div>
       <p class="muted" style="margin:6px 3px 10px;font-size:13px">마지막 무대 직전 — 어떻게 갈까?</p>
-      ${foreChip}
+      ${hint}${foreChip}
       <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
         <button class="btn ghost" id="scSafe" style="text-align:left;padding:14px 16px">🧘 <b>침착하게</b><br><small class="muted" style="font-size:12px">안정 · 점수 +8% 확정</small></button>
         <button class="btn" id="scAllin" style="text-align:left;padding:14px 16px;background:linear-gradient(135deg,#ff8a3d,#ff4d72)">🔥 <b>다 걸고!</b><br><small style="font-size:12px;opacity:.9">올인 · 대박(+38%) 아니면 긴장(−22%)</small></button>
@@ -3449,6 +3453,8 @@ window.addEventListener("popstate", ()=>{
   .goal-claim{display:flex;align-items:center;gap:10px;margin-top:13px;padding:11px 14px;border-radius:14px;cursor:pointer;
     background:linear-gradient(135deg,rgba(255,194,71,.16),rgba(255,77,114,.1));border:1px solid var(--gold);font-size:13.5px;color:var(--txt)}
   /* 클라이맥스 전략 모달 — 상태(안전/아슬/위험) 칩 */
+  .sc-hint{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:13px;padding:10px 13px;margin:0 0 11px;font-size:12.5px;line-height:1.5;color:var(--txt);text-align:left}
+  .sc-hint small{color:var(--sub);font-size:11.5px}
   .sc-fore{display:inline-block;font-size:12.5px;font-weight:800;padding:6px 13px;border-radius:999px;border:1px solid}
   .sc-fore.safe{color:#4fd6a0;border-color:#2a5a44;background:rgba(79,214,160,.12)}
   .sc-fore.tight{color:#ffca5f;border-color:#5a4a2a;background:rgba(255,202,95,.12)}
