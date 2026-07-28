@@ -4682,7 +4682,7 @@ window.addEventListener("popstate", ()=>{
       const drops=this.rollCards(trainedK, gr, debuted, stats);
       const dropInfo=drops.map(id=>{ const wasNew=!this.owned(id); this.add(id,1,1); if(wasNew) this.data.newCards[id]=1; return {id, isNew:wasNew}; });
       this.data.runs++; this.persist();
-      return {drops:dropInfo, joinMsg, debuted, newRid, titles, newRecord, fans:fansV};
+      return {drops:dropInfo, joinMsg, debuted, newRid, titles, newRecord, fans:fansV, tier:(end&&end.tier)||''};
     },
     // ⑳⑲ 드랍 재설계(재율애비 확정): 최다 훈련영역 1장 확정 + 랜덤 추가 최대 2장(안 나올 수도).
     //   랜덤은 레어도 차등확률(N>R>SR>SSR>UR, 상위등급도 뜸) + 육성 등급으로 약간 보정. ⚠️수치 임시(밸런싱 대기)
@@ -5439,10 +5439,15 @@ window.addEventListener("popstate", ()=>{
         : '<span class="muted">이번엔 육성카드를 못 얻었어요</span>';
       const rec = res.newRecord ? `<div class="dg-record">🎉 <b>최고 팬 신기록!</b> ${fmt(res.fans)}명</div>` : '';
       const titleChips=(res.titles&&res.titles.length)? `<div class="dg-res-titles"><b>🏅 획득 칭호</b><div class="dg-titles" style="margin-top:6px">${res.titles.map(id=>this.titleChip(id)).join('')}</div></div>` : '';
-      // 애정⑧ 완주 감사 인사 — 등급별 캐릭터 한마디
-      const thanksPool = res.debuted
-        ? ['"다 프로듀서님 덕분이에요… 진짜로요!"','"저 잘했죠? 칭찬해줘요!"','"프로듀서님 없었으면 여기까지 못 왔어요"','"다음엔 더 잘할게요. 약속!"']
-        : ['"미안해요… 다음엔 꼭 해낼게요"','"조금만 더 믿어주면 안 될까요?"'];
+      // 애정⑧ 완주 감사 인사 — 엔딩 등급에 톤 맞춤(화려한 엔딩엔 화려한 대사)
+      const _et=res.tier||'';
+      const thanksPool = !res.debuted
+        ? ['"미안해요… 다음엔 꼭 해낼게요"','"조금만 더 믿어주면 안 될까요?"']
+        : /^(SS|S)$/.test(_et)
+          ? ['"우리 진짜 해냈어요! 최고의 데뷔였죠?! 🔥"','"이 무대 평생 안 잊을 거예요, 프로듀서님!"','"제가… 스타가 됐어요! 다 프로듀서님 덕분!"']
+        : /^(A|B)$/.test(_et)
+          ? ['"저 잘했죠? 칭찬해줘요! 😊"','"다 프로듀서님 덕분이에요… 진짜로요!"','"우리 여기서 더 올라가요!"']
+          : ['"떨렸지만… 그래도 해냈어요!"','"프로듀서님 없었으면 여기까지 못 왔어요"','"다음엔 더 멋진 모습 보여드릴게요!"'];
       const thanks=`<div class="fb-sub" style="text-align:center;margin:2px 0 8px;font-size:13px;color:#ffd35c">💬 ${thanksPool[Math.floor(Math.random()*thanksPool.length)]}</div>`;
       // ⭐한 명 더 육성 훅: 방금 완주로 진척된 다음 목표 노출 → 최고 몰입 순간에 다음 런 유도
       const ng=this.nextGoals(2);
