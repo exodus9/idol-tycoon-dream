@@ -147,6 +147,8 @@
   .run-direction .specpick{padding:0}.run-direction .sp{min-height:50px;font-size:11px;line-height:1.15;padding:7px 3px}
   .run-direction .sp small{display:block;margin-top:3px;font-size:9px;color:var(--muted)}
   .run-direction-effect{margin-top:8px;padding:7px 9px;border-radius:10px;background:rgba(78,112,255,.13);color:#c9d7ff;font-size:10px;line-height:1.35}
+  .season-edition-preview{display:flex;align-items:center;gap:8px;margin-top:7px;padding:8px 9px;border-radius:10px;background:linear-gradient(90deg,rgba(35,96,255,.2),rgba(197,51,198,.16));border:1px solid rgba(111,139,255,.35);color:#dce7ff}
+  .season-edition-preview b{flex:0 0 auto;font-size:10px;white-space:nowrap}.season-edition-preview span{font-size:9.5px;line-height:1.3;color:#b7c8ed}
   .mentor-pick{margin:10px 0;padding:12px;border:1px solid rgba(255,211,92,.2);border-radius:16px;background:linear-gradient(135deg,rgba(31,25,48,.96),rgba(12,18,30,.96))}
   .mentor-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:9px}.mentor-head b{font-size:12px;letter-spacing:.8px;color:#ffd35c}.mentor-head span{font-size:10px;line-height:1.3;text-align:right;color:#8e9cb0}
   .mentor-strip{display:flex;gap:8px;overflow-x:auto;padding:1px 1px 5px;scroll-snap-type:x proximity;scrollbar-width:none}.mentor-strip::-webkit-scrollbar{display:none}
@@ -6817,8 +6819,10 @@ window.addEventListener("popstate", ()=>{
         const draft=rr||{name:idol.name,img:idol.img,grade:'?',runs:1,stats:{}};
         const im=rr?this.idolCardMeta(rr):null;
         const photo=this.idolCardHTML(draft,{cls:'cph-idol-card',state:'training'});
-        const trendKey=TREND_STAT[(this.currentTrend()||{}).pos]||'vocal';
-        const directionPick=`<div class="run-direction"><div class="run-direction-head"><b>이번 RUN 핵심 무대</b><span>아이돌의 능력이 아니라<br>프로듀서의 제작 방향</span></div><div class="specpick">${STATS.map(s=>`<button type="button" class="sp ${Game.runDirection===s.k?'on':''}" onclick="DG.setRunDirection('${s.k}')"><span class="spico">${s.ico}</span>${esc(s.n)}${s.k===trendKey?'<small>시즌 추천</small>':'<small>&nbsp;</small>'}</button>`).join('')}</div>${Game.runDirection?`<div class="run-direction-effect"><b>${esc(STATNM[Game.runDirection])} 집중 제작</b> · 시작 준비 +18 · 해당 카드 성장 ×1.22 · 제작 시너지 18%${Game.runDirection===trendKey?' · 시즌 보정 ×1.25':''}</div>`:''}</div>`;
+        const trend=this.currentTrend()||{}, trendKey=TREND_STAT[trend.pos]||'vocal', seasonLabel=`S${this.seasonNo()+1}`;
+        const ownedEdition=rr?this.seasonEditionOf(rr.rid,this.seasonNo()):null;
+        const editionPreview=Game.runDirection===trendKey?`<div class="season-edition-preview"><b>${esc(trend.ic||'🎬')} ${seasonLabel} EDITION</b><span>${ownedEdition?'보유 중 · 완주하면 새 버전이 남고 최고 기록이면 대표 RUN 교체':'미수집 · 파이널 완주 시 이 아이돌 카드에 영구 등록'}</span></div>`:'';
+        const directionPick=`<div class="run-direction"><div class="run-direction-head"><b>이번 RUN 핵심 무대</b><span>아이돌의 능력이 아니라<br>프로듀서의 제작 방향</span></div><div class="specpick">${STATS.map(s=>`<button type="button" class="sp ${Game.runDirection===s.k?'on':''}" onclick="DG.setRunDirection('${s.k}')"><span class="spico">${s.ico}</span>${esc(s.n)}${s.k===trendKey?'<small>시즌 에디션</small>':'<small>&nbsp;</small>'}</button>`).join('')}</div>${Game.runDirection?`<div class="run-direction-effect"><b>${esc(STATNM[Game.runDirection])} 집중 제작</b> · 시작 준비 +18 · 해당 카드 성장 ×1.22 · 제작 시너지 18%${Game.runDirection===trendKey?' · 시즌 보정 ×1.25':''}</div>`:''}${editionPreview}</div>`;
         hero.innerHTML=`${photo}<div class="cph-copy"><div class="cph-kicker">${Game._retrainRid?'IDOL CARD UPGRADE':'NEW IDOL CARD'}</div>
           <div class="cph-name">${esc(idol.name||'연습생')}</div>
           <div class="cph-run">${Game._retrainRid?`${runs+1}회차 · 제작 경험 계승 +${4+(im?im.star:1)*3} · ${im&&im.star>=5?'MAX RUN 갱신':`다음 ★ ${this.idolNextGoal(im)}`}`:'첫 육성 완료 시 영구 카드 생성'}</div>

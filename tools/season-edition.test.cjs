@@ -54,8 +54,8 @@ test('legacy editions without final qualification are removed from records and l
   assert.equal(out.changed,true);
 });
 
-test('card, classified result, album and current-season collection all read the canonical ledger', () => {
-  for (const marker of ['SeasonEditionLedger.upsert', 'seasonEditionCount=this.seasonEditionsOf(rid).length', 'class="ic-season"', 'EDITION 수집', '대표 RUN 갱신', '새 버전 기록', 'season_edition_new:', '시즌 ${this.seasonNo()+1} 에디션 컬렉션']) {
+test('pre-run target, card, classified result, album and current-season collection all read the canonical ledger', () => {
+  for (const marker of ['SeasonEditionLedger.upsert', 'ownedEdition=rr?this.seasonEditionOf', 'class="season-edition-preview"', '미수집 · 파이널 완주 시', '보유 중 · 완주하면 새 버전', 'seasonEditionCount=this.seasonEditionsOf(rid).length', 'class="ic-season"', 'EDITION 수집', '대표 RUN 갱신', '새 버전 기록', 'season_edition_new:', '시즌 ${this.seasonNo()+1} 에디션 컬렉션']) {
     assert.ok(html.includes(marker), `missing season edition surface: ${marker}`);
   }
 });
