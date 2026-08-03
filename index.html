@@ -97,6 +97,8 @@
   .seg{flex:1;appearance:none;border:1px solid var(--line);border-radius:12px;padding:11px 8px;
     background:var(--panel);color:var(--sub);font-size:14px;font-weight:700;cursor:pointer;transition:.1s}
   .seg.on{background:var(--panel2);color:var(--txt);border-color:var(--accent)}
+  .app-favorite-hint{display:flex;align-items:center;gap:9px;margin:8px 0 10px;padding:9px 10px;border-radius:12px;background:linear-gradient(90deg,rgba(255,77,114,.13),rgba(108,86,255,.1));border:1px solid rgba(255,107,143,.3)}
+  .app-favorite-hint span{display:flex;flex:1;min-width:0;align-items:center;gap:7px}.app-favorite-hint small{font-size:9px;font-weight:900;color:#ff89a5;letter-spacing:.3px}.app-favorite-hint b{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.app-favorite-hint button{flex:0 0 auto;border:0;background:transparent;color:var(--accent);font:800 10px/1.2 inherit;padding:5px;cursor:pointer}
   .modebox{flex:1;display:flex;flex-direction:column;min-height:0;padding-bottom:150px}
   /* 플로팅 시작 버튼 */
   .startfab{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);
@@ -721,12 +723,13 @@
       <h2 data-i18n="sel_who">누구를 키울까?</h2>
     </div>
     <div class="segtab">
-      <button class="seg on" id="seg-search" onclick="Game.mode('search')" data-i18n="sel_tab_search">🔍 아이돌 검색</button>
-      <button class="seg" id="seg-custom" onclick="Game.mode('custom')" data-i18n="sel_tab_custom">✏️ 커스텀</button>
+      <button class="seg on" id="seg-search" onclick="Game.mode('search','user')" data-i18n="sel_tab_search">🔍 아이돌 검색</button>
+      <button class="seg" id="seg-custom" onclick="Game.mode('custom','user')" data-i18n="sel_tab_custom">✏️ 커스텀</button>
     </div>
 
     <div id="mode-search" class="modebox">
-      <input class="srch" id="idolSearch" aria-label="아이돌 이름 또는 그룹 검색" placeholder="이름·그룹 검색 (예: 리사, BTS)" data-i18n-ph="sel_search_ph" oninput="Game.search()" autocomplete="off">
+      <input class="srch" id="idolSearch" aria-label="아이돌 이름 또는 그룹 검색" placeholder="이름·그룹 검색 (예: 리사, BTS)" data-i18n-ph="sel_search_ph" oninput="Game.search(true)" autocomplete="off">
+      <div class="app-favorite-hint" id="appFavoriteHint" style="display:none"></div>
       <div class="grid" id="idolGrid"></div>
     </div>
 
@@ -1607,7 +1610,7 @@ function bondLevel(v){ v=Math.max(0,Math.min(100,+v||0));
 const RUN_SAVE_KEY='idol_save', RUN_BACKUP_KEY='idol_save_backup_v1';
 const validRunSave=s=>!!(s&&s.idol&&typeof s.week==='number'&&s.week>=1);
 const Game = {
-  st:null, lastResult:null, selIdol:null, curMode:"search", trainMode:"full", customSpec:null, runDirection:null, pendingRunDirection:null, runPromiseId:null, replyPromiseSource:null, replyPromiseSelectionTracked:false, mentorRid:null, pendingRunId:null, pendingMentorRid:null, customImg:null, customGender:"F", appFavoriteId:null,
+  st:null, lastResult:null, selIdol:null, curMode:"search", trainMode:"full", customSpec:null, runDirection:null, pendingRunDirection:null, runPromiseId:null, replyPromiseSource:null, replyPromiseSelectionTracked:false, mentorRid:null, pendingRunId:null, pendingMentorRid:null, customImg:null, customGender:"F", appFavoriteId:null, appFavoriteDismissed:false, userIdolOverride:false,
 
   goSelect(){
     this.selIdol=null; this.customImg=null; this.customSpec=null; this.runDirection=null; this.pendingRunDirection=null; this.runPromiseId=null; this.replyPromiseSource=null; this.replyPromiseSelectionTracked=false; this.mentorRid=null; this.pendingRunId=null; this.pendingMentorRid=null; this.customGender="F";
@@ -1628,14 +1631,17 @@ const Game = {
     if(_h) _h.textContent = _first ? '✨ 네 최애를 찾아봐' : '누구를 키울까?';
     const _si=document.getElementById('idolSearch');
     if(_si){ _si.placeholder = _first ? '최애 이름 검색 (예: 카리나, 뷔, 리사)' : '이름·그룹 검색 (예: 리사, BTS)';
-      const _appFav=_first&&this.appFavoriteId!=null?IDOLS.find(i=>String(i.id)===String(this.appFavoriteId)):null;
-      if(_appFav){ _si.value=_appFav.name||''; this.search(); this.pick(_appFav.id); if(_h)_h.textContent=`♥ ${koWith(idolName(_appFav),'과','와')} 첫 RUN`;
-        try{ toast(`최애돌의 내 최애 · ${koWith(idolName(_appFav),'을','를')} 불러왔어요`); }catch(e){} }
+      const _appFav=_first&&!this.appFavoriteDismissed&&this.appFavoriteId!=null?IDOLS.find(i=>String(i.id)===String(this.appFavoriteId)):null;
+      if(_appFav&&!this.userIdolOverride){ _si.value=_appFav.name||''; this.search(); this.pick(_appFav.id,'app'); if(_h)_h.textContent=`♥ ${koWith(idolName(_appFav),'과','와')} 첫 RUN`;
+        this.renderAppFavoriteHint(_appFav); try{ ProductTelemetry.track('favorite_context_applied',{favorite_id:_appFav.id}); toast(`최애돌의 내 최애 · ${koWith(idolName(_appFav),'을','를')} 불러왔어요`); }catch(e){} }
       else if(_first) setTimeout(()=>{ try{ _si.focus(); }catch(e){} }, 400); }
     show("s-select");
     try{ if(window.Tut) Tut.onSelect(); }catch(e){}
   },
-  mode(m){
+  renderAppFavoriteHint(idol){ const box=document.getElementById('appFavoriteHint'); if(!box)return; if(!idol||this.appFavoriteDismissed){box.style.display='none';box.innerHTML='';return;} box.style.display='flex'; box.innerHTML=`<span><small>최애돌 내 최애</small><b>♥ ${esc(idolName(idol))}</b></span><button type="button" onclick="Game.dismissAppFavoritePick()">다른 아이돌 고르기</button>`; },
+  dismissAppFavoritePick(){ const had=this.appFavoriteId!=null; this.userIdolOverride=true; this.appFavoriteDismissed=true; this.selIdol=null; this.runDirection=null; const input=document.getElementById('idolSearch'); if(input)input.value=''; this.renderAppFavoriteHint(null); this.search(); this.updateStartFab(); const h=document.querySelector('#s-select .sub-head h2'); if(h)h.textContent='✨ 네 최애를 찾아봐'; try{if(input)input.focus();if(had)ProductTelemetry.track('favorite_context_change',{source:'hint'});}catch(e){} },
+  mode(m,source){
+    if(source==='user'){this.userIdolOverride=true;this.appFavoriteDismissed=true;this.renderAppFavoriteHint(null);}
     this.curMode=m; this.selIdol=null; this.runDirection=null; this.runPromiseId=null; this.mentorRid=null;
     document.getElementById("seg-search").classList.toggle("on", m==="search");
     document.getElementById("seg-custom").classList.toggle("on", m==="custom");
@@ -1644,20 +1650,24 @@ const Game = {
     document.querySelectorAll("#idolGrid .card.sel").forEach(c=>c.classList.remove("sel"));
     this.updateStartFab();
   },
-  search(){
+  search(userTyped){
+    if(userTyped){ const had=this.appFavoriteId!=null&&!this.appFavoriteDismissed; this.userIdolOverride=true; this.appFavoriteDismissed=this.appFavoriteId!=null; this.selIdol=null; this.runDirection=null; this.renderAppFavoriteHint(null); this.updateStartFab(); const h=document.querySelector('#s-select .sub-head h2'); if(h)h.textContent='✨ 네 최애를 찾아봐'; try{if(had)ProductTelemetry.track('favorite_context_change',{source:'search'});}catch(e){} }
     const q=(document.getElementById("idolSearch").value||"").trim().toLowerCase();
     let list = q ? IDOLS.filter(i=> (i.name||"").toLowerCase().includes(q) || (i.grp||"").toLowerCase().includes(q) || (i.en||"").includes(q)) : IDOLS;
     list = list.slice(0,60);
     const grid=document.getElementById("idolGrid");
     if(!list.length){ grid.innerHTML=`<p class="muted" style="grid-column:1/-1;text-align:center;padding:24px">${t("sel_no_result")}</p>`; return; }
     grid.innerHTML = list.map(i=>{
-      return `<button type="button" class="card" data-id="${i.id}" onclick="Game.pick(${i.id})">
+      return `<button type="button" class="card" data-id="${i.id}" onclick="Game.pick(${i.id},'user')">
         <span class="ph" style="background-image:url('${i.img}')"></span>
         <div class="nm">${esc(idolName(i))}</div>
         <div class="gp">${esc(idolGrp(i))}</div>
       </button>`;}).join("");
   },
-  pick(id){
+  pick(id,source){
+    if(source==='user')this.userIdolOverride=true;
+    const changedFavorite=this.appFavoriteId!=null&&String(id)!==String(this.appFavoriteId)&&!this.appFavoriteDismissed;
+    if(changedFavorite){this.appFavoriteDismissed=true;this.renderAppFavoriteHint(null);try{ProductTelemetry.track('favorite_context_change',{source:'card'});}catch(e){}}
     this.selIdol = IDOLS.find(i=>i.id===id) || null;
     this.runDirection=null;
     document.querySelectorAll("#idolGrid .card").forEach(c=>{ const on=(+c.dataset.id===id); c.classList.toggle("sel", on);
@@ -7685,9 +7695,9 @@ window.addEventListener("popstate", ()=>{
     },
   };
   window.DG = DG; DG.load();
-  const applyDreamGroupContext=ctx=>{ const id=ctx&&ctx.favorite_id; if(id==null)return; const idol=IDOLS.find(i=>String(i.id)===String(id)); if(!idol)return;
-    Game.appFavoriteId=id; const select=document.getElementById('s-select'); if(select&&select.classList.contains('on')){ try{ DG.load(); if(!(DG.data.roster||[]).length&&Game.curMode==='search'&&!Game.selIdol){
-      const input=document.getElementById('idolSearch'); if(input&&!(input.value||'').trim()){ input.value=idol.name||''; Game.search(); Game.pick(idol.id); const h=document.querySelector('#s-select .sub-head h2'); if(h)h.textContent=`♥ ${koWith(idolName(idol),'과','와')} 첫 RUN`; } } }catch(e){} } };
+  const applyDreamGroupContext=ctx=>{ const id=ctx&&ctx.favorite_id; if(id==null)return; const idol=IDOLS.find(i=>String(i.id)===String(id)); if(!idol){try{ProductTelemetry.track('favorite_context_unmatched',{});}catch(e){}return;}
+    const changed=Game.appFavoriteId==null||String(Game.appFavoriteId)!==String(id); Game.appFavoriteId=id; if(changed&&!Game.userIdolOverride)Game.appFavoriteDismissed=false; const select=document.getElementById('s-select'); if(select&&select.classList.contains('on')){ try{ DG.load(); if(!(DG.data.roster||[]).length&&Game.curMode==='search'&&!Game.selIdol&&!Game.appFavoriteDismissed&&!Game.userIdolOverride){
+      const input=document.getElementById('idolSearch'); if(input&&!(input.value||'').trim()){ input.value=idol.name||''; Game.search(); Game.pick(idol.id,'app'); Game.renderAppFavoriteHint(idol); const h=document.querySelector('#s-select .sub-head h2'); if(h)h.textContent=`♥ ${koWith(idolName(idol),'과','와')} 첫 RUN`; try{ProductTelemetry.track('favorite_context_applied',{favorite_id:id});}catch(e){} } } }catch(e){} } };
   window.addEventListener('dream-group-context',e=>applyDreamGroupContext(e.detail));
   try{ applyDreamGroupContext(ProductTelemetry.getContext()); }catch(e){}
   try{ ProductTelemetry.ready(); }catch(e){}
