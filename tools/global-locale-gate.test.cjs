@@ -112,3 +112,23 @@ test('result next-star copy uses the concrete localized requirement',()=>{
   assert.ok(html.includes("{goal:this.idolNextGoal(this.idolCardMeta(idolR))}"));
   assert.equal(html.includes("{goal:window.LANG==='ko'?this.idolNextGoal"),false);
 });
+
+test('result explains the final fan jump and shows collection rewards before diagnostics',()=>{
+  assert.ok(html.includes("dgT('result.finalFanGain',{fans:fmt(finalFanGain)})"));
+  assert.ok(html.includes("dgT('result.runDirection',{direction:"));
+  assert.ok(html.includes("dgT('result.joinCardMeta'"));
+  const endSection=html.slice(html.indexOf('<section class="screen" id="s-end">'),html.indexOf('<!-- ENDING DEX -->'));
+  assert.ok(endSection.indexOf('id="dgResult"')<endSection.indexOf('id="radarWrap"'),'card rewards must appear before the detailed radar');
+  const resultRenderer=html.slice(html.indexOf('renderResult(box, res)'),html.indexOf('runPromiseView(p,ctx)'));
+  assert.ok(resultRenderer.indexOf('${idolReveal}')<resultRenderer.indexOf('${seasonResult}'),'idol card must precede detailed season copy');
+  assert.ok(resultRenderer.indexOf("dgT('result.supportTitle')")<resultRenderer.indexOf('${seasonResult}'),'support rewards must precede detailed season copy');
+  assert.equal(resultRenderer.includes("dgT('result.joinBalance'"),false,'the primary reward summary must not compete with a second letter grade');
+});
+
+test('finishing below first place never claims that a debut spot was secured',()=>{
+  for(const [locale,language] of [['ko','ko-KR'],['en','en-US'],['ja','ja-JP'],['id','id-ID']]){
+    const copy=boot(language).I18N[locale].end_stage_world;
+    assert.ok(copy.includes('{rank}'),`${locale} must state the actual final rank`);
+    assert.equal(/데뷔 자격 획득|Debut Spot Secured|デビュー資格獲得/.test(copy),false,`${locale} falsely guarantees debut regardless of rank`);
+  }
+});

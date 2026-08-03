@@ -950,11 +950,11 @@
     <div class="rank-emoji" id="endEmoji">🌟</div>
     <div class="endname" id="endName">—</div>
     <div class="endsub" id="endSub">—</div>
+    <div id="dgResult"></div>
     <div id="radarWrap"><canvas id="radar" width="580" height="580"></canvas></div>
     <div class="ograde" id="oGrade"></div>
     <button class="btn ghost" id="shareBtn" style="margin-top:12px" onclick="Game.shareLink()" data-i18n="share_btn">🔗 공유하기</button>
     <div class="growth" id="growthBox" style="display:none"></div>
-    <div id="dgResult"></div>
     <!-- 액션: 등록 → 공유 → (기획사·다시하기 한 줄). 전당 랭킹(lbBox)은 결과화면선 숨김 = 홈>전설의 연습생 전용(중복 제거) -->
     <input class="name" id="nameInput" placeholder="이름을 남겨봐" maxlength="10" data-i18n-ph="name_ph">
     <button class="btn ghost" id="saveBtn" style="margin-top:9px" onclick="Game.saveScore()" data-i18n="save_btn">🏆 전설의 연습생 등록</button>
@@ -1060,13 +1060,13 @@
 <script src="run-memory.js?v=be63959df4"></script>
 <script src="fandom-onboarding.js?v=b79c701b69"></script>
 <script src="season-edition.js?v=5b6e84402d"></script>
-<script src="beginner-flow.js?v=13f261628a"></script>
+<script src="beginner-flow.js?v=7d7eea7788"></script>
 <script src="run-balance-rules.js?v=7e1af59983"></script>
 <script src="stage-criteria.js?v=6d23aaaa14"></script>
 <script src="completion-transaction.js?v=8c3a470bcb"></script>
 <script src="product-telemetry.js?v=36d3c57a97"></script>
-<script src="dg-i18n.js?v=479ae5c4a0"></script>
-<script src="i18n.js?v=9b603a7ab9"></script>
+<script src="dg-i18n.js?v=8f3c55cfc1"></script>
+<script src="i18n.js?v=1d3ac651ea"></script>
 <script src="idols.js?v=8bb60ae14f"></script>
 <script>
 // 검색용 아이돌: idols.js의 window.IDOL_DB (최애돌 실데이터 = 활성 아이돌만, 전일 하트투표 순위로 정렬됨). 로드 실패 시 빈 배열.
@@ -1919,22 +1919,22 @@ const Game = {
       return {risk:true,html:dgT('run.debutNeed',{total:`<b>${p.need.total}</b>`,peak:`<b>${p.need.peak}</b>`})};
     }
     const c=sc.compets[nxw]; if(!c)return null;
-    let mine=0, recommend=direction;
+    let mine=0, recommend=null;
+    const statValues=Object.fromEntries(STATS.map(x=>[x.k,Number(s[x.k])||0]));
+    const actionable=BeginnerFlow.actionableStats(s.hand,TRAIN_CARDS.concat([RARE_CARD]));
     if(c.type==='stage'){
       const fields=this.stageFields(c,s);
       mine=fields.reduce((a,k)=>a+(Number(s[k])||0),0)/fields.length*(0.55+0.45*(Number(s.cond)||0)/100);
-      let options=STATS.filter(x=>fields.includes(x.k));
-      const actionable=BeginnerFlow.actionableStats(s.hand,TRAIN_CARDS.concat([RARE_CARD])), available=options.filter(x=>actionable.includes(x.k));
-      if(available.length)options=available;
-      recommend=options.sort((a,b)=>(Number(s[a.k])||0)-(Number(s[b.k])||0))[0]||direction;
+      const recommendedKey=BeginnerFlow.recommendedTrainableStat({valid:fields,actionable,values:statValues});
+      recommend=STATS.find(x=>x.k===recommendedKey)||null;
     } else {
       const avg=STATS.reduce((a,st)=>a+(Number(s[st.k])||0),0)/6, peak=Math.max(...STATS.map(st=>Number(s[st.k])||0));
       mine=Math.max(avg,peak*AWARD_PEAK_K)*(1+Math.min(0.45,(Number(s.fans)||0)/60000));
-      const actionable=BeginnerFlow.actionableStats(s.hand,TRAIN_CARDS.concat([RARE_CARD]));
-      const available=STATS.filter(x=>actionable.includes(x.k));
-      if(available.length) recommend=available.find(x=>x.k===direction.k)||available.sort((a,b)=>(Number(s[a.k])||0)-(Number(s[b.k])||0))[0];
+      const recommendedKey=BeginnerFlow.recommendedTrainableStat({valid:STATS.map(x=>x.k),actionable,values:statValues,preferred:direction.k});
+      recommend=STATS.find(x=>x.k===recommendedKey)||null;
     }
     const target=c.base*this.difficulty(s), need=Math.max(0,Math.ceil(target-mine));
+    if(!recommend)return {risk:need>0,html:dgT(need>0?'run.needPowerReady':'run.safeReady',{need:`<b>${need}</b>`})};
     const recommendName=esc(t('st_'+recommend.k));
     return need>0?{risk:true,html:dgT('run.needPower',{need:`<b>${need}</b>`,stat:recommendName})}:{risk:false,html:dgT('run.safeAdvice',{stat:`<b>${recommendName}</b>`})};
   },
@@ -2913,7 +2913,8 @@ const Game = {
     if(s) s.busy=true;   // 종료 처리 중 훈련 입력 잠금
     if(!shared&&s&&s.runPromise&&!s.runMemory){ s.runMemory=RunMemory.evaluate(s); RunMemory.applyReward(s,s.runMemory); }
     const statTotal=STATS.reduce((a,st)=>a+s[st.k],0);
-    if(!shared) s.fans+=Math.round(statTotal*35 + s.mental*8);  // 공유 결과는 이미 최종 팬
+    const finalFanGain=shared?0:Math.round(statTotal*35+s.mental*8);
+    if(!shared) s.fans+=finalFanGain;  // 공유 결과는 이미 최종 팬
     const end=this.ending(reachedWorld, finalRank);
     const endDisplayName=dgT(/^(SS|S)$/.test(end.tier)?'result.endingLegend':/^(A|B)$/.test(end.tier)?'result.endingStrong':/^(C|D)$/.test(end.tier)?'result.endingGrowing':'result.endingStart');
     const endDisplaySub=dgT('result.endingSub');
@@ -2924,7 +2925,7 @@ const Game = {
     const overall=grade(Math.round(statTotal/STATS.length));
     const spStat=STATS.find(x=>x.k===s.runDirection)||STATS[0];
     this.lastResult={name:idolName(s.idol),grp:idolGrp(s.idol),ending:endDisplayName,emoji:end.emoji,
-      tier:end.tier,fans:s.fans,reachedWorld,statVals,overall,finalRank:finalRank||null,
+      tier:end.tier,fans:s.fans,finalFanGain,reachedWorld,statVals,overall,finalRank:finalRank||null,
       fandom:fandomOf(s.idol).name, fanBond:Math.round(s.fanBond||0), fanBondMoments:s.fanBondMoments||0,
       direction:s.runDirection, spec:s.runDirection, specName:spStat.n, specIco:spStat.ico, specColor:spStat.c, img:s.idol.img||"",
       mentorName:s.mentor&&s.mentor.name||'', mentorChoice:s.mentorChoice||'',
@@ -2939,8 +2940,8 @@ const Game = {
     document.getElementById("endEmoji").textContent=end.emoji;
     document.getElementById("endName").textContent=endDisplayName;
     const dexChip = dexNew ? `<div class="dex-unlock">${t("end_dex_unlock")}</div>` : "";
-    document.getElementById("endSub").innerHTML=`${dexChip}${endDisplaySub}<br><br>${t("end_fans",{fans:fmt(s.fans)})}`;
-    document.getElementById("oGrade").innerHTML=t("end_overall",{g:overall});
+    document.getElementById("endSub").innerHTML=`${dexChip}${endDisplaySub}<br><br>${t("end_fans",{fans:fmt(s.fans)})}${!shared?`<small style="display:block;margin-top:5px;color:var(--sub)">${dgT('result.finalFanGain',{fans:fmt(finalFanGain)})}</small>`:''}`;
+    document.getElementById("oGrade").textContent=dgT('result.runDirection',{direction:t('st_'+(s.runDirection||'vocal'))});
     const gbox=document.getElementById("growthBox");
     if(s.log && s.log.length){ gbox.style.display="";   // 기본 접힘 → 스크롤 길이 축소(재율애비). 제목 탭하면 펼침
       gbox.innerHTML=`<h3 class="growth-toggle" onclick="Game.toggleGrowth()"><span>${t("end_growth_title",{name:esc(idolName(s.idol))})}</span><span class="growth-caret" id="growthCaret">▼</span></h3>`
@@ -5715,7 +5716,7 @@ window.addEventListener("popstate", ()=>{
           old.incomplete=false;
           old.runs=nextRun; old.lastTrainedAt=Date.now();
           joinMsg=`✨ <b>${esc(st.idol.name)} ${nextRun}회차 완료</b><br><span class="muted">${adopt?'BEST RUN 갱신 · 카드 전시 교체':'기존 BEST RUN 유지 · 이번 추억 보관'} · 6영역 밸런스 ${overallNow}</span>`;
-          completionView={kind:'rerun',name:idolName(st.idol),run:nextRun,adopt,grade:overallNow};
+          completionView={kind:'rerun',name:idolName(st.idol),run:nextRun,adopt,grade:gr,direction:st.runDirection};
         } else {
           adoptedCurrent=true;
           newRid=++this.data.ridSeq;
@@ -5723,7 +5724,7 @@ window.addEventListener("popstate", ()=>{
           joinMsg=firstEver
             ? `✨ <b>${esc(st.idol.name)}</b> 프롤로그 수료! 첫 RUN 카드 등록<br><span class="muted">6영역 밸런스 ${overallNow} · 다음 육성부터 오디션 조건 적용</span>`
             : `🎊 <b>${esc(st.idol.name)}</b> 오디션 통과! RUN 카드 등록<br><span class="muted">6영역 밸런스 ${overallNow} · 그룹 데뷔 후보 합류</span>`;
-          completionView={kind:firstEver?'first':'passed',name:idolName(st.idol),grade:overallNow};
+          completionView={kind:firstEver?'first':'passed',name:idolName(st.idol),grade:gr,direction:st.runDirection};
         }
       } else {
         const old=st&&st.retrainRid?this.rosterById(st.retrainRid):null;
@@ -5737,13 +5738,13 @@ window.addEventListener("popstate", ()=>{
           joinMsg=old.incomplete
             ? `💤 <b>${esc(st.idol.name)}</b> 오디션 탈락 — 미완성 카드 유지<br><span class="muted">다시 육성해 부족한 기록을 넘으면 정식 등록</span>`
             : `📔 <b>${esc(st.idol.name)}</b> 오디션 탈락 — 기존 최고 카드 유지<br><span class="muted">이번 실패 기록은 버전 앨범에 보관</span>`;
-          completionView={kind:old.incomplete?'failNew':'failKept',name:idolName(st.idol),grade:overallNow};
+          completionView={kind:old.incomplete?'failNew':'failKept',name:idolName(st.idol),grade:gr,direction:st.runDirection};
         } else {
           newRid=++this.data.ridSeq;
           this.data.roster.push({rid:newRid,idkey,name:st.idol.name,img:st.idol.img||'',runDirection:st.runDirection,cat:st.idol.cat||'F',
             stats,grade:gr,titles:[],grp:st.idol.grp||'',fans:Math.round((st&&st.fans)||0),fanBond:Math.round((st&&st.fanBond)||0),runs:1,progressRuns:1,incomplete:true,joinedAt:Date.now()});
           joinMsg=`💤 <b>${esc(st.idol.name)}</b> 오디션 탈락 — 미완성 카드 보관<br><span class="muted">다시 육성해 부족한 기록을 넘으면 정식 등록</span>`;
-          completionView={kind:'failNew',name:idolName(st.idol),grade:overallNow};
+          completionView={kind:'failNew',name:idolName(st.idol),grade:gr,direction:st.runDirection};
         }
         this.data.fails=(this.data.fails||0)+1;
       }   // ㉔ 히든업적 카운터
@@ -6863,20 +6864,21 @@ window.addEventListener("popstate", ()=>{
             ? `<div class="res-return-hook"><b>🌙 ${dgT('result.returnTomorrowTitle')}</b><span>${dgT('result.returnTomorrowCopy')}</span><button type="button" onclick="DG.goDaily()">${dgT('result.returnTomorrowButton')}</button></div>`
             : `<div class="res-return-hook"><b>💞 ${dgT('result.returnStartTitle')}</b><span>${dgT('result.returnStartCopy')}</span><button type="button" onclick="DG.goDaily()">${dgT('result.returnStartButton')}</button></div>`;
       }catch(e){}
-      const cv=res.completionView||{}, completionSummary=cv.kind==='rerun'
-        ? `✨ <b>${dgT('result.joinRerun',{name:esc(cv.name||''),run:cv.run||1})}</b><br><span class="muted">${dgT(cv.adopt?'result.joinBest':'result.joinKept')} · ${dgT('result.joinBalance',{grade:cv.grade||'F'})}</span>`
-        : cv.kind==='first'?`✨ <b>${dgT('result.joinFirst',{name:esc(cv.name||'')})}</b><br><span class="muted">${dgT('result.joinFirstCopy',{grade:cv.grade||'F'})}</span>`
-        : cv.kind==='passed'?`🎊 <b>${dgT('result.joinPassed',{name:esc(cv.name||'')})}</b><br><span class="muted">${dgT('result.joinPassedCopy',{grade:cv.grade||'F'})}</span>`
+      const cv=res.completionView||{}, cvMeta=dgT('result.joinCardMeta',{grade:cv.grade||'F',direction:t('st_'+(cv.direction||'vocal'))}), completionSummary=cv.kind==='rerun'
+        ? `✨ <b>${dgT('result.joinRerun',{name:esc(cv.name||''),run:cv.run||1})}</b><br><span class="muted">${dgT(cv.adopt?'result.joinBest':'result.joinKept')} · ${cvMeta}</span>`
+        : cv.kind==='first'?`✨ <b>${dgT('result.joinFirst',{name:esc(cv.name||'')})}</b><br><span class="muted">${cvMeta} · ${dgT('result.firstGateNext')}</span>`
+        : cv.kind==='passed'?`🎊 <b>${dgT('result.joinPassed',{name:esc(cv.name||'')})}</b><br><span class="muted">${cvMeta} · ${dgT('result.groupCandidate')}</span>`
         : /^fail/.test(cv.kind||'')?`💤 <b>${dgT(cv.kind==='failKept'?'result.joinFailKept':'result.joinFailNew',{name:esc(cv.name||'')})}</b><br><span class="muted">${dgT(cv.kind==='failKept'?'result.joinFailAlbum':'result.joinFailCopy')}</span>`:res.joinMsg;
       const idolReveal=idolR?`<div class="res-idol-reveal">
         <div class="res-card-kicker">${dgT(idolR.incomplete?'result.kickerRetry':keptAfterFail||!res.adopted?'result.kickerRecorded':(idolR.runs||1)>1?'result.kickerUpdated':'result.kickerNew')}</div>
         ${this.idolCardHTML(idolR,{cls:'result-idol-card',state:idolR.incomplete?'incomplete':(keptAfterFail||!res.adopted?'complete':'new'),onclick:`DG.showRosterDetail(${idolR.rid})`})}
         <div class="res-card-copy"><b>${dgT(idolR.incomplete?'result.cardIncomplete':keptAfterFail||!res.adopted?'result.cardKept':'result.cardSaved',{name:esc(idolR.name)})}</b><span>${dgT(idolR.incomplete?'result.cardIncompleteCopy':keptAfterFail||!res.adopted?'result.cardKeptCopy':this.idolCardMeta(idolR).star>=5?'result.cardMax':'result.cardNext',{goal:this.idolNextGoal(this.idolCardMeta(idolR))})}</span></div>
       </div>`:'';
-      box.innerHTML=`<div class="dg-res">${rec}<div class="dg-res-slot">${completionSummary}</div>${thanks}${seasonResult}${memoryResult}${bondResult}${returnHook}
+      box.innerHTML=`<div class="dg-res">${rec}<div class="dg-res-slot">${completionSummary}</div>${thanks}
         ${idolReveal}
-        ${titleChips}
         <div class="dg-res-cards"><b>${dgT('result.supportTitle')}</b><div class="dg-chips" style="margin-top:6px">${chips}</div></div>
+        ${seasonResult}${memoryResult}${bondResult}${returnHook}
+        ${titleChips}
         ${goalPull}
         <button class="btn" onclick="${nextAction.on}" style="margin-top:10px">${actionLabel}</button>
         ${idolR&&!['promiseRetry','retry','retrain'].includes(nextAction.kind)?`<button class="btn ghost" onclick="DG.retrain(${idolR.rid})" style="margin-top:9px">🔥 ${dgT('result.retrainCta',{name:esc(idolR.name)})}</button>`:''}

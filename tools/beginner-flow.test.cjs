@@ -37,12 +37,23 @@ test('gate advice can only recommend stats actionable from the current hand',()=
   assert.deepEqual(BeginnerFlow.actionableStats(['g_vocal','rest','l_dance'],cards),['vocal','dance']);
 });
 
+test('gate advice never recommends an actionable stat that is already capped',()=>{
+  const values={vocal:800,dance:120,visual:300};
+  assert.equal(BeginnerFlow.recommendedTrainableStat({
+    valid:['vocal','dance','visual'],actionable:['vocal','dance'],values,preferred:'vocal'
+  }),'dance');
+  assert.equal(BeginnerFlow.recommendedTrainableStat({
+    valid:['vocal'],actionable:['vocal'],values,preferred:'vocal'
+  }),null);
+});
+
 test('award-gate advice also filters recommendations through the current hand',()=>{
   const html=require('node:fs').readFileSync(require('node:path').join(__dirname,'..','index.html'),'utf8');
   const advice=html.slice(html.indexOf('  gateAdvice(s,nxw)'),html.indexOf('  // 상황 반응형 코치'));
   assert.ok(advice.includes("const actionable=BeginnerFlow.actionableStats(s.hand,TRAIN_CARDS.concat([RARE_CARD]))"));
-  assert.ok(advice.includes("const available=STATS.filter(x=>actionable.includes(x.k))"));
-  assert.ok(advice.includes("available.find(x=>x.k===direction.k)"));
+  assert.ok(advice.includes('BeginnerFlow.recommendedTrainableStat'));
+  assert.ok(advice.includes("preferred:direction.k"));
+  assert.ok(advice.includes("if(!recommend)return"));
 });
 
 test('result action names the exact next turn',()=>{

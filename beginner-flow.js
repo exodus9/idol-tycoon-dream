@@ -65,6 +65,18 @@
     return [...new Set((hand||[]).map(id=>byId.get(id)).filter(card=>card&&card.stat).map(card=>card.stat))];
   }
 
+  function recommendedTrainableStat(input){
+    input=input||{};
+    const valid=[...new Set((input.valid||[]).filter(Boolean))];
+    const actionable=new Set((input.actionable||[]).filter(Boolean));
+    const values=input.values||{};
+    const cap=Math.max(1,Number(input.cap)||800);
+    const trainable=valid.filter(key=>actionable.has(key)&&(Number(values[key])||0)<cap);
+    if(!trainable.length)return null;
+    if(input.preferred&&trainable.includes(input.preferred))return input.preferred;
+    return trainable.sort((a,b)=>(Number(values[a])||0)-(Number(values[b])||0))[0]||null;
+  }
+
   function nextTurnLabel(week,total){
     const now=Math.max(1,Math.round(Number(week)||1));
     const end=Math.max(now,Math.round(Number(total)||now));
@@ -101,5 +113,5 @@
     return !!isGate&&!won&&Math.max(1,Math.round(Number(runNo)||1))===1;
   }
 
-  return Object.freeze({isFirstRun,recommendedDirection,recoveryState,recoveryHand,firstRunHand,actionableStats,nextTurnLabel,debutProgress,protectsFirstGate});
+  return Object.freeze({isFirstRun,recommendedDirection,recoveryState,recoveryHand,firstRunHand,actionableStats,recommendedTrainableStat,nextTurnLabel,debutProgress,protectsFirstGate});
 });

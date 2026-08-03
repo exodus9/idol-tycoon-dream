@@ -43,7 +43,9 @@ test('critical achievement and support-card surfaces are translated in every rel
   const keys = [
     'achievement.unlocked', 'achievement.rewardReady', 'achievement.claim',
     'support.detail.effect', 'support.detail.special', 'support.detail.origin',
-    'support.detail.owned', 'support.detail.new', 'support.origin.n', 'support.origin.ssr'
+    'support.detail.owned', 'support.detail.new', 'support.origin.n', 'support.origin.ssr',
+    'result.finalFanGain', 'result.runDirection', 'result.joinCardMeta',
+    'result.firstGateNext', 'result.groupCandidate'
   ];
   for (const locale of ['en', 'ja', 'id']) {
     for (const key of keys) {
