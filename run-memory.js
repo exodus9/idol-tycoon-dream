@@ -15,7 +15,7 @@
     const target=targetFor(type,mode);
     const map={
       signature:{icon:'🎬',title:`${direction} 대표 장면 남기기`,copy:`${idol}의 이번 버전을 ${direction} 한 장면으로 증명해요.`,goal:`${direction} 훈련 ${target}회`,tradeoff:'핵심 성장 집중 · 다른 관문 준비 여유 감소'},
-      fandom:{icon:'💌',title:`${fandom} 앙코르 약속`,copy:`${fandom} 팬들이 다시 부를 장면을 팬 소통 훈련으로 완성해요.`,goal:`팬 소통 훈련 ${target}회`,tradeoff:'팬덤 유대 강화 · 핵심 무대 성장 분산'},
+      fandom:{icon:'💌',title:`${fandom} 앙코르 약속`,copy:'팬들이 다시 부르고 싶은 장면을 팬 소통 훈련으로 완성해요.',goal:`팬 소통 훈련 ${target}회`,tradeoff:'팬덤 유대 강화 · 핵심 무대 성장 분산'},
       resilience:{icon:'🔥',title:`${idol}의 흔들리지 않는 파이널`,copy:'고위험 한 방보다 컨디션과 멘탈을 지켜 마지막 무대까지 가요.',goal:`완주 시 멘탈 ${target} 이상`,tradeoff:'안정 운영 · 고위험 훈련 기회 감소'},
     };
     return {id:type,baseType:type,target,mode,...map[type],...extra};

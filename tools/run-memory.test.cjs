@@ -1,5 +1,6 @@
 const assert=require('node:assert/strict');
 const RunMemory=require('../run-memory.js');
+assert.equal(RunMemory.options({idolName:'G-DRAGON',fandom:'팬덤',directionLabel:'랩 무대',mode:'quick'})[1].copy,'팬들이 다시 부르고 싶은 장면을 팬 소통 훈련으로 완성해요.');
 
 const ctx={idolName:'예준',fandom:'플리',directionLabel:'보컬 무대',mode:'quick'};
 const opts=RunMemory.options(ctx);

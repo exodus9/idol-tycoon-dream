@@ -16,7 +16,8 @@ test('season proposal carries the recommended direction into retraining', () => 
   assert.ok(html.includes('retrainForSeason(rid,direction)'));
   assert.ok(html.includes("this.retrain(rid,{source:'season_brief',direction})"));
   assert.ok(html.includes('Game.pendingRunDirection=STATS.some(s=>s.k===opts.direction)?opts.direction:null'));
-  assert.ok(html.includes('else Game.runDirection=suggestedDirection'));
+  assert.ok(html.includes('else Game.runDirection=BeginnerFlow.recommendedDirection'));
+  assert.ok(html.includes('pending:suggestedDirection'));
   assert.ok(html.includes("ProductTelemetry.track('season_retrain_click'"));
 });
 

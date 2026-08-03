@@ -1,0 +1,60 @@
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const BeginnerFlow=require('../beginner-flow.js');
+
+test('first RUN gets the current season direction only when no stronger choice exists',()=>{
+  const valid=['vocal','dance','visual'];
+  assert.equal(BeginnerFlow.recommendedDirection({valid,firstRun:true,trend:'dance'}),'dance');
+  assert.equal(BeginnerFlow.recommendedDirection({valid,firstRun:true,trend:'dance',pending:'vocal'}),'vocal');
+  assert.equal(BeginnerFlow.recommendedDirection({valid,firstRun:false,trend:'dance'}),null);
+});
+
+test('low stamina exposes a direct rest recovery action',()=>{
+  const cards=[{cost:27},{cost:12},{cost:-44}];
+  assert.deepEqual(BeginnerFlow.recoveryState(11,cards),{urgent:true,recommended:true,restIndex:2,stamina:11});
+  assert.equal(BeginnerFlow.recoveryState(20,cards).urgent,false);
+});
+
+test('the first hand teaches the recommended direction with an affordable card',()=>{
+  const cards=[
+    {id:'l_vocal',stat:'vocal',cost:27,base:36},
+    {id:'g_vocal',stat:'vocal',cost:13,base:20},
+    {id:'l_visual',stat:'visual',cost:25,base:36}
+  ];
+  assert.deepEqual(BeginnerFlow.firstRunHand(['l_visual','burst','focus'],'vocal',cards),['g_vocal','burst','focus']);
+  assert.deepEqual(BeginnerFlow.firstRunHand(['l_vocal','burst','focus'],'vocal',cards),['l_vocal','burst','focus']);
+});
+
+test('gate advice can only recommend stats actionable from the current hand',()=>{
+  const cards=[{id:'g_vocal',stat:'vocal'},{id:'l_dance',stat:'dance'},{id:'rest',stat:null}];
+  assert.deepEqual(BeginnerFlow.actionableStats(['g_vocal','rest','l_dance'],cards),['vocal','dance']);
+});
+
+test('award-gate advice also filters recommendations through the current hand',()=>{
+  const html=require('node:fs').readFileSync(require('node:path').join(__dirname,'..','index.html'),'utf8');
+  const advice=html.slice(html.indexOf('  gateAdvice(s,nxw)'),html.indexOf('  // 상황 반응형 코치'));
+  assert.ok(advice.includes("const actionable=BeginnerFlow.actionableStats(s.hand,TRAIN_CARDS.concat([RARE_CARD]))"));
+  assert.ok(advice.includes("const available=STATS.filter(x=>actionable.includes(x.k))"));
+  assert.ok(advice.includes("available.find(x=>x.k===direction.k)"));
+});
+
+test('result action names the exact next turn',()=>{
+  assert.equal(BeginnerFlow.nextTurnLabel(1,12),'다음 턴 2/12');
+  assert.equal(BeginnerFlow.nextTurnLabel(12,12),'결과 확인하기');
+});
+
+test('debut guidance uses the exact minimum-and-either-threshold rule',()=>{
+  const cut={total:340,peak:150,min:100};
+  assert.equal(BeginnerFlow.debutProgress({values:[50,50,50,50,50,50],cut,modifier:.85}).pass,false);
+  assert.deepEqual(BeginnerFlow.debutProgress({values:[90,40,40,40,40,40],cut,modifier:.85}).need,{total:0,peak:38,min:0});
+  assert.equal(BeginnerFlow.debutProgress({values:[90,40,40,40,40,40],cut,modifier:.85}).pass,true);
+  assert.equal(BeginnerFlow.debutProgress({values:[128,20,20,20,20,20],cut,modifier:.85}).pass,true);
+  assert.equal(BeginnerFlow.debutProgress({values:[84,60,60,60,60,60],cut,modifier:.85}).pass,false);
+});
+
+test('only the first RUN receives one gate safety pass',()=>{
+  assert.equal(BeginnerFlow.protectsFirstGate(1,true,false),true);
+  assert.equal(BeginnerFlow.protectsFirstGate(2,true,false),false);
+  assert.equal(BeginnerFlow.protectsFirstGate(1,false,false),false);
+  assert.equal(BeginnerFlow.protectsFirstGate(1,true,true),false);
+});
