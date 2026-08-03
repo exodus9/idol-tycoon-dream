@@ -18,7 +18,10 @@ need(html.includes('unresolvedPromise')&&html.includes('retryOf'),'failed promis
 need(html.includes('rr.unresolvedPromise||rr.lastRunMemory'),'an older unresolved promise must survive unrelated RUN results');
 need(html.includes('retrainFromPromiseReply')&&html.includes("'promise_reply_to_retrain'"),'the next-day reply must convert directly into the same idol retrain');
 need(html.includes('replyPromiseSource')&&html.includes('reply_run_id')&&html.includes('reply_promise_id'),'reply RUN identity must survive through retrain_started and run_start');
-need(html.includes("String(linkedMemory.promiseId||'')!==replyPromiseId"),'reply CTA must reject a mismatched immutable RUN promise');
+need(html.includes('if(exactSource&&!linkedSource)'),'exact-source CTA must reject a mismatched immutable RUN promise');
+need(html.includes('retrainFromRunRecord')&&html.includes("source:'run_record'"),'album retry CTA must bind to the selected immutable RUN record');
+need(html.includes('RunMemory.recordSource(this.data.runRecords'),'album and reply retries must validate an exact RUN and promise pair');
+need(html.includes('RUN 기록에서 이어진 약속'),'RUN setup must disclose that the promise came from the selected album record');
 need(html.includes('promiseTitle:record.runMemory.title'),'the exact RUN scene must queue a next-day reply');
 for(const unsafe of ['프로듀서님','제일 좋아','저만 봐','손 놓','우리 둘','책임져','안 뺏','프로듀서님만 믿','프로듀서님 얼굴','프로듀서님 없었으면']) need(!html.includes(unsafe),`unsafe real-idol intimacy copy remains: ${unsafe}`);
 need(daily.includes('promiseStatus:input.promiseStatus'),'next-day echo storage must preserve the result state');

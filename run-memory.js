@@ -91,9 +91,20 @@
     return prev;
   }
 
+  function recordSource(records,input){
+    const source=input&&input.source;
+    if(!['promise_reply','run_record'].includes(source))return null;
+    const rid=String(input.rid), runId=String(input.runId||''), promiseId=String(input.promiseId||'');
+    if(!runId||!promiseId)return null;
+    const record=Array.isArray(records)?records.find(x=>String(x.rid)===rid&&String(x.runId)===runId):null;
+    const memory=record&&record.runMemory;
+    if(!memory||String(memory.promiseId||'')!==promiseId)return null;
+    return {source,rid:input.rid,runId,promiseId,memory:{...memory}};
+  }
+
   function replyLink(source){
     if(!source||!source.runId||!source.promiseId)return {};
-    return {source:'promise_reply',reply_run_id:String(source.runId),reply_promise_id:String(source.promiseId)};
+    return {source:source.source==='run_record'?'run_record':'promise_reply',reply_run_id:String(source.runId),reply_promise_id:String(source.promiseId)};
   }
 
   function replySelection(memory){
@@ -102,5 +113,5 @@
     return memory.status==='failed'?`retry:${type}`:type;
   }
 
-  return {TYPES,options,applyStart,progress,resolveCheckpoint,evaluate,applyReward,nextUnresolved,replyLink,replySelection};
+  return {TYPES,options,applyStart,progress,resolveCheckpoint,evaluate,applyReward,nextUnresolved,recordSource,replyLink,replySelection};
 });

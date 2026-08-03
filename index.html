@@ -6267,6 +6267,9 @@ window.addEventListener("popstate", ()=>{
       try{ ProductTelemetry.track('promise_reply_to_retrain',{rid:String(rid),run_id:source.runId,promise_id:source.promiseId}); }catch(e){}
       this.retrain(rid,{source:'promise_reply',...source});
     },
+    retrainFromRunRecord(rid,runId,promiseId){
+      this.retrain(rid,{source:'run_record',runId:decodeURIComponent(runId||''),promiseId:decodeURIComponent(promiseId||'')});
+    },
     takeDailyBoost(rid){ this.load(); const used=DailyRetention.consume(this.data.dailyBoosts,rid); if(!used.boost)return null;
       this.data.dailyBoosts=used.boosts; this.persist(); return used.boost; },
     goAchv(){ this.load(); this.checkAchv(); this.data.achvViewed=this.achvDone(); this.persist(); this.renderAchv(); show('s-achv'); },   // 메뉴 도트 해제 기준
@@ -6461,7 +6464,7 @@ window.addEventListener("popstate", ()=>{
         <div class="ev-title">${m?esc(m.title):`${esc(r.name)}의 RUN 기록`}</div>
         <div class="ev-text">${m?esc(m.evidence||m.goal||''):`RUN 완성도 ${esc(v.grade||'F')} · 팬 ${fmt(v.fans||0)}`}</div>
         ${m?`<div class="res-bond"><div><span>${m.status==='success'?'🎬 장면 완성':'↻ 미완결 약속'}</span><b>${esc(m.checkpoint==='commit'?'끝까지 밀어붙임':m.checkpoint==='adapt'?'재해석':'결과')}</b></div><small style="display:block;margin-top:6px">${esc(m.reward||'')}</small></div>`:''}
-        <div class="ev-choices ready" style="margin-top:12px">${failed?`<button class="btn" onclick="var o=document.getElementById('ov');o.className='ov';DG.retrain(${rid})">미완결 약속 다시 도전</button>`:''}<button class="btn ghost" onclick="var o=document.getElementById('ov');o.className='ov'">닫기</button></div></div>`;
+        <div class="ev-choices ready" style="margin-top:12px">${failed&&m?`<button class="btn" onclick="var o=document.getElementById('ov');o.className='ov';DG.retrainFromRunRecord(${rid},'${encodeURIComponent(v.runId||runId)}','${encodeURIComponent(m.promiseId||'')}')">RUN ${String(v.run||1).padStart(2,'0')} 약속 다시 도전</button>`:''}<button class="btn ghost" onclick="var o=document.getElementById('ov');o.className='ov'">닫기</button></div></div>`;
     },
     // 카드 상세 팝업(숙소 상세와 동일 패턴): 이름·레어도·별·효과·보유 별별 개수
     // #3 카드 상세 = 플립카드(앞=실물 카드, 뒤=효과·별·내구도·획득경로). 정보를 카드 밖 텍스트박스로 빼지 않음.
@@ -6735,9 +6738,10 @@ window.addEventListener("popstate", ()=>{
       let selected=list.find(x=>x.id===Game.runPromiseId);
       if(!selected){ selected=list[0]; Game.runPromiseId=selected.id;
         try{ ProductTelemetry.track('promise_offer',{run_id:Game.pendingRunId||'',option_count:list.length,retry:!!selected.retryOf}); ProductTelemetry.track('promise_selected',{run_id:Game.pendingRunId||'',promise_id:selected.id,source:'auto',retry:!!selected.retryOf}); }catch(e){} }
-      else if(Game.replyPromiseSource&&!Game.replyPromiseSelectionTracked){ Game.replyPromiseSelectionTracked=true;
-        try{ ProductTelemetry.track('promise_offer',{run_id:Game.pendingRunId||'',option_count:list.length,retry:!!selected.retryOf,source:'promise_reply'}); ProductTelemetry.track('promise_selected',{run_id:Game.pendingRunId||'',promise_id:selected.id,source:'promise_reply',retry:!!selected.retryOf,...RunMemory.replyLink(Game.replyPromiseSource)}); }catch(e){} }
-      box.innerHTML=`<div class="promise-pick"><div class="promise-head"><b>OUR SCENE · ${Game.replyPromiseSource?'답장에서 이어진 약속':'이번 RUN의 약속'}</b><span>${Game.replyPromiseSource?'같은 장면을 이번 RUN에서 완성해':'조건을 지키면 장면 완성<br>실패하면 다음 RUN에 미완결'}</span></div><div class="promise-options">${list.map(p=>
+      else if(Game.replyPromiseSource&&!Game.replyPromiseSelectionTracked){ Game.replyPromiseSelectionTracked=true; const source=Game.replyPromiseSource.source||'promise_reply';
+        try{ ProductTelemetry.track('promise_offer',{run_id:Game.pendingRunId||'',option_count:list.length,retry:!!selected.retryOf,source}); ProductTelemetry.track('promise_selected',{run_id:Game.pendingRunId||'',promise_id:selected.id,source,retry:!!selected.retryOf,...RunMemory.replyLink(Game.replyPromiseSource)}); }catch(e){} }
+      const linkedFromRecord=Game.replyPromiseSource&&Game.replyPromiseSource.source==='run_record';
+      box.innerHTML=`<div class="promise-pick"><div class="promise-head"><b>OUR SCENE · ${linkedFromRecord?'RUN 기록에서 이어진 약속':Game.replyPromiseSource?'답장에서 이어진 약속':'이번 RUN의 약속'}</b><span>${Game.replyPromiseSource?'같은 장면을 이번 RUN에서 완성해':'조건을 지키면 장면 완성<br>실패하면 다음 RUN에 미완결'}</span></div><div class="promise-options">${list.map(p=>
         `<button type="button" class="promise-option ${selected&&selected.id===p.id?'on':''}" onclick="DG.selectRunPromise('${esc(p.id)}')"><span class="po-ic">${p.icon}</span><span><b>${esc(p.title)}</b><small>${esc(p.copy)}</small><em>목표 · ${esc(p.goal)} / ${esc(p.tradeoff)}</em></span></button>`).join('')}</div>
         <div class="promise-effect">${selected.retryOf?'↻ 지난 실패를 회수하면 지원 카드 1장 추가 · ':''}실제 달성 목표 · <b>${esc(selected.goal)}</b><br>결과 장면과 다음 RUN 기록에 그대로 남아</div></div>`;
     },
@@ -6825,9 +6829,10 @@ window.addEventListener("popstate", ()=>{
       this.load();
       const r=this.rosterById(rid); if(!r){ try{toast('연습생을 찾을 수 없어');}catch(e){} return; }
       opts=opts||{}; const replyRunId=String(opts.runId||''), replyPromiseId=String(opts.promiseId||'');
-      const linkedRecord=opts.source==='promise_reply'&&Array.isArray(this.data.runRecords)?this.data.runRecords.find(x=>String(x.rid)===String(rid)&&String(x.runId)===replyRunId):null;
-      const linkedMemory=linkedRecord&&linkedRecord.runMemory;
-      if(opts.source==='promise_reply'&&(!linkedMemory||String(linkedMemory.promiseId||'')!==replyPromiseId)){ try{toast('이 RUN 약속 기록을 찾을 수 없어');}catch(e){} return; }
+      const exactSource=['promise_reply','run_record'].includes(opts.source);
+      const linkedSource=exactSource&&window.RunMemory?RunMemory.recordSource(this.data.runRecords,{source:opts.source,rid,runId:replyRunId,promiseId:replyPromiseId}):null;
+      const linkedMemory=linkedSource&&linkedSource.memory;
+      if(exactSource&&!linkedSource){ try{toast('이 RUN 약속 기록을 찾을 수 없어');}catch(e){} return; }
       let idol=null;
       if((r.idkey||'').startsWith('i:')){
         const iid=+(r.idkey||'').slice(2);
@@ -6842,7 +6847,7 @@ window.addEventListener("popstate", ()=>{
       Game._retrainRid=rid;
       Game._retrainIdkey=r.idkey;
       Game.pendingRunDirection=STATS.some(s=>s.k===opts.direction)?opts.direction:null;
-      Game.replyPromiseSource=linkedMemory?{rid,runId:replyRunId,promiseId:replyPromiseId,memory:Object.assign({},linkedMemory)}:null;
+      Game.replyPromiseSource=linkedSource;
       Game.replyPromiseSelectionTracked=false;
       Game.pendingRunId=Game.pendingRunId||newRunId();
       const link=window.RunMemory?RunMemory.replyLink(Game.replyPromiseSource):{};
