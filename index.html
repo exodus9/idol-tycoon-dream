@@ -1065,8 +1065,8 @@
 <script src="stage-criteria.js?v=6d23aaaa14"></script>
 <script src="completion-transaction.js?v=8c3a470bcb"></script>
 <script src="product-telemetry.js?v=36d3c57a97"></script>
-<script src="dg-i18n.js?v=c52324efde"></script>
-<script src="i18n.js?v=8cdd37ab01"></script>
+<script src="dg-i18n.js?v=479ae5c4a0"></script>
+<script src="i18n.js?v=9b603a7ab9"></script>
 <script src="idols.js?v=8bb60ae14f"></script>
 <script>
 // 검색용 아이돌: idols.js의 window.IDOL_DB (최애돌 실데이터 = 활성 아이돌만, 전일 하트투표 순위로 정렬됨). 로드 실패 시 빈 배열.
@@ -2390,7 +2390,7 @@ const Game = {
     const okGender=e=> !e.gender || e.gender===(s.idol.cat||"F");
     let pool=EVENTS.filter(e=> okGender(e) && !(e.once && s.usedEvents.includes(e.id)));
     if(window.LANG==='id'){
-      const reviewedIdEvents=new Set(['support','fansign','mentor','birthday','fairy','heartpick']);
+      const reviewedIdEvents=new Set(['support','fansign','mentor','birthday','fairy','heartpick','themepick','freetalk','miracle']);
       pool=pool.filter(e=>reviewedIdEvents.has(e.id));
     }
     if(!pool.length) pool=EVENTS.filter(okGender);
@@ -5181,19 +5181,21 @@ window.addEventListener("popstate", ()=>{
     rarBadge(type){ const r=CARDS[type].rr; return `<b style="color:${RAR_COLOR[r]}">${RARITY[r]}</b>`; },
     starStr(star){ return star>0?'★'+star:''; },
     cardName(type){ const c=CARDS[type]; if(!c)return ''; const key=`support.name.${type}`, translated=dgT(key); return translated===key?c.nm:translated; },
-    cardDesc(type, star){ const c=CARDS[type]; const m=STAR_MULT[(star||this.bestStar(type)||1)-1]||1;
+    cardBaseDesc(type, star){ const c=CARDS[type]; const m=STAR_MULT[(star||this.bestStar(type)||1)-1]||1;
       const parts=[];
       if(c.eff.all!=null) parts.push(dgT('support.desc.all',{value:Math.round(c.eff.all*m)}));
       if(c.eff.stat) for(const k in c.eff.stat) parts.push(dgT('support.desc.stat',{stat:t('st_'+k),value:Math.round(c.eff.stat[k]*m)}));
-      let s = parts.join(' · ');
+      return parts.join(' · '); },
+    cardSpecialDesc(type){ const c=CARDS[type];
       const sp=[];   // 특수효과(별배수 미적용, 지속효과)
       if(c.eff.growth) sp.push(dgT('support.desc.growth',{value:Math.round(c.eff.growth*100)}));
       if(c.eff.gate) sp.push(dgT('support.desc.gate',{value:Math.round(c.eff.gate*100)}));
       if(c.eff.condSave) sp.push(dgT('support.desc.condition',{value:Math.round(c.eff.condSave*100)}));
       if(c.eff.mentalSave) sp.push(dgT('support.desc.mental',{value:Math.round(c.eff.mentalSave*100)}));
       if(c.eff.earlyGrow) sp.push(dgT('support.desc.early',{value:Math.round(c.eff.earlyGrow*100)}));
-      if(sp.length) s += (s?' · ':'')+sp.join(' · ');
-      return s; },
+      return sp.join(' · '); },
+    cardDesc(type, star){
+      return [this.cardBaseDesc(type,star),this.cardSpecialDesc(type)].filter(Boolean).join(' · '); },
     effOf(types){ const e={stat:{},all:0,growth:0,gate:0,condSave:0,mentalSave:0,earlyGrow:0}; (types||[]).forEach(id=>{ const c=CARDS[id]; if(!c)return; const m=STAR_MULT[Math.max(1,this.bestStar(id))-1]||1; const x=c.eff;
       if(x.all)e.all+=x.all*m; if(x.stat)for(const k in x.stat)e.stat[k]=(e.stat[k]||0)+x.stat[k]*m;
       if(x.growth)e.growth+=x.growth; if(x.gate)e.gate+=x.gate;
@@ -6276,7 +6278,7 @@ window.addEventListener("popstate", ()=>{
       this.data.achvClaimed[id]=1; const wasNew=!this.owned(rw); this.add(rw,1,1);
       if(wasNew){ if(!this.data.newCards)this.data.newCards={}; this.data.newCards[rw]=1; }
       this.persist(); try{ sfx('sparkle'); if(navigator.vibrate)navigator.vibrate(15); }catch(e){}
-      toast(`🎴 ${this.rarBadge(rw)} ${esc(this.nmOf(rw))} 획득!`);   // 어떤 업적→어떤 카드인지 명확히
+      toast(`🎴 ${this.rarBadge(rw)} ${dgT('achievement.cardReceived',{card:esc(this.nmOf(rw))})}`);   // 어떤 업적→어떤 카드인지 명확히
       this.renderAchv(); try{ updateTabbar('s-achv'); }catch(e){} },
     // 달성 시엔 보상을 '고정'만(achvRw) + 배너 알림 — 실제 카드 지급은 업적 페이지 '보상받기'에서(우르르 쏟아짐 방지)
     checkAchv(){ this.load(); this._ensureAchv();
@@ -6285,7 +6287,7 @@ window.addEventListener("popstate", ()=>{
       // 여러 개 동시 달성 → 하나로 묶어 표시(우르르 방지). 1개면 그대로.
       if(newly.length){ this.persist();
         if(newly.length===1) this.queueAchvFx(newly[0]);
-        else this.queueAchvFx({_summary:newly, ic:'🏅', nm:`업적 ${newly.length}개 달성!`, names:newly.map(a=>a.nm)}); }
+        else this.queueAchvFx({_summary:newly, ic:'🏅', nm:dgT('achievement.summary',{count:newly.length})}); }
       return newly; },
     // A) 업적 달성 연출 — 상단 배너 슬라이드인. ⚠️딤/컷씬/모달 위에 겹쳐 뜨는 것 방지(대기).
     queueAchvFx(a){ if(!this._achvQ)this._achvQ=[]; this._achvQ.push(a); if(!this._achvBusy)this._nextAchvFx(); },
@@ -6304,7 +6306,7 @@ window.addEventListener("popstate", ()=>{
       host.onclick=()=>{ try{ host.className='achv-fx'; if(window.DG&&DG.goAchv) DG.goAchv(); }catch(e){} };   // 배너 탭 → 업적 페이지(뭔지 확인)
       host.style.cursor='pointer';
       host.innerHTML=`<div class="afx-badge">${a.ic}</div>
-        <div class="afx-txt"><div class="afx-h">🏅 업적 달성!</div><div class="afx-nm">${esc(a.nm)}</div><div class="afx-desc">${isSum?`${esc((a.names||[]).slice(0,3).join(' · '))}${a.names.length>3?' 외':''} · 탭해서 보상받기`:((this.data.achvRw&&this.data.achvRw[a.id])?`🎁 보상 도착! 탭해서 받기`:esc(a.desc))}</div></div>`;
+        <div class="afx-txt"><div class="afx-h">🏅 ${dgT('achievement.unlocked')}</div><div class="afx-nm">${esc(isSum?a.nm:(window.LANG==='ko'?a.nm:dgT('achievement.single')))}</div><div class="afx-desc">${isSum||this.data.achvRw&&this.data.achvRw[a.id]?`🎁 ${dgT('achievement.rewardReady')}`:(window.LANG==='ko'?esc(a.desc):dgT('achievement.progress',{current:Math.min(a.cur(this),a.goal),goal:a.goal}))}</div></div>`;
       // 색종이
       const pal=['#ffd35c','#ff5fa2','#5fc9ff','#8b5cff','#4fd6a0'];
       for(let i=0;i<14;i++){ const s=document.createElement('span'); s.className='afx-conf'; s.style.left=(8+Math.random()*84)+'%'; s.style.background=pal[i%pal.length]; s.style.animationDelay=(Math.random()*0.35)+'s'; host.appendChild(s); setTimeout(()=>s.remove(),1600); }
@@ -6417,19 +6419,21 @@ window.addEventListener("popstate", ()=>{
     renderAchv(){ const box=document.getElementById('achvList'); if(!box) return;
       this._ensureAchv();
       const st=this.achvState(), done=st.filter(x=>x.done).length;
-      const head=document.getElementById('achvHead'); if(head) head.innerHTML=`달성 <b style="color:var(--accent)">${done} / ${st.length}</b>`;
-      box.innerHTML=st.map(x=>{ const a=x.a;
+      const head=document.getElementById('achvHead'); if(head) head.innerHTML=dgT('achievement.head',{done:`<b style="color:var(--accent)">${done}</b>`,total:st.length});
+      box.innerHTML=st.map((x,index)=>{ const a=x.a;
         const hid=a.hidden&&!x.done;   // ㉔ 히든 업적: 달성 전엔 정체 숨김
+        const shownName=window.LANG==='ko'?a.nm:dgT('achievement.item',{number:index+1});
+        const shownDesc=window.LANG==='ko'?a.desc:dgT('achievement.progress',{current:Math.min(x.val,a.goal),goal:a.goal});
         return `<div style="display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid ${x.done?'rgba(240,160,30,.55)':'var(--line)'};border-radius:14px;padding:12px 14px;margin-bottom:8px;${x.done?'':'opacity:.7'}">
           <span style="font-size:26px;flex:0 0 auto;${x.done?'':'filter:grayscale(1)'}">${hid?'❓':a.ic}</span>
           <div style="flex:1;min-width:0">
-            <div style="font-weight:bold">${hid?'???':a.nm}${x.done?' <span style="color:#e8890c;font-size:12px">달성 ✓</span>':''}</div>
-            <div class="muted" style="font-size:12px">${hid?'숨겨진 업적 — 뭘 하면 열릴까?':a.desc}</div>
+            <div style="font-weight:bold">${hid?'???':esc(shownName)}${x.done?` <span style="color:#e8890c;font-size:12px">${dgT('achievement.completed')}</span>`:''}</div>
+            <div class="muted" style="font-size:12px">${hid?dgT('achievement.hidden'):esc(shownDesc)}</div>
             ${hid?'':`<div style="height:6px;background:var(--bg);border-radius:4px;margin-top:6px;overflow:hidden"><div style="height:100%;width:${x.pct}%;background:${x.done?'#f0a01e':'#ec3a5c'}"></div></div>`}
           </div>
           ${x.done ? ((this.data.achvRw[a.id] && !this.data.achvClaimed[a.id])
-              ? `<button class="btn" style="flex:0 0 auto;width:auto;padding:7px 12px;font-size:12px;white-space:nowrap" onclick="event.stopPropagation();DG.claimAchvReward('${a.id}')">🎁 보상받기</button>`
-              : `<span style="flex:0 0 auto;font-size:11px;color:var(--sub);font-weight:bold">🎁 수령완료</span>`)
+              ? `<button class="btn" style="flex:0 0 auto;width:auto;padding:7px 12px;font-size:12px;white-space:nowrap" onclick="event.stopPropagation();DG.claimAchvReward('${a.id}')">🎁 ${dgT('achievement.claim')}</button>`
+              : `<span style="flex:0 0 auto;font-size:11px;color:var(--sub);font-weight:bold">🎁 ${dgT('achievement.claimed')}</span>`)
             : `<span class="muted" style="flex:0 0 auto;font-size:12px;font-weight:bold">${hid?'?':`${Math.min(x.val,a.goal)}/${a.goal}`}</span>`}
         </div>`; }).join('');
     },
@@ -6618,20 +6622,20 @@ window.addEventListener("popstate", ()=>{
       const owned=this.owned(type), bs=this.bestStar(type);
       const stars=[]; for(let s=1;s<=MAXSTAR;s++){ const n=this.countAt(type,s); if(!n)continue;
         const w=this.wearOf(type,s);
-        stars.push(`★${s} <b>${n}장</b>${w?` <span style="color:#f0a01e">🔋${this.DUR_MAX-w}/${this.DUR_MAX}</span>`:''}`); }
-      const rrName=['평범','희귀','영웅','전설','신화'][c.rr]||'';
+        stars.push(`${dgT('support.detail.highest',{star:`★${s}`})} <b>${dgT('support.detail.copy',{count:n})}</b>${w?` <span style="color:#f0a01e">🔋${this.DUR_MAX-w}/${this.DUR_MAX}</span>`:''}`); }
+      const rrName=dgT(`support.rarity.${c.rr}`);
       // 앞면 = 실물 카드(효과 요약을 카드 안 meta에)
       const front=this.tcardHTML(type,{star:bs||1, locked:!owned, meta: owned? esc(this.cardDesc(type,bs)) : this.cardOrigin(type)});
       // 뒷면 = 상세 정보 (효과 + 획득 경로 항상 명시 — 직관성)
-      const back=`<div class="fb-name">${this.rarBadge(type)} ${owned?esc(c.nm):'???'}</div>
-        <div class="fb-sub">${RARITY[c.rr]}(${rrName})${owned?` · 최고 ${this.starStr(bs)}`:''}</div>
+      const back=`<div class="fb-name">${this.rarBadge(type)} ${owned?esc(this.cardName(type)):'???'}</div>
+        <div class="fb-sub">${RARITY[c.rr]} (${rrName})${owned?` · ${dgT('support.detail.highest',{star:this.starStr(bs)})}`:''}</div>
         <div class="fb-rows" style="margin-top:7px">
-          <div class="fb-sub" style="margin:0 0 3px">⚡ 효과</div>
-          <div style="font-size:12.5px;line-height:1.5">${esc(this.cardDesc(type, owned?bs:1))}</div>
-          ${c.eff&&(c.eff.growth||c.eff.gate||c.eff.condSave||c.eff.mentalSave||c.eff.earlyGrow)?`<div class="fb-sub" style="margin:9px 0 3px">✨ 특수</div><div style="font-size:12px;color:#c3b6dd;line-height:1.5">${c.eff.growth?`육성 성장률 +${Math.round(c.eff.growth*100)}%<br>`:''}${c.eff.gate?`관문 파워 +${Math.round(c.eff.gate*100)}%<br>`:''}${c.eff.condSave?`컨디션 소모 -${Math.round(c.eff.condSave*100)}% (지쳐도 오래 버텨)<br>`:''}${c.eff.mentalSave?`멘탈 하락 -${Math.round(c.eff.mentalSave*100)}% (실패해도 덜 흔들려)<br>`:''}${c.eff.earlyGrow?`초반 성장 +${Math.round(c.eff.earlyGrow*100)}% (전반부에 확 큼)`:''}</div>`:''}
-          <div class="fb-sub" style="margin:9px 0 3px">📥 획득 방법</div>
+          <div class="fb-sub" style="margin:0 0 3px">⚡ ${dgT('support.detail.effect')}</div>
+          <div style="font-size:12.5px;line-height:1.5">${esc(this.cardBaseDesc(type, owned?bs:1))}</div>
+          ${this.cardSpecialDesc(type)?`<div class="fb-sub" style="margin:9px 0 3px">✨ ${dgT('support.detail.special')}</div><div style="font-size:12px;color:#c3b6dd;line-height:1.5">${esc(this.cardSpecialDesc(type))}</div>`:''}
+          <div class="fb-sub" style="margin:9px 0 3px">📥 ${dgT('support.detail.origin')}</div>
           <div style="font-size:12px;color:#c3b6dd;line-height:1.55">${this.cardOrigin(type)}</div>
-          ${owned&&stars.length?`<div class="fb-sub" style="margin:9px 0 3px">🎴 보유</div><div style="font-size:12.5px;line-height:1.7">${stars.join(' · ')}</div>`:''}
+          ${owned&&stars.length?`<div class="fb-sub" style="margin:9px 0 3px">🎴 ${dgT('support.detail.owned')}</div><div style="font-size:12.5px;line-height:1.7">${stars.join(' · ')}</div>`:''}
         </div>`;
       this.showFlipCard(front, back, '');
     },
@@ -6838,7 +6842,8 @@ window.addEventListener("popstate", ()=>{
       const memoryResult=_rm?`<div class="res-bond" style="border-color:${_rmSuccess?'rgba(255,211,92,.45)':'rgba(255,87,126,.5)'}"><div><span>🎬 ${dgT('result.memoryHead')}</span><b>${dgT(_rmSuccess?'result.memorySuccess':'result.memoryFailed')}</b></div><div style="font-size:13px;font-weight:900;margin-top:7px">${esc(_rmTitle)}</div><small style="display:block;margin-top:4px">${esc(_rmEvidence)}</small><small style="display:block;margin-top:5px;color:${_rmSuccess?'#ffd35c':'#ff91aa'}">${esc(_rmReward)}</small></div>`:'';
       const _se=res.seasonEdition;
       const _seTitle=_se?dgT(_se.newCollection?'result.editionCollected':_se.bestUpdated?'result.editionBest':'result.editionVersion',{season:+_se.no+1}):'';
-      const _seCopy=_se?dgT(_se.newCollection?'result.editionCollectedCopy':_se.bestUpdated?'result.editionBestCopy':'result.editionVersionCopy',{name:esc(_se.name||dgT('result.title'))}):'';
+      const _seName=_se?(window.LANG==='ko'?(_se.name||dgT('card.seasonEdition')):dgT('card.seasonEdition')):'';
+      const _seCopy=_se?dgT(_se.newCollection?'result.editionCollectedCopy':_se.bestUpdated?'result.editionBestCopy':'result.editionVersionCopy',{name:esc(_seName)}):'';
       const seasonResult=_se?`<div class="season-edition-result"><b>${esc(_se.icon||'🎬')} ${_seTitle}</b><span>${_seCopy}</span></div>`:'';
       const ng=this.nextGoals(2);
       const goalPull = window.LANG==='ko'&&ng.length ? `<div class="res-goals"><div class="res-goals-h">🎯 ${dgT('result.nextGoal')}</div>
@@ -6866,7 +6871,7 @@ window.addEventListener("popstate", ()=>{
       const idolReveal=idolR?`<div class="res-idol-reveal">
         <div class="res-card-kicker">${dgT(idolR.incomplete?'result.kickerRetry':keptAfterFail||!res.adopted?'result.kickerRecorded':(idolR.runs||1)>1?'result.kickerUpdated':'result.kickerNew')}</div>
         ${this.idolCardHTML(idolR,{cls:'result-idol-card',state:idolR.incomplete?'incomplete':(keptAfterFail||!res.adopted?'complete':'new'),onclick:`DG.showRosterDetail(${idolR.rid})`})}
-        <div class="res-card-copy"><b>${dgT(idolR.incomplete?'result.cardIncomplete':keptAfterFail||!res.adopted?'result.cardKept':'result.cardSaved',{name:esc(idolR.name)})}</b><span>${dgT(idolR.incomplete?'result.cardIncompleteCopy':keptAfterFail||!res.adopted?'result.cardKeptCopy':this.idolCardMeta(idolR).star>=5?'result.cardMax':'result.cardNext',{goal:window.LANG==='ko'?this.idolNextGoal(this.idolCardMeta(idolR)):dgT('result.nextGoal')})}</span></div>
+        <div class="res-card-copy"><b>${dgT(idolR.incomplete?'result.cardIncomplete':keptAfterFail||!res.adopted?'result.cardKept':'result.cardSaved',{name:esc(idolR.name)})}</b><span>${dgT(idolR.incomplete?'result.cardIncompleteCopy':keptAfterFail||!res.adopted?'result.cardKeptCopy':this.idolCardMeta(idolR).star>=5?'result.cardMax':'result.cardNext',{goal:this.idolNextGoal(this.idolCardMeta(idolR))})}</span></div>
       </div>`:'';
       box.innerHTML=`<div class="dg-res">${rec}<div class="dg-res-slot">${completionSummary}</div>${thanks}${seasonResult}${memoryResult}${bondResult}${returnHook}
         ${idolReveal}
@@ -7156,13 +7161,13 @@ window.addEventListener("popstate", ()=>{
     nmOf(id){ return this.cardName(id)||id; },
     // 카드별 정확한 획득 경로(직관성 — 도감·상세에 명시). 하이브리드는 재료 R카드 2종을 이름으로.
     cardOrigin(id){ const c=CARDS[id]; if(!c) return '';
-      if(c.rr===0) return '🎯 육성 완주 시 획득';
-      if(c.rr===1){ const k=Object.keys(c.eff.stat||{})[0], nm=STATNM[k]||''; return `🎯 육성 완주(${nm} 위주 훈련) · 🤝 방출 · ⚗️ N+N 합성`; }
+      if(c.rr===0) return `🎯 ${dgT('support.origin.n')}`;
+      if(c.rr===1){ const k=Object.keys(c.eff.stat||{})[0], nm=t('st_'+k)||''; return `🎯 ${dgT('support.origin.r',{stat:nm})}`; }
       if(c.hyb){ const ks=Object.keys(c.eff.stat||{}); const r1=this.nmOf(STATCARD[ks[0]]), r2=this.nmOf(STATCARD[ks[1]]);
-        return `⚗️ ${r1} + ${r2} 합성 · 🎯 육성 SR 드랍`; }
-      if(id==='genius') return '🎯 육성 완주 SR 드랍 전용 (합성으로는 안 나와)';
-      if(c.rr===3) return '⚗️ 서로 다른 SR 2장 합성 · 🎯 육성 대박 드랍';
-      if(c.rr===4) return '⚗️ 서로 다른 SSR 2장 합성 · 🎯 육성 초대박 드랍';
+        return `⚗️ ${dgT('support.origin.hybrid',{first:r1,second:r2})}`; }
+      if(id==='genius') return `🎯 ${dgT('support.origin.genius')}`;
+      if(c.rr===3) return `⚗️ ${dgT('support.origin.ssr')}`;
+      if(c.rr===4) return `⚗️ ${dgT('support.origin.ur')}`;
       return ''; },
     // #1 드랍 공개: 뒷면 탭 → (SSR+ 골드 섬광 후) 실물 카드 팝. isNew는 NEW 뱃지와 별개 '새 카드!' 라벨
     revealDrop(el, id, isNew){
@@ -7174,7 +7179,7 @@ window.addEventListener("popstate", ()=>{
       const doReveal=()=>{
         const wrap=document.createElement('div');
         wrap.innerHTML=this.tcardHTML(id,{star:1, cls:'tpop', attr:`onclick="DG.showCardDetail('${id}')"`,
-          meta:isNew?'✨ 새 카드!':'＋1장', noStars:true});
+          meta:isNew?`✨ ${dgT('support.detail.new')}`:dgT('support.detail.added'), noStars:true});
         const card=wrap.firstElementChild;
         el.replaceWith(card);
         setTimeout(()=>{ card.classList.remove('tpop'); card.classList.add('tilt'); }, 620);   // 손맛④ 팝 후 살랑 틸트(홀로가 빛 각도 따라 반짝)

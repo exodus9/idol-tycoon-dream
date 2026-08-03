@@ -1498,6 +1498,21 @@ window.I18N = {
     ev_fairy_title:"Proyek donasi fandom",ev_fairy_text:"Penggemar mengumpulkan donasi atas nama favorit mereka untuk berbagi pengaruh baik.",ev_fairy_c1:"Ikut menjadi relawan (penggemar naik, mental +10, ikatan fandom +8)",ev_fairy_c2:"Berdonasi dengan tenang (mental +8, penggemar sedikit naik)",
     ev_heartpick_title:"Misi Heart Pick",ev_heartpick_text:"Apakah RUN ini akan menggerakkan fandom untuk mengejar peringkat Heart Pick minggu ini?",ev_heartpick_c1:"Ajak fandom mengejar peringkat!",ev_heartpick_w_l:"Heart Pick peringkat pertama!",ev_heartpick_w_d:"Penggemar <b>↑↑</b> · ikatan fandom <b>+14</b>",ev_heartpick_lo_l:"Kalah tipis di peringkat dua",ev_heartpick_lo_d:"Mental <b>-10</b> · kondisi <b>-6</b>",ev_heartpick_c2:"Tumbuh secara alami",ev_odds:"· Peluang berhasil {pct}%",ev_banner:"💫 Peristiwa Mendadak"
   });
+  Object.assign(window.I18N.en,{
+    ev_themepick_title:"Theme Pick Nominee!",ev_themepick_text:"This RUN is nominated for the monthly Theme Pick. First place earns a major outdoor ad!",ev_themepick_c1:"Rally the fandom for Theme Pick",ev_themepick_w_l:"Theme Pick #1!",ev_themepick_w_d:"Fans <b>way up↑↑</b> · Styling <b>+18</b>",ev_themepick_lo_l:"The ranking race overheated",ev_themepick_lo_d:"Mental <b>-12</b> · Fans <b>↓</b>",ev_themepick_c2:"Join at a steady pace (safe fan gain)",
+    ev_freetalk_title:"Trending on Free Talk!",ev_freetalk_text:"This RUN's fancam is #1 on Free Talk, the fan board. New posts are pouring in.",ev_freetalk_c1:"Reply to the Free Talk buzz (Fans ↑↑, Mental +8)",
+    ev_miracle_title:"Miracle of the Month!",ev_miracle_text:"This RUN was selected as the month’s most talked-about rookie project.",ev_miracle_c1:"Thank the fandom (Fans ↑↑, Mental +10)"
+  });
+  Object.assign(window.I18N.ja,{
+    ev_themepick_title:"テーマピック候補に選出！",ev_themepick_text:"今回のRUNが今月のテーマピック候補に。1位なら大型屋外広告！",ev_themepick_c1:"ファンダムとテーマピックに全力",ev_themepick_w_l:"テーマピック1位！",ev_themepick_w_d:"ファン <b>大幅↑↑</b>・スタイリング <b>+18</b>",ev_themepick_lo_l:"順位争いが過熱",ev_themepick_lo_d:"メンタル <b>-12</b>・ファン <b>↓</b>",ev_themepick_c2:"無理せず参加（ファン安定増加）",
+    ev_freetalk_title:"フリートークでリアルタイム話題！",ev_freetalk_text:"今回のRUNのファンカムがファン掲示板の1位。投稿が次々と届いている。",ev_freetalk_c1:"フリートークの反応に応える（ファン↑↑・メンタル+8）",
+    ev_miracle_title:"今月のミラクル！",ev_miracle_text:"今回のRUNが今月最も話題になった新人プロジェクトに選ばれた。",ev_miracle_c1:"ファンダムに感謝する（ファン↑↑・メンタル+10）"
+  });
+  Object.assign(window.I18N.id,{
+    ev_themepick_title:"Nominasi Theme Pick!",ev_themepick_text:"RUN ini masuk nominasi Theme Pick bulanan. Peringkat pertama mendapat iklan luar ruang besar!",ev_themepick_c1:"Ajak fandom mengejar Theme Pick",ev_themepick_w_l:"Theme Pick peringkat pertama!",ev_themepick_w_d:"Penggemar <b>naik besar↑↑</b> · Styling <b>+18</b>",ev_themepick_lo_l:"Persaingan peringkat memanas",ev_themepick_lo_d:"Mental <b>-12</b> · Penggemar <b>↓</b>",ev_themepick_c2:"Ikut dengan ritme stabil (penggemar naik aman)",
+    ev_freetalk_title:"Trending di Free Talk!",ev_freetalk_text:"Fancam RUN ini berada di peringkat pertama papan penggemar. Postingan baru terus berdatangan.",ev_freetalk_c1:"Balas antusiasme Free Talk (penggemar ↑↑, mental +8)",
+    ev_miracle_title:"Miracle Bulan Ini!",ev_miracle_text:"RUN ini terpilih sebagai proyek rookie yang paling ramai dibicarakan bulan ini.",ev_miracle_c1:"Berterima kasih pada fandom (penggemar ↑↑, mental +10)"
+  });
   // 선언된 언어들 중 실제 언어팩(I18N)이 존재하는 것만 활성. 팩 추가하면 스위처에 자동 노출.
   // 상용 안전 게이트: RUN 제작 모델로 전량 검수된 언어만 노출한다.
   // EN/JA/ID는 위 안전 오버라이드까지 검수된 출시 언어다. 미검수 ZH/ES 팩은 선택/자동감지에서 제외한다.

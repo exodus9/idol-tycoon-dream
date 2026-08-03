@@ -74,3 +74,41 @@ test('saved RUN promises are re-localized from identity instead of stale display
   assert.ok(html.includes("promiseDirection:st.runDirection"));
   assert.ok(html.includes("dgT(`promise.${promiseType}Title`"));
 });
+
+test('Choeaedol event decisions and outcomes are reviewed in every release locale',()=>{
+  const keys=[
+    'ev_themepick_title','ev_themepick_text','ev_themepick_c1','ev_themepick_w_l',
+    'ev_themepick_w_d','ev_themepick_lo_l','ev_themepick_lo_d','ev_themepick_c2',
+    'ev_freetalk_title','ev_freetalk_text','ev_freetalk_c1',
+    'ev_miracle_title','ev_miracle_text','ev_miracle_c1'
+  ];
+  const ko=boot('ko-KR').I18N.ko;
+  for(const locale of ['en','ja','id']){
+    const pack=boot(locale==='id'?'id-ID':`${locale}-${locale.toUpperCase()}`).I18N[locale];
+    for(const key of keys){
+      assert.ok(pack[key],`${locale}.${key} is missing`);
+      assert.notEqual(pack[key],ko[key],`${locale}.${key} fell back to Korean`);
+      if(locale!=='ja') assert.equal(/[가-힣]/.test(pack[key]),false,`${locale}.${key} contains Korean`);
+    }
+  }
+});
+
+test('critical achievement and support-card renderers use locale keys instead of Korean literals',()=>{
+  const achievement=html.slice(html.indexOf('claimAchvReward(id)'),html.indexOf('showFlipCard('));
+  const detail=html.slice(html.indexOf('showCardDetail(type)'),html.indexOf('renderResult(box, res)'));
+  const origin=html.slice(html.indexOf('cardOrigin(id){'),html.indexOf('revealDrop(el,'));
+  assert.ok(achievement.includes("dgT('achievement.unlocked')"));
+  assert.ok(achievement.includes("dgT('achievement.claim')"));
+  assert.equal(/<div class="afx-h">🏅 업적 달성|>🎁 보상받기<|>🎁 수령완료</.test(achievement),false);
+  assert.ok(detail.includes("dgT('support.detail.effect')"));
+  assert.ok(detail.includes("dgT('support.detail.origin')"));
+  assert.equal(/획득 방법|🎴 보유|✨ 특수/.test(detail),false);
+  assert.ok(origin.includes("dgT('support.origin.n')"));
+  assert.ok(origin.includes("dgT('support.origin.ssr')"));
+  assert.equal(/육성 완주 시 획득|서로 다른 SR 2장 합성/.test(origin),false);
+});
+
+test('result next-star copy uses the concrete localized requirement',()=>{
+  assert.ok(html.includes("{goal:this.idolNextGoal(this.idolCardMeta(idolR))}"));
+  assert.equal(html.includes("{goal:window.LANG==='ko'?this.idolNextGoal"),false);
+});

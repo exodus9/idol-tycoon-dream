@@ -38,3 +38,26 @@ test('is available through a browser-style global UMD export', () => {
   assert.equal(globalThis.DGI18n, i18n);
   assert.equal(i18n.createTranslator('id-ID')('common.confirm'), 'Konfirmasi');
 });
+
+test('critical achievement and support-card surfaces are translated in every release locale', () => {
+  const keys = [
+    'achievement.unlocked', 'achievement.rewardReady', 'achievement.claim',
+    'support.detail.effect', 'support.detail.special', 'support.detail.origin',
+    'support.detail.owned', 'support.detail.new', 'support.origin.n', 'support.origin.ssr'
+  ];
+  for (const locale of ['en', 'ja', 'id']) {
+    for (const key of keys) {
+      assert.notEqual(i18n.t(locale, key), i18n.t('ko', key), `${locale}.${key} fell back to Korean`);
+      assert.notEqual(i18n.t(locale, key), key, `${locale}.${key} is missing`);
+    }
+  }
+});
+
+test('generic season-edition copy does not duplicate the word edition', () => {
+  for (const locale of ['en', 'ja', 'id']) {
+    const rendered = i18n.t(locale, 'result.editionCollectedCopy', {
+      name: i18n.t(locale, 'card.seasonEdition')
+    });
+    assert.equal(/Edition Edition|エディションエディション|Edisi Edisi/i.test(rendered), false, `${locale}: ${rendered}`);
+  }
+});
