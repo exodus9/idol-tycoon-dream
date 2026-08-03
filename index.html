@@ -156,6 +156,7 @@
   .res-return-hook{margin:10px 0;padding:12px 13px;border:1px solid rgba(255,211,92,.36);border-radius:14px;background:linear-gradient(135deg,rgba(255,211,92,.1),rgba(255,95,146,.1));text-align:left}
   .res-return-hook b{display:block;font-size:12px;color:#ffe69a}.res-return-hook span{display:block;margin-top:4px;font-size:10px;line-height:1.45;color:#c7bdd3}
   .res-return-hook button{margin-top:8px;padding:7px 10px;border:1px solid rgba(255,211,92,.38);border-radius:9px;background:rgba(12,14,28,.54);color:#fff;font:inherit;font-size:10px;font-weight:900}
+  .res-grade-explain{display:block;margin-top:5px;font-size:9px;line-height:1.35;color:#c3b7ce}
   .season-edition-preview{display:flex;align-items:center;gap:8px;margin-top:7px;padding:8px 9px;border-radius:10px;background:linear-gradient(90deg,rgba(35,96,255,.2),rgba(197,51,198,.16));border:1px solid rgba(111,139,255,.35);color:#dce7ff}
   .season-edition-preview b{flex:0 0 auto;font-size:10px;white-space:nowrap}.season-edition-preview span{font-size:9.5px;line-height:1.3;color:#b7c8ed}
   .mentor-pick{margin:10px 0;padding:12px;border:1px solid rgba(255,211,92,.2);border-radius:16px;background:linear-gradient(135deg,rgba(31,25,48,.96),rgba(12,18,30,.96))}
@@ -1067,7 +1068,7 @@
 <script src="product-telemetry.js?v=36d3c57a97"></script>
 <script src="dg-i18n.js?v=59ff918fc1"></script>
 <script src="i18n.js?v=1d3ac651ea"></script>
-<script src="idols.js?v=8bb60ae14f"></script>
+<script src="idols.js?v=sync202608040520"></script>
 <script>
 // 검색용 아이돌: idols.js의 window.IDOL_DB (최애돌 실데이터 = 활성 아이돌만, 전일 하트투표 순위로 정렬됨). 로드 실패 시 빈 배열.
 const IDOLS = window.IDOL_DB || [];
@@ -6344,6 +6345,11 @@ window.addEventListener("popstate", ()=>{
     // 하루 한 번 최애와 팬덤의 행동을 고르고, 관계 기억 + 다음 재육성의 실제 보정으로 이어진다.
     kstDay(){ return DailyRetention.kstDay(); },
     dayDiff(a,b){ return DailyRetention.dayDiff(a,b); },
+    replyUnlockLabel(now){
+      const at=DailyRetention.nextKstResetAt(now), locale={ko:'ko-KR',en:'en-US',ja:'ja-JP',id:'id-ID'}[window.LANG||'ko']||'en-US';
+      try{ return new Intl.DateTimeFormat(locale,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',timeZoneName:'short'}).format(new Date(at)); }
+      catch(_){ return new Date(at).toLocaleString(); }
+    },
     dailyState(){ return DailyRetention.state((this.data&&this.data.daily)||{},this.kstDay()); },
     dailyFavorite(){ const rs=(this.data&&this.data.roster)||[]; return this.rosterById(this.data&&this.data.favRid)||rs.slice().sort((a,b)=>(b.joinedAt||0)-(a.joinedAt||0))[0]||null; },
     dailyEchoState(rid){ return DailyRetention.echoState((this.data&&this.data.dailyEchoes)||[],this.kstDay(),rid); },
@@ -6386,7 +6392,7 @@ window.addEventListener("popstate", ()=>{
         const banked=next.kind==='scout'||next.kind==='lineup'||next.kind==='debut'
           ? `${esc(fav.name)} 보정은 답장까지 보관 · 지금은 첫 그룹을 완성할 차례`
           : `${awaiting?`답장 대기 ${awaiting}개`:''}${awaiting&&pending?' · ':''}${pending?`사용 가능 ${pending}개`:''}`;
-        action=`<div class="daily-done"><b>${dgT('daily.projectDone')}</b><p>${esc(picked.nm)} · ${esc(picked.effect)}<br>${window.LANG==='ko'?`${banked} · `:''}${dgT('daily.replyAt')}</p></div>
+        action=`<div class="daily-done"><b>${dgT('daily.projectDone')}</b><p>${esc(picked.nm)} · ${esc(picked.effect)}<br>${window.LANG==='ko'?`${banked} · `:''}${dgT('daily.replyAt',{time:esc(this.replyUnlockLabel())})}</p></div>
           <button class="btn" style="margin-top:10px;width:100%" onclick="${next.on}">${next.label}</button>`;
       } else { action=`<div class="daily-section-title"><b>${dgT('daily.chooseTitle')}</b><span>${dgT('daily.chooseOne')}</span></div><div class="daily-options">${choices.map(c=>
           `<button class="daily-option" onclick="DG.completeDaily('${c.id}')"><img src="${c.img}" alt=""><span><b>${esc(c.nm)}</b><small>${esc(c.copy)}</small></span><em>${esc(c.effect)}</em></button>`).join('')}</div>`; }
@@ -6885,10 +6891,11 @@ window.addEventListener("popstate", ()=>{
       let returnHook='';
       try{
         const reply=this.dailyEchoState().ready, daily=this.dailyState();
+        const unlockTime=this.replyUnlockLabel();
         returnHook=reply
           ? `<div class="res-return-hook"><b>💌 ${dgT('result.returnReplyTitle')}</b><span>${dgT('result.returnReplyCopy')}</span><button type="button" onclick="DG.goDaily()">${dgT('result.returnReplyButton')}</button></div>`
           : daily.done
-            ? `<div class="res-return-hook"><b>🌙 ${dgT('result.returnTomorrowTitle')}</b><span>${dgT('result.returnTomorrowCopy')}</span><button type="button" onclick="DG.goDaily()">${dgT('result.returnTomorrowButton')}</button></div>`
+            ? `<div class="res-return-hook"><b>🌙 ${dgT('result.returnTomorrowTitle',{time:esc(unlockTime)})}</b><span>${dgT('result.returnTomorrowCopy')}</span><button type="button" onclick="DG.goDaily()">${dgT('result.returnTomorrowButton')}</button></div>`
             : `<div class="res-return-hook"><b>💞 ${dgT('result.returnStartTitle')}</b><span>${dgT('result.returnStartCopy')}</span><button type="button" onclick="DG.goDaily()">${dgT('result.returnStartButton')}</button></div>`;
       }catch(e){}
       const cv=res.completionView||{}, cvMeta=dgT('result.joinCardMeta',{grade:cv.grade||'F',direction:t('st_'+(cv.direction||'vocal'))}), completionSummary=cv.kind==='rerun'
@@ -6896,12 +6903,13 @@ window.addEventListener("popstate", ()=>{
         : cv.kind==='first'?`✨ <b>${dgT('result.joinFirst',{name:esc(cv.name||'')})}</b><br><span class="muted">${cvMeta} · ${dgT('result.firstGateNext')}</span>`
         : cv.kind==='passed'?`🎊 <b>${dgT('result.joinPassed',{name:esc(cv.name||'')})}</b><br><span class="muted">${cvMeta} · ${dgT('result.groupCandidate')}</span>`
         : /^fail/.test(cv.kind||'')?`💤 <b>${dgT(cv.kind==='failKept'?'result.joinFailKept':'result.joinFailNew',{name:esc(cv.name||'')})}</b><br><span class="muted">${dgT(cv.kind==='failKept'?'result.joinFailAlbum':'result.joinFailCopy')}</span>`:res.joinMsg;
+      const gradeExplain=res.debuted&&idolR?`<small class="res-grade-explain">${dgT('result.rankGradeExplain',{grade:cv.grade||'F',average:Math.round(res.overall||0),goal:this.idolNextGoal(this.idolCardMeta(idolR))})}</small>`:'';
       const idolReveal=idolR?`<div class="res-idol-reveal">
         <div class="res-card-kicker">${dgT(idolR.incomplete?'result.kickerRetry':keptAfterFail||!res.adopted?'result.kickerRecorded':(idolR.runs||1)>1?'result.kickerUpdated':'result.kickerNew')}</div>
         ${this.idolCardHTML(idolR,{cls:'result-idol-card',state:idolR.incomplete?'incomplete':(keptAfterFail||!res.adopted?'complete':'new'),onclick:`DG.showRosterDetail(${idolR.rid})`})}
         <div class="res-card-copy"><b>${dgT(idolR.incomplete?'result.cardIncomplete':keptAfterFail||!res.adopted?'result.cardKept':'result.cardSaved',{name:esc(idolR.name)})}</b><span>${dgT(idolR.incomplete?'result.cardIncompleteCopy':keptAfterFail||!res.adopted?'result.cardKeptCopy':this.idolCardMeta(idolR).star>=5?'result.cardMax':'result.cardNext',{goal:this.idolNextGoal(this.idolCardMeta(idolR))})}</span></div>
       </div>`:'';
-      box.innerHTML=`<div class="dg-res">${rec}<div class="dg-res-slot">${completionSummary}</div>${thanks}
+      box.innerHTML=`<div class="dg-res">${rec}<div class="dg-res-slot">${completionSummary}${gradeExplain}</div>${thanks}
         ${returnHook}
         ${idolReveal}
         <div class="dg-res-cards"><b>${dgT('result.supportTitle')}</b><div class="dg-chips" style="margin-top:6px">${chips}</div></div>
