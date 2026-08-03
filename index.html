@@ -1604,10 +1604,10 @@ function bondLevel(v){ v=Math.max(0,Math.min(100,+v||0));
 const RUN_SAVE_KEY='idol_save', RUN_BACKUP_KEY='idol_save_backup_v1';
 const validRunSave=s=>!!(s&&s.idol&&typeof s.week==='number'&&s.week>=1);
 const Game = {
-  st:null, lastResult:null, selIdol:null, curMode:"search", trainMode:"full", customSpec:null, runDirection:null, runPromiseId:null, replyPromiseSource:null, replyPromiseSelectionTracked:false, mentorRid:null, pendingRunId:null, pendingMentorRid:null, customImg:null, customGender:"F", appFavoriteId:null,
+  st:null, lastResult:null, selIdol:null, curMode:"search", trainMode:"full", customSpec:null, runDirection:null, pendingRunDirection:null, runPromiseId:null, replyPromiseSource:null, replyPromiseSelectionTracked:false, mentorRid:null, pendingRunId:null, pendingMentorRid:null, customImg:null, customGender:"F", appFavoriteId:null,
 
   goSelect(){
-    this.selIdol=null; this.customImg=null; this.customSpec=null; this.runDirection=null; this.runPromiseId=null; this.replyPromiseSource=null; this.replyPromiseSelectionTracked=false; this.mentorRid=null; this.pendingRunId=null; this.pendingMentorRid=null; this.customGender="F";
+    this.selIdol=null; this.customImg=null; this.customSpec=null; this.runDirection=null; this.pendingRunDirection=null; this.runPromiseId=null; this.replyPromiseSource=null; this.replyPromiseSelectionTracked=false; this.mentorRid=null; this.pendingRunId=null; this.pendingMentorRid=null; this.customGender="F";
     this._retrainRid=null; this._retrainIdkey=null;   // 재육성 취소 후 다른 아이돌이 기존 카드에 덮이는 것 방지
     // ⭐첫 플레이어는 간이(12턴)를 기본으로 = 짧고 확실한 첫 맛(간이는 오프닝 컷씬도 스킵). 완주 경험 있으면 마지막 선택 유지.
     try{ DG.load(); if((DG.data.roster||[]).length===0) this.trainMode='quick'; }catch(e){}
@@ -4001,6 +4001,10 @@ window.addEventListener("popstate", ()=>{
   .role-coach{margin-top:10px;padding:11px 12px;border-radius:13px;background:linear-gradient(135deg,rgba(95,201,255,.09),rgba(255,95,162,.08));border:1px solid rgba(95,201,255,.24);display:flex;align-items:center;gap:9px;text-align:left}
   .role-coach .rc-copy{flex:1;min-width:0}.role-coach b{display:block;font-size:12px}.role-coach span{display:block;margin-top:2px;font-size:10.5px;line-height:1.4;color:var(--sub)}
   .role-coach button{flex:0 0 auto;border:1px solid rgba(95,201,255,.38);background:rgba(95,201,255,.1);color:#aee7ff;border-radius:10px;padding:7px 9px;font:inherit;font-size:10px;font-weight:900}
+  .season-run-hook{margin:12px 0;padding:10px;border-radius:14px;background:linear-gradient(135deg,rgba(95,201,255,.11),rgba(255,95,162,.1));border:1px solid rgba(95,201,255,.28);text-align:left}
+  .season-run-person{display:flex;align-items:center;gap:9px}.season-run-person img,.season-run-person .srh-av{width:42px;height:42px;flex:0 0 42px;border-radius:50%;object-fit:cover;background:#202b40;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,211,92,.42)}
+  .season-run-copy{min-width:0;flex:1}.season-run-copy b,.season-run-copy span{display:block}.season-run-copy b{font-size:12.5px}.season-run-copy span{font-size:10.5px;color:var(--sub);line-height:1.4;margin-top:2px}
+  .season-run-hook button{margin-top:9px;width:100%;border:1px solid rgba(95,201,255,.38);background:rgba(95,201,255,.12);color:#c6efff;border-radius:10px;padding:9px;font:inherit;font-size:11.5px;font-weight:900}
   .dg-sub{display:flex;justify-content:space-between;align-items:center;margin:16px 0 7px;font-size:15px}
   .dg-chips{display:flex;flex-wrap:wrap;gap:6px}
   .dg-chip{display:inline-block;background:var(--panel);border:1.5px solid var(--line);border-radius:999px;padding:6px 11px;font-size:12.5px;line-height:1.35}
@@ -5110,6 +5114,33 @@ window.addEventListener("popstate", ()=>{
     seasonNo(){ return Math.max(0, Math.floor((Date.now()-SEASON_EPOCH)/SEASON_MS)); },
     currentTrend(){ return TRENDS[this.seasonNo()%TRENDS.length]; },
     seasonEndsInDays(){ const next=(this.seasonNo()+1)*SEASON_MS+SEASON_EPOCH; return Math.max(0,Math.ceil((next-Date.now())/86400000)); },
+    // 시즌 결과가 단순 리셋 안내로 끝나지 않고, 대표 그룹의 다음 RUN 제작으로 이어지게 한다.
+    seasonRunProposal(trend,g){
+      trend=trend||this.currentTrend(); g=g||this.repGroup(); if(!g)return null;
+      const members=this.groupMembers(g); if(!members.length)return null;
+      const direction=this.TREND_STAT[trend.pos]||'vocal';
+      const pool=members.filter(m=>m.type===trend.pos);
+      pool.sort((a,b)=>((b.r.rid===this.data.favRid)-(a.r.rid===this.data.favRid)) || (b.r.joinedAt||0)-(a.r.joinedAt||0));
+      const member=pool[0]||null;
+      // 실제 편성 역할과 시즌 콘셉트가 일치할 때만 개인 제안. 불일치하면 실존 인물을 교정하는 인상을 피한다.
+      return {rid:member?member.r.rid:null,name:member?member.r.name:'',img:member?(member.r.img||''):'',direction,trendName:trend.nm,groupName:g.name||'대표 그룹'};
+    },
+    seasonRunAction(rid,direction){
+      if(!STATS.some(s=>s.k===direction))return;
+      if(Game.hasSave()){
+        try{ ProductTelemetry.track('season_retrain_click',{season_no:this.seasonNo(),trend_pos:(this.currentTrend()||{}).pos||'',rid:rid==null?'':String(rid),direction,deferred:true}); }catch(e){}
+        Game.continueGame(); try{toast('진행 중인 RUN부터 이어갈게 · 시즌 제안은 홈에 남아 있어');}catch(e){} return;
+      }
+      if(rid!=null){ this.retrainForSeason(rid,direction); return; }
+      try{ ProductTelemetry.track('season_retrain_click',{season_no:this.seasonNo(),trend_pos:(this.currentTrend()||{}).pos||'',rid:'',direction,generic:true}); }catch(e){}
+      Game.goSelect(); Game.pendingRunDirection=direction;
+    },
+    retrainForSeason(rid,direction){
+      if(!STATS.some(s=>s.k===direction)){ try{toast('시즌 제작 방향을 찾지 못했어');}catch(e){} return; }
+      const r=this.rosterById(rid); if(!r)return;
+      try{ ProductTelemetry.track('season_retrain_click',{season_no:this.seasonNo(),trend_pos:(this.currentTrend()||{}).pos||'',rid:String(rid),direction}); }catch(e){}
+      this.retrain(rid,{source:'season_brief',direction});
+    },
     // 배틀 승점(경쟁전⑤) — 시즌 바뀌면 자동 리셋(티어/랭킹만, 그룹·카드 자산은 유지)
     // ⑦ 랭킹=그룹별 승점(재율애비 결정). 승점·전적·통산이 그룹(gid)마다 따로 → 대표 바꾸면 그 그룹 자기 승점 표시.
     //   ⑧ 배치전 없음: 시즌 시작/중간참여 모두 브론즈 0P부터.
@@ -5749,6 +5780,9 @@ window.addEventListener("popstate", ()=>{
       let _resume=null; try{ if(Game.hasSave()){ const sv=JSON.parse(localStorage.getItem('idol_save')); if(sv&&sv.idol) _resume={name:sv.idol.name, week:sv.week||1, total:(sv.mode==='quick'?12:24), img:sv.idol.img||'',rid:sv.retrainRid||0,stats:sv}; } }catch(e){}
       const _mentorOffer=!_resume?this.mentorHomeOffer():null;
       const _mentorBtn=_mentorOffer?`<button class="btn ghost" onclick="DG.startMentorRun(${_mentorOffer.mentor.rid},${_mentorOffer.target.id})">🫶 ${esc(_mentorOffer.mentor.name)} → ${esc(idolName(_mentorOffer.target))} 다음 RUN</button>`:'';
+      const _seasonResult=this.data.lastSeasonResult;
+      const _homeSeasonPlan=_seasonResult&&_seasonResult.no<this.seasonNo()?this.seasonRunProposal(_trend,rep):null;
+      const _seasonHeroBtn=_homeSeasonPlan?`<button class="btn ghost" style="flex:1" onclick="DG.seasonRunAction(${_homeSeasonPlan.rid==null?'null':_homeSeasonPlan.rid},'${_homeSeasonPlan.direction}')">🎬 ${_homeSeasonPlan.name?`${esc(_homeSeasonPlan.name)} 새 시즌 RUN`:`${esc(_homeSeasonPlan.trendName)} 시즌 제작`}</button>`:'';
       // 편성/데뷔 대기 멤버 얼굴(공용) — 얼굴이 홈을 지배하게
       const _lineMem = this.slots().map(s=>this.rosterById(this.data.lineup[s.sid])).filter(Boolean);
       const _sgTrend = STAGE_HUE[_trend.pos]||STAGE_HUE.center;
@@ -5758,7 +5792,7 @@ window.addEventListener("popstate", ()=>{
           cardState:'training', progress:Math.round((_resume.week/_resume.total)*100),
           greet:'저 아직 육성 중이에요 — 이어서 키워줘요! 🎤', badge:'⏸️ 육성 중',
           nm:esc(_resume.name), sub:`${_resume.week}/${_resume.total}턴`,
-          next:'완주 보상 · 아이돌 카드 영구 저장 + 지원 카드 1장',
+          next:_homeSeasonPlan?`완주 후 · ${esc(_homeSeasonPlan.trendName)} 시즌 제작 제안 대기`:'완주 보상 · 아이돌 카드 영구 저장 + 지원 카드 1장',
           goal:`${esc(_resume.name)} 카드 완주 · ${_resume.total-_resume.week+1}턴 남음`,
           cta:{on:'Game.continueGame()', label:`▶️ ${esc(_resume.name)} ${_resume.week}/${_resume.total}턴 이어하기`},
           extra: rep?`<button class="btn ghost" style="margin-top:8px" onclick="DG.showBattleLobby()">👻 ${esc(rep.name)} 고스트 리그</button>`:'' });
@@ -5787,7 +5821,7 @@ window.addEventListener("popstate", ()=>{
           goalOn:'DG.showBattleLobby()',
           cta:{on:'DG.showBattleLobby()', label:'👻 고스트 리그'},
           extra:`<div class="hero-btns" style="margin-top:9px">
-             <button class="btn ghost" style="flex:1" onclick="${_lead?`DG.retrain(${_lead.r.rid})`:'Game.goSelect()'}">${_lead?`🔥 ${esc(_lead.r.name)} 재육성`:'✨ 육성'}</button>
+             ${_seasonHeroBtn||`<button class="btn ghost" style="flex:1" onclick="${_lead?`DG.retrain(${_lead.r.rid})`:'Game.goSelect()'}">${_lead?`🔥 ${esc(_lead.r.name)} 재육성`:'✨ 육성'}</button>`}
              ${_mentorBtn||'<button class="btn ghost" style="flex:1" onclick="DG.goRoster()">📋 편성</button>'}</div>` });
       } else if(gi.n>=3){
         hero=this._stageHero({ members:_lineMem.map(r=>({img:r.img})), idol:_lineMem[0], sg:_sgTrend,
@@ -5902,14 +5936,17 @@ window.addEventListener("popstate", ()=>{
       if(lsr && !lsr.seen){
         lsr.seen=1; this.persist();
         const lt=this.battleTier(lsr.pts||0);
+        const _seasonPlan=this.seasonRunProposal(_trend,rep);
         const ov=document.getElementById('ov'); ov.className='ov on';
         ov.onclick=(e)=>{ if(e.target===ov){ ov.className='ov'; ov.onclick=null; } };
         ov.innerHTML=`<div class="ev-card" style="text-align:center;max-width:300px">
           <div style="font-size:50px;line-height:1.1">${lt.ic}</div>
           <div class="ev-title" style="margin-top:6px">시즌 ${lsr.no} 마감!</div><!-- 시즌 번호는 랭킹 헤드와 동일 표기(seasonNo 그대로) — +1 하면 현 시즌과 같은 번호로 보이는 불일치 -->
           <div style="margin:9px 3px 6px;font-size:14.5px;line-height:1.6"><b>${esc(lt.nm)}</b>로 마무리 · 승점 <b>${lsr.pts}P</b><br>${lsr.w}승 ${lsr.l}패</div>
-          <div class="muted" style="font-size:12.5px;margin-bottom:13px">🐤 리니 "새 시즌은 <b>${esc(_trend.nm)}</b>! 티어는 리셋됐지만 그룹·카드는 그대로야"</div>
-          <button class="btn" onclick="var o=document.getElementById('ov');o.className='ov';o.onclick=null">새 시즌 가자 🔥</button></div>`;
+          <div class="muted" style="font-size:12.5px;margin-bottom:${_seasonPlan?'3':'13'}px">🐤 리니 "새 시즌은 <b>${esc(_trend.nm)}</b>! 티어는 리셋됐지만 그룹·카드는 그대로야"</div>
+          ${_seasonPlan?`<div class="season-run-hook"><div class="season-run-person">${_seasonPlan.img?`<img src="${esc(_seasonPlan.img)}" alt="">`:'<span class="srh-av">🎬</span>'}<div class="season-run-copy"><b>${_seasonPlan.name?`${esc(_seasonPlan.name)}의 새 시즌 RUN`:`${esc(_seasonPlan.groupName)} 새 시즌 제작`}</b><span>${_seasonPlan.name?'현재 편성 역할과 맞는 새 버전':'멤버 평가는 그대로 두고 새 콘셉트만'} · ${esc(STATNM[_seasonPlan.direction]||'무대')} 집중</span></div></div><button onclick="var o=document.getElementById('ov');o.className='ov';o.onclick=null;DG.seasonRunAction(${_seasonPlan.rid==null?'null':_seasonPlan.rid},'${_seasonPlan.direction}')">${_resume?'진행 중인 RUN 이어하기':`${esc(_trend.nm)} 버전 제작하기 ›`}</button></div>`:''}
+          <button class="btn${_seasonPlan?' ghost':''}" onclick="var o=document.getElementById('ov');o.className='ov';o.onclick=null">${_seasonPlan?'이번 시즌부터 보기':'새 시즌 가자 🔥'}</button></div>`;
+        try{ ProductTelemetry.track('season_brief_open',{season_no:this.seasonNo(),previous_season:lsr.no,previous_tier:lt.nm,has_run_proposal:!!_seasonPlan,proposal_rid:_seasonPlan?String(_seasonPlan.rid):''}); }catch(e){}
         try{ sfx('fanfare'); }catch(e){}
       }
 
@@ -6692,9 +6729,11 @@ window.addEventListener("popstate", ()=>{
     toCardPick(){
       this.load(); this.equipped=[];
       Game.runPromiseId=Game.replyPromiseSource&&window.RunMemory?RunMemory.replySelection(Game.replyPromiseSource.memory):null;
+      const suggestedDirection=STATS.some(s=>s.k===Game.pendingRunDirection)?Game.pendingRunDirection:null;
+      Game.pendingRunDirection=null;
       // 실아이돌 DB의 고정 spec은 사용하지 않는다. 커스텀의 첫 선택만 초깃값으로 넘긴다.
       if(!Game._retrainRid && Game.curMode==='custom' && Game.customSpec) Game.runDirection=Game.customSpec;
-      else Game.runDirection=null;
+      else Game.runDirection=suggestedDirection;
       Game.pendingRunId=Game.pendingRunId||newRunId();
       const candidates=this.mentorCandidates(), mentor=candidates.find(x=>String(x.rid)===String(Game.pendingMentorRid))||candidates[0];
       Game.pendingMentorRid=null; Game.mentorRid=mentor?mentor.rid:null;
@@ -6722,11 +6761,12 @@ window.addEventListener("popstate", ()=>{
       Game.curMode='search'; Game.selIdol=idol; Game.trainMode='quick';
       Game._retrainRid=rid;
       Game._retrainIdkey=r.idkey;
+      Game.pendingRunDirection=STATS.some(s=>s.k===opts.direction)?opts.direction:null;
       Game.replyPromiseSource=linkedMemory?{rid,runId:replyRunId,promiseId:replyPromiseId,memory:Object.assign({},linkedMemory)}:null;
       Game.replyPromiseSelectionTracked=false;
       Game.pendingRunId=Game.pendingRunId||newRunId();
       const link=window.RunMemory?RunMemory.replyLink(Game.replyPromiseSource):{};
-      try{ ProductTelemetry.track('retrain_started',{rid:String(rid),run_id:Game.pendingRunId,source:link.source||(r.unresolvedPromise?'unresolved_promise':'card_detail'),promise_id:linkedMemory?linkedMemory.promiseId:(r.unresolvedPromise&&r.unresolvedPromise.promiseId||''),...link}); }catch(e){}
+      try{ ProductTelemetry.track('retrain_started',{rid:String(rid),run_id:Game.pendingRunId,source:link.source||opts.source||(r.unresolvedPromise?'unresolved_promise':'card_detail'),direction:Game.pendingRunDirection||'',promise_id:linkedMemory?linkedMemory.promiseId:(r.unresolvedPromise&&r.unresolvedPromise.promiseId||''),...link}); }catch(e){}
       this.toCardPick();
     },
     renderCardPick(){
