@@ -19,7 +19,7 @@
   function cleanContext(props){
     const out={}, src=props&&typeof props==='object'?props:{};
     const scalar=(key,max=120)=>{ const v=src[key]; if(typeof v==='number'&&Number.isFinite(v))out[key]=v; else if(typeof v==='string'&&v)out[key]=v.slice(0,max); };
-    scalar('user_id',80); scalar('favorite_id',80); scalar('favorite_name',80); scalar('favorite_group',80); scalar('locale',16); scalar('app_version',32);
+    scalar('favorite_id',80); scalar('favorite_name',80); scalar('favorite_group',80); scalar('locale',16); scalar('app_version',32);
     return out;
   }
   function nativePost(payload){
@@ -44,7 +44,7 @@
     if(!msg||msg.type!=='DREAM_GROUP_CONTEXT'||!msg.data||typeof msg.data!=='object')return;
     context=cleanContext(msg.data);
     try{ root.dispatchEvent&&root.dispatchEvent(new CustomEvent('dream-group-context',{detail:{...context}})); }catch(_){ }
-    track('context_received',{has_user:!!context.user_id,has_favorite:!!context.favorite_id});
+    track('context_received',{has_favorite:!!context.favorite_id});
     return true;
   }
   function ready(){ nativePost({type:'DREAM_GROUP_READY',data:{version:'2026-08-03'}}); track('app_open',{standalone:!(root.webkit||root.Android)}); }

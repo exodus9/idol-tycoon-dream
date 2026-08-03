@@ -13,7 +13,7 @@ need(bridge.includes("type:'DREAM_GROUP_EVENT'"),'native app event bridge is mis
 need(bridge.includes("type:'DREAM_GROUP_READY'"),'native app readiness handshake is missing');
 need(bridge.includes("new CustomEvent('dream-group-context'"),'received app context must notify the game runtime');
 need(bridge.includes("raw.source!==root"),'cross-frame context messages must be rejected');
-need(bridge.includes("scalar('user_id'")&&bridge.includes("scalar('favorite_id'")&&!bridge.includes("scalar('token'"),'app context must use an explicit safe-field allowlist');
+need(!bridge.includes("scalar('user_id'")&&bridge.includes("scalar('favorite_id'")&&!bridge.includes("scalar('token'"),'app context must expose favorite UX fields only');
 need(bridge.includes("msg.type!=='DREAM_GROUP_CONTEXT'"),'native context receiver is missing');
 need(!/localStorage\.getItem\([^)]*(token|jwt)/i.test(bridge),'auth tokens must never be read from localStorage');
 need(!/URLSearchParams[^\n]*(token|jwt)/i.test(bridge),'auth tokens must never be accepted from URL parameters');
