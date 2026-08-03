@@ -1004,7 +1004,7 @@
 <script src="storage-journal.js?v=20260803b"></script>
 <script src="run-migration.js?v=20260803b"></script>
 <script src="daily-retention.js?v=20260803b"></script>
-<script src="product-telemetry.js?v=20260803a"></script>
+<script src="product-telemetry.js?v=20260803b"></script>
 <script src="i18n.js?v=20260803a"></script>
 <script src="idols.js?v=sync202608030520"></script>
 <script>
@@ -1580,7 +1580,7 @@ function bondLevel(v){ v=Math.max(0,Math.min(100,+v||0));
 const RUN_SAVE_KEY='idol_save', RUN_BACKUP_KEY='idol_save_backup_v1';
 const validRunSave=s=>!!(s&&s.idol&&typeof s.week==='number'&&s.week>=1);
 const Game = {
-  st:null, lastResult:null, selIdol:null, curMode:"search", trainMode:"full", customSpec:null, runDirection:null, customImg:null, customGender:"F",
+  st:null, lastResult:null, selIdol:null, curMode:"search", trainMode:"full", customSpec:null, runDirection:null, customImg:null, customGender:"F", appFavoriteId:null,
 
   goSelect(){
     this.selIdol=null; this.customImg=null; this.customSpec=null; this.runDirection=null; this.customGender="F";
@@ -1601,7 +1601,10 @@ const Game = {
     if(_h) _h.textContent = _first ? '✨ 네 최애를 찾아봐' : '누구를 키울까?';
     const _si=document.getElementById('idolSearch');
     if(_si){ _si.placeholder = _first ? '최애 이름 검색 (예: 카리나, 뷔, 리사)' : '이름·그룹 검색 (예: 리사, BTS)';
-      if(_first) setTimeout(()=>{ try{ _si.focus(); }catch(e){} }, 400); }
+      const _appFav=_first&&this.appFavoriteId!=null?IDOLS.find(i=>String(i.id)===String(this.appFavoriteId)):null;
+      if(_appFav){ _si.value=_appFav.name||''; this.search(); this.pick(_appFav.id); if(_h)_h.textContent=`♥ ${koWith(idolName(_appFav),'과','와')} 첫 RUN`;
+        try{ toast(`최애돌의 내 최애 · ${koWith(idolName(_appFav),'을','를')} 불러왔어요`); }catch(e){} }
+      else if(_first) setTimeout(()=>{ try{ _si.focus(); }catch(e){} }, 400); }
     show("s-select");
     try{ if(window.Tut) Tut.onSelect(); }catch(e){}
   },
@@ -7264,6 +7267,11 @@ window.addEventListener("popstate", ()=>{
     },
   };
   window.DG = DG; DG.load();
+  const applyDreamGroupContext=ctx=>{ const id=ctx&&ctx.favorite_id; if(id==null)return; const idol=IDOLS.find(i=>String(i.id)===String(id)); if(!idol)return;
+    Game.appFavoriteId=id; const select=document.getElementById('s-select'); if(select&&select.classList.contains('on')){ try{ DG.load(); if(!(DG.data.roster||[]).length&&Game.curMode==='search'&&!Game.selIdol){
+      const input=document.getElementById('idolSearch'); if(input&&!(input.value||'').trim()){ input.value=idol.name||''; Game.search(); Game.pick(idol.id); const h=document.querySelector('#s-select .sub-head h2'); if(h)h.textContent=`♥ ${koWith(idolName(idol),'과','와')} 첫 RUN`; } } }catch(e){} } };
+  window.addEventListener('dream-group-context',e=>applyDreamGroupContext(e.detail));
+  try{ applyDreamGroupContext(ProductTelemetry.getContext()); }catch(e){}
   try{ ProductTelemetry.ready(); }catch(e){}
 
   // ===== 첫 실행 튜토리얼 (스포트라이트 코치마크) — 5스텝 =====
