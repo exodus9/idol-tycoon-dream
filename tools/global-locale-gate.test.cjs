@@ -7,10 +7,10 @@ const vm = require('node:vm');
 const source = fs.readFileSync(path.join(__dirname, '..', 'i18n.js'), 'utf8');
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 
-function boot(language){
+function boot(language,search=''){
   const store = new Map();
   const context = vm.createContext({
-    navigator:{language},
+    navigator:{language},location:{search},URLSearchParams,
     localStorage:{getItem:key=>store.get(key)||null,setItem:(key,value)=>store.set(key,String(value))},
     console
   });
@@ -25,6 +25,7 @@ test('launch locale detection covers Korean, English, Japanese and Indonesian',(
   assert.equal(boot('ja-JP').LANG,'ja');
   assert.equal(boot('id-ID').LANG,'id');
   assert.equal(boot('in-ID').LANG,'id');
+  assert.equal(boot('ko-KR','?lang=id').LANG,'id','an explicit QA/deep-link locale must override the device language');
   assert.deepEqual(Array.from(boot('en-US').langList(),x=>x.code),['ko','en','ja','id']);
   assert.ok(html.includes('src="dg-i18n.js'));
 });

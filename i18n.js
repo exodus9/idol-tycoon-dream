@@ -1505,6 +1505,7 @@ window.I18N = {
   const has=l=>DECLARED.includes(l)&&!!I18N[l];
   const SUPPORTED=DECLARED.filter(has);
   function detect(){
+    try{ const q=new URLSearchParams(location.search||'').get('lang'); if(q&&has(q)) return q; }catch(e){}
     try{ const s=localStorage.getItem("idol_lang"); if(s&&has(s)) return s; }catch(e){}
     const n=(navigator.language||"ko").toLowerCase();
     let want="en";
