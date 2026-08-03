@@ -121,6 +121,7 @@ test('result explains the final fan jump and shows collection rewards before dia
   assert.ok(endSection.indexOf('id="dgResult"')<endSection.indexOf('id="radarWrap"'),'card rewards must appear before the detailed radar');
   const resultRenderer=html.slice(html.indexOf('renderResult(box, res)'),html.indexOf('runPromiseView(p,ctx)'));
   assert.ok(resultRenderer.indexOf('${idolReveal}')<resultRenderer.indexOf('${seasonResult}'),'idol card must precede detailed season copy');
+  assert.ok(resultRenderer.indexOf('${returnHook}')<resultRenderer.indexOf('${idolReveal}'),'the next-day fandom hook must be visible before the tall idol-card reward');
   assert.ok(resultRenderer.indexOf('${returnHook}')<resultRenderer.indexOf("dgT('result.supportTitle')"),'the next-day fandom hook must not be buried below secondary rewards');
   assert.ok(resultRenderer.indexOf("dgT('result.supportTitle')")<resultRenderer.indexOf('${seasonResult}'),'support rewards must precede detailed season copy');
   assert.equal(resultRenderer.includes("dgT('result.joinBalance'"),false,'the primary reward summary must not compete with a second letter grade');
@@ -133,10 +134,12 @@ test('RUN grade is not appended directly to a real idol name',()=>{
   assert.equal(cardRenderer.includes('<div class="rnm">${esc(name)} ${isLegacy?'),false);
 });
 
-test('Korean fandom copy resolves subject and companion particles',()=>{
+test('Korean copy resolves fandom and directional particles',()=>{
   const translator=html.slice(html.indexOf('function dgT(key,params)'),html.indexOf('function dgTOr'));
   assert.ok(translator.includes("replaceAll(`${word}과`,koWith(word,'과','와'))"));
   assert.ok(translator.includes("replaceAll(`${word}이`,koWith(word,'이','가'))"));
+  assert.ok(translator.includes("replaceAll(`${word}으로`,koRoute(word))"));
+  assert.ok(html.includes("jong===8?'로':'으로'"),'Korean route particle must handle final rieul correctly');
 });
 
 test('finishing below first place never claims that a debut spot was secured',()=>{

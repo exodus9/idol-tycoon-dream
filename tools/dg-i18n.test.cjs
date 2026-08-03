@@ -72,3 +72,11 @@ test('growth preview is labeled as a variable baseline in every release locale',
   assert.match(copies[2],/基準成長.*結果で変動/);
   assert.match(copies[3],/dasar.*berubah/i);
 });
+
+test('growth preview teaches normal and failed outcome ranges in every release locale', () => {
+  for(const locale of ['ko','en','ja','id']){
+    const copy=i18n.t(locale,'run.growthRange',{stat:'X',min:40,max:50,failMin:11,failMax:14});
+    assert.notEqual(copy,'run.growthRange');
+    for(const amount of ['40','50','11','14']) assert.match(copy,new RegExp(amount));
+  }
+});

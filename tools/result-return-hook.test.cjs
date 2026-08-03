@@ -23,6 +23,14 @@ test('result screen always exposes the appropriate next-day fandom bridge',()=>{
     for(const locale of ['ko','en','ja','id']) assert.notEqual(dgI18n.t(locale,key),key,`${locale} missing ${key}`);
   }
   assert.ok(html.includes('onclick="DG.goDaily()"'));
+  const resultRenderer=html.slice(html.indexOf('renderResult(box, res)'),html.indexOf('runPromiseView(p,ctx)'));
+  assert.ok(resultRenderer.indexOf('${returnHook}')<resultRenderer.indexOf('${idolReveal}'),'next-day bridge must appear before the tall idol card');
+});
+
+test('completed promise evidence never renders confusing over-target fractions',()=>{
+  assert.ok(html.includes('const _rmDisplayValue=_rmSuccess&&_rmTarget>0?Math.min(_rmValue,_rmTarget):_rmValue'));
+  assert.ok(html.includes('const _lmDisplayValue=_lmSuccess&&_lmTarget>0?Math.min(_lmValue,_lmTarget):_lmValue'));
+  assert.ok(html.includes('const displayValue=success&&target>0?Math.min(value,target):value'));
 });
 
 test('arrived, opened and promise reply states remain localized through retraining',()=>{

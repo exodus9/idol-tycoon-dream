@@ -1065,7 +1065,7 @@
 <script src="stage-criteria.js?v=6d23aaaa14"></script>
 <script src="completion-transaction.js?v=8c3a470bcb"></script>
 <script src="product-telemetry.js?v=36d3c57a97"></script>
-<script src="dg-i18n.js?v=ebc4f5b2e5"></script>
+<script src="dg-i18n.js?v=9c5f08b9c4"></script>
 <script src="i18n.js?v=1d3ac651ea"></script>
 <script src="idols.js?v=8bb60ae14f"></script>
 <script>
@@ -2022,10 +2022,11 @@ const Game = {
         : (spec?'<span class="spk">⭐</span>':'');
       const impactStat=(c.kind==="rare"||c.kind==="burst")?s.runDirection:c.stat;
       const nextCombo=s.comboStat===impactStat?(s.combo||0)+1:1;
-      const previewJudge=c.kind==="rare"?JUDGE.great:JUDGE.ok;
-      const preview=impactStat?RunBalanceRules.growthOutcome({base:c.base,judgeMult:previewJudge.mult,current:s[impactStat],growthMult:growthMult(s[impactStat]),talentMult:impactStat===s.runDirection?1.25:1,trendMult:RunBalanceRules.trendMultiplier(impactStat,_trendStat),cardGrowth:s.cardGrowth||1,comboMult:1+Math.min(.6,(nextCombo-1)*.15),buffMult:s.buff&&s.buff.turns>0?s.buff.mult:1,randomMult:1}):{applied:0};
-      const appliedPreview=preview.applied;
-      const impact=c.base?dgT('run.expectedGain',{stat:impactStat?stnm(impactStat):dgT('run.keyStage'),amount:appliedPreview})+((s.mental<MENTAL_THRESH||cb==='bad')?' · '+dgT('run.accidentRisk'):'')
+      const previewInput=impactStat?{base:c.base,current:s[impactStat],growthMult:growthMult(s[impactStat]),talentMult:impactStat===s.runDirection?1.25:1,trendMult:RunBalanceRules.trendMultiplier(impactStat,_trendStat),cardGrowth:s.cardGrowth||1,comboMult:1+Math.min(.6,(nextCombo-1)*.15),buffMult:s.buff&&s.buff.turns>0?s.buff.mult:1}:null;
+      const previewRange=(judgeMult)=>{ const low=RunBalanceRules.growthOutcome({...previewInput,judgeMult,randomMult:.9}).applied, high=RunBalanceRules.growthOutcome({...previewInput,judgeMult,randomMult:1.1}).applied; return {min:Math.min(low,high),max:Math.max(low,high)}; };
+      const normalRange=impactStat?previewRange(c.kind==="rare"?JUDGE.great.mult:JUDGE.ok.mult):{min:0,max:0};
+      const failRange=impactStat&&c.kind!=="rare"?previewRange(JUDGE.fail.mult):{min:0,max:0};
+      const impact=c.base?dgT(c.kind==="rare"?'run.growthRare':'run.growthRange',{stat:impactStat?stnm(impactStat):dgT('run.keyStage'),min:normalRange.min,max:normalRange.max,failMin:failRange.min,failMax:failRange.max})+((s.mental<MENTAL_THRESH||cb==='bad')?' · '+dgT('run.accidentRisk'):'')
         : c.kind==='rest'?dgT('run.recover')
         : c.kind==='live'?dgT('run.fansGain')
         : c.kind==='focus'?'3 TURN · +30%':dgT('run.specialEffect');
@@ -3484,6 +3485,8 @@ const Nav={
 function fmt(n){return Math.round(n||0).toLocaleString("en-US");}
 function koWith(word,finalJosa,vowelJosa){ const s=String(word||''), cp=s.codePointAt(s.length-1), hangul=cp>=0xAC00&&cp<=0xD7A3;
   return s+(hangul&&((cp-0xAC00)%28!==0)?finalJosa:vowelJosa); }
+function koRoute(word){ const s=String(word||''), cp=s.codePointAt(s.length-1), hangul=cp>=0xAC00&&cp<=0xD7A3, jong=hangul?(cp-0xAC00)%28:0;
+  return s+(!jong||jong===8?'로':'으로'); }
 function clampState(s){ s.cond=Math.max(0,Math.min(100,s.cond)); s.mental=Math.max(0,Math.min(100,s.mental));  // 멘탈 100 캡(이벤트 초과 버그 수정)
   s.fans=Math.max(0,Math.round(s.fans)); STATS.forEach(st=>s[st.k]=Math.max(0,Math.min(800,Math.round(s[st.k])))); }  // 스탯 800 캡
 function loadImg(src, cross){ return new Promise(res=>{ if(!src){res(null);return;}
@@ -3687,6 +3690,7 @@ function dgT(key,params){
   if((window.LANG||'ko')==='ko'&&params){
     for(const field of ['fandom','rally']){ const word=params[field]; if(word==null)continue;
       value=value.replaceAll(`${word}과`,koWith(word,'과','와')).replaceAll(`${word}이`,koWith(word,'이','가')); }
+    if(params.stat!=null){ const word=String(params.stat); value=value.replaceAll(`${word}으로`,koRoute(word)); }
   }
   return value;
 }
@@ -6577,7 +6581,8 @@ window.addEventListener("popstate", ()=>{
           return `<button type="button" class="va-run ${v.current?'current':''} ${v.failed||memory&&memory.status==='failed'?'failed':''}" onclick="event.stopPropagation();DG.showRunRecord(${rid},'${encodeURIComponent(v.runId||'')}')"><b>RUN ${String(v.run||1).padStart(2,'0')}</b><span>${esc(state)}</span><em>${edition&&v.completed?`${esc(edition.icon||'🎬')} S${+edition.no+1} · ${window.LANG==='ko'?esc(edition.name||dgT('card.albumSeason')):dgT('card.albumSeason')}`:(memory?esc(dgT(`promise.${memory.baseType||'signature'}Title`,{idol:r.name,fandom:fandomOf(r).name,direction:t('st_'+(v.runDirection||r.runDirection||'vocal'))})):dgT('card.albumSummary',{grade:esc(v.grade||'F'),fans:fmt(v.fans||0)}))}</em></button>`;}).join('')}</div>`:'';
       const _lm=r.lastRunMemory, _lmType=_lm&&(_lm.baseType||'signature'), _lmSuccess=!!(_lm&&_lm.status==='success'), _lmNums=_lm&&String(_lm.evidence||'').match(/(\d+)\/(\d+)/), _lmValue=_lm&&_lm.value!=null?_lm.value:(_lmNums?+_lmNums[1]:0), _lmTarget=_lm&&_lm.target!=null?_lm.target:(_lmNums?+_lmNums[2]:0);
       const _lmTitle=_lm?dgT(`promise.${_lmType}Title`,{idol:esc(r.name),fandom:esc(fandomOf(r).name),direction:t('st_'+(r.runDirection||'vocal'))}):'';
-      const _lmEvidence=_lm?dgT(`result.memory${_lmType[0].toUpperCase()+_lmType.slice(1)}${_lmSuccess?'Success':'Failed'}`,{value:_lmValue,target:_lmTarget}):'';
+      const _lmDisplayValue=_lmSuccess&&_lmTarget>0?Math.min(_lmValue,_lmTarget):_lmValue;
+      const _lmEvidence=_lm?dgT(`result.memory${_lmType[0].toUpperCase()+_lmType.slice(1)}${_lmSuccess?'Success':'Failed'}`,{value:_lmDisplayValue,target:_lmTarget}):'';
       const lastScene=_lm?`<div class="res-bond" style="margin:7px 0"><div><span>🎬 ${dgT('card.lastScene')}</span><b>${dgT(_lmSuccess?'result.memorySuccess':'result.memoryFailed')}</b></div><small style="display:block;margin-top:5px">${esc(_lmTitle)} · ${esc(_lmEvidence)}</small></div>`:'';
       // 애정⑥ 함께한 기록
       const days=Math.max(1, Math.floor((Date.now()-(r.joinedAt||Date.now()))/86400000)+1);
@@ -6613,7 +6618,8 @@ window.addEventListener("popstate", ()=>{
       const edition=v.seasonEdition&&v.completed?v.seasonEdition:null, runNo=String(v.run||1).padStart(2,'0');
       const type=m&&(m.baseType||'signature'), success=!!(m&&m.status==='success'), nums=m&&String(m.evidence||'').match(/(\d+)\/(\d+)/), value=m&&(m.value!=null?m.value:(nums?+nums[1]:0)), target=m&&(m.target!=null?m.target:(nums?+nums[2]:0));
       const title=m?dgT(`promise.${type}Title`,{idol:esc(r.name),fandom:esc(fandomOf(r).name),direction:t('st_'+(v.runDirection||r.runDirection||'vocal'))}):dgT('record.title',{name:esc(r.name)});
-      const evidence=m?dgT(`result.memory${type[0].toUpperCase()+type.slice(1)}${success?'Success':'Failed'}`,{value,target}):dgT('record.summary',{grade:esc(v.grade||'F'),fans:fmt(v.fans||0)});
+      const displayValue=success&&target>0?Math.min(value,target):value;
+      const evidence=m?dgT(`result.memory${type[0].toUpperCase()+type.slice(1)}${success?'Success':'Failed'}`,{value:displayValue,target}):dgT('record.summary',{grade:esc(v.grade||'F'),fans:fmt(v.fans||0)});
       const reward=m?dgT(!success?'result.memoryRetry':type==='fandom'?'result.memoryRewardBond':type==='signature'?'result.memoryRewardFans800':'result.memoryRewardFans500'):'';
       ov.className='ov on'; ov.onclick=null; ov.innerHTML=`<div class="ev-card" style="text-align:left"><div class="ev-banner">RUN ${runNo} · ${edition?`${esc(edition.icon||'🎬')} S${+edition.no+1} ${dgT('record.edition')}`:dgT(v.adopted?'record.adopted':failed?'record.unfinished':'record.memory')}</div>
         <div class="ev-title">${esc(title)}</div>
@@ -6843,7 +6849,8 @@ window.addEventListener("popstate", ()=>{
       const _rmType=_rm&&(_rm.baseType||'signature'), _rmSuccess=!!(_rm&&_rm.status==='success');
       const _rmNums=_rm&&String(_rm.evidence||'').match(/(\d+)\/(\d+)/), _rmValue=_rm&&_rm.value!=null?_rm.value:(_rmNums?+_rmNums[1]:0), _rmTarget=_rm&&_rm.target!=null?_rm.target:(_rmNums?+_rmNums[2]:0);
       const _rmTitle=_rm?dgT(`promise.${_rmType}Title`,{idol:idolR?esc(idolR.name):'IDOL',fandom:esc(_fd),direction:idolR?t('st_'+(idolR.runDirection||'vocal')):t('st_vocal')}):'';
-      const _rmEvidence=_rm?dgT(`result.memory${_rmType[0].toUpperCase()+_rmType.slice(1)}${_rmSuccess?'Success':'Failed'}`,{value:_rmValue,target:_rmTarget}):'';
+      const _rmDisplayValue=_rmSuccess&&_rmTarget>0?Math.min(_rmValue,_rmTarget):_rmValue;
+      const _rmEvidence=_rm?dgT(`result.memory${_rmType[0].toUpperCase()+_rmType.slice(1)}${_rmSuccess?'Success':'Failed'}`,{value:_rmDisplayValue,target:_rmTarget}):'';
       const _rmReward=_rm?dgT(!_rmSuccess?'result.memoryRetry':_rmType==='fandom'?'result.memoryRewardBond':_rmType==='signature'?'result.memoryRewardFans800':'result.memoryRewardFans500'):'';
       const memoryResult=_rm?`<div class="res-bond" style="border-color:${_rmSuccess?'rgba(255,211,92,.45)':'rgba(255,87,126,.5)'}"><div><span>🎬 ${dgT('result.memoryHead')}</span><b>${dgT(_rmSuccess?'result.memorySuccess':'result.memoryFailed')}</b></div><div style="font-size:13px;font-weight:900;margin-top:7px">${esc(_rmTitle)}</div><small style="display:block;margin-top:4px">${esc(_rmEvidence)}</small><small style="display:block;margin-top:5px;color:${_rmSuccess?'#ffd35c':'#ff91aa'}">${esc(_rmReward)}</small></div>`:'';
       const _se=res.seasonEdition;
@@ -6880,8 +6887,8 @@ window.addEventListener("popstate", ()=>{
         <div class="res-card-copy"><b>${dgT(idolR.incomplete?'result.cardIncomplete':keptAfterFail||!res.adopted?'result.cardKept':'result.cardSaved',{name:esc(idolR.name)})}</b><span>${dgT(idolR.incomplete?'result.cardIncompleteCopy':keptAfterFail||!res.adopted?'result.cardKeptCopy':this.idolCardMeta(idolR).star>=5?'result.cardMax':'result.cardNext',{goal:this.idolNextGoal(this.idolCardMeta(idolR))})}</span></div>
       </div>`:'';
       box.innerHTML=`<div class="dg-res">${rec}<div class="dg-res-slot">${completionSummary}</div>${thanks}
-        ${idolReveal}
         ${returnHook}
+        ${idolReveal}
         <div class="dg-res-cards"><b>${dgT('result.supportTitle')}</b><div class="dg-chips" style="margin-top:6px">${chips}</div></div>
         ${seasonResult}${memoryResult}${bondResult}
         ${titleChips}

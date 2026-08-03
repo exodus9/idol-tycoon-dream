@@ -228,10 +228,10 @@
   Object.assign(PACKS.en, {'result.editionCollectedCopy':'{name} is now permanently in the season collection'});
   Object.assign(PACKS.ja, {'result.editionCollectedCopy':'{name}をシーズンコレクションに永久登録'});
   Object.assign(PACKS.id, {'result.editionCollectedCopy':'{name} tersimpan permanen di koleksi musim'});
-  Object.assign(PACKS.ko, {'run.expectedGain':'{stat} 기본 성장 +{amount} · 결과에 따라 변동'});
-  Object.assign(PACKS.en, {'run.expectedGain':'{stat} base growth +{amount} · outcome varies'});
-  Object.assign(PACKS.ja, {'run.expectedGain':'{stat} 基準成長+{amount}・結果で変動'});
-  Object.assign(PACKS.id, {'run.expectedGain':'Pertumbuhan dasar {stat} +{amount} · hasil dapat berubah'});
+  Object.assign(PACKS.ko, {'run.expectedGain':'{stat} 기본 성장 +{amount} · 결과에 따라 변동','run.growthRange':'{stat} 보통 +{min}~{max} · 실패 +{failMin}~{failMax}','run.growthRare':'{stat} 대성공 +{min}~{max}'});
+  Object.assign(PACKS.en, {'run.expectedGain':'{stat} base growth +{amount} · outcome varies','run.growthRange':'{stat} normal +{min}–{max} · fail +{failMin}–{failMax}','run.growthRare':'{stat} great +{min}–{max}'});
+  Object.assign(PACKS.ja, {'run.expectedGain':'{stat} 基準成長+{amount}・結果で変動','run.growthRange':'{stat} 通常+{min}〜{max}・失敗+{failMin}〜{failMax}','run.growthRare':'{stat} 大成功+{min}〜{max}'});
+  Object.assign(PACKS.id, {'run.expectedGain':'Pertumbuhan dasar {stat} +{amount} · hasil dapat berubah','run.growthRange':'{stat} normal +{min}–{max} · gagal +{failMin}–{failMax}','run.growthRare':'{stat} sukses besar +{min}–{max}'});
 
   function normalizeLocale(locale) {
     var value = String(locale || '').trim().toLowerCase().replace(/_/g, '-');
