@@ -784,6 +784,16 @@
     <div class="spacer" style="max-height:12px"></div>
   </section>
 
+  <!-- 오늘의 팬덤 프로젝트: 다음날 돌아올 이유 + 최애와 누적되는 관계 기억 -->
+  <section class="screen" id="s-daily">
+    <div class="sub-head">
+      <button class="menu-btn" onclick="DG.go()" aria-label="back" title="뒤로">←</button>
+      <h2>오늘의 팬덤 프로젝트</h2>
+      <span id="dailyHead" class="daily-head"></span>
+    </div>
+    <div id="dailyBody"></div>
+  </section>
+
   <!-- 업적 -->
   <section class="screen" id="s-achv">
     <div class="sub-head">
@@ -951,6 +961,7 @@
   <section class="screen" id="s-menu">
     <div class="sub-head"><button class="menu-btn" onclick="DG.go()" aria-label="메뉴 닫기">‹</button><h2 style="margin:0">메뉴</h2></div>
     <div class="menu-list">
+      <button class="menu-item" onclick="DG.goDaily()"><span class="mi-ic">💞</span><span class="mi-t">오늘의 팬덤 프로젝트</span><span class="mi-v muted" id="menuDaily"></span><span class="mi-ar">›</span></button>
       <button class="menu-item" onclick="DG.goAchv()"><span class="mi-ic">🏅</span><span class="mi-t">업적</span><span id="menuAchvDot" style="display:none;width:8px;height:8px;border-radius:50%;background:#ff3b5c;box-shadow:0 0 6px #ff3b5c;margin-left:6px;flex:0 0 auto"></span><span class="mi-v muted" id="menuAchv"></span><span class="mi-ar">›</span></button>
       <button class="menu-item" onclick="DG.showGroupDex()"><span class="mi-ic">📖</span><span class="mi-t">그룹 도감</span><span class="mi-ar">›</span></button>
       <button class="menu-item" onclick="Game.showManual('intro')"><span class="mi-ic">❓</span><span class="mi-t">게임 소개</span><span class="mi-ar">›</span></button>
@@ -992,6 +1003,8 @@
 <!-- 콘텐츠(다국어·아이돌DB) 갱신 시 v= 날짜를 올려 캐시 무효화 → 재방문 유저에게도 반영 -->
 <script src="storage-journal.js?v=20260803b"></script>
 <script src="run-migration.js?v=20260803b"></script>
+<script src="daily-retention.js?v=20260803a"></script>
+<script src="product-telemetry.js?v=20260803a"></script>
 <script src="i18n.js?v=20260803a"></script>
 <script src="idols.js?v=sync202608030520"></script>
 <script>
@@ -1739,13 +1752,17 @@ const Game = {
     this._retrainRid=null; this._retrainIdkey=null;
     let inheritedBond=8;
     if(retrainRid){ const prev=DG.rosterById(retrainRid); if(prev) inheritedBond=Math.min(45,Math.max(8,Math.round((prev.fanBond||8)*.55))); }
+    const dailyBoost=retrainRid?DG.takeDailyBoost(retrainRid):null;
+    if(dailyBoost&&dailyBoost.bond) inheritedBond=Math.min(60,inheritedBond+dailyBoost.bond);
     let runNo=1; try{ DG.load(); runNo=Math.max(1,(DG.data.runs||0)+1); }catch(e){}
     this.st = {idol, runDirection, retrainRid, ...base, cond:100, stam:100, hand:[], combo:0, comboStat:null, buff:null, fans:0, runNo,
-      fanBond:inheritedBond, fanBondMoments:0, week:1, busy:false, log:[], mode, trainCount:{}};   // 팬덤 유대는 회차 안에서 성장하고 재육성 때 일부 계승
+      fanBond:inheritedBond, fanBondMoments:0, dailyClimax:(dailyBoost&&dailyBoost.climax)||0,
+      week:1, busy:false, log:[], mode, trainCount:{}};   // 팬덤 유대는 회차 안에서 성장하고 재육성 때 일부 계승
     DG.applyEquipped(this.st);   // 드림그룹: 장착한 육성카드 시작 보정
     // 아이돌 카드 계승: 같은 아이돌 재육성은 이전 영구 카드의 별 단계만큼 시작치가 실제로 강해진다.
     if(retrainRid){ const prev=DG.rosterById(retrainRid); if(prev){ const im=DG.idolCardMeta(prev), inherit=4+im.star*3;
       STATS.forEach(x=>this.st[x.k]=(this.st[x.k]||0)+inherit); this.st.idolCardInherit=inherit; } }
+    if(dailyBoost&&dailyBoost.start){ this.st[runDirection]=(this.st[runDirection]||0)+dailyBoost.start; this.st.dailyStart=dailyBoost.start; }
     { const _e=DG.effOf(DG.equipped); this.st.cardGrowth=1+(_e.growth||0); this.st.cardGate=1+(_e.gate||0);
       this.st.condSave=_e.condSave||0; this.st.mentalSave=_e.mentalSave||0; this.st.earlyGrow=_e.earlyGrow||0; }   // 특수효과: SSR/UR 배수 + N 성향(개근/긍정/근성)
     // 학원마스식 성장 비포/애프터: 첫날 스탯 스냅샷(카드 보정 포함) → 결과 레이더에 회색 고스트로 "첫날의 너 vs 지금"
@@ -1753,6 +1770,8 @@ const Game = {
     DG.consumeEquipped();        // 카드 소모형: 장착 카드 1장씩 소모(지속 플레이 유인)
     this._fansShown=0;   // 새 게임: 팬 카운트업 기준 리셋
     this.logWeek(t("start_log",{name:esc(idolName(idol))}));
+    if(dailyBoost) this.logWeek(`💞 오늘의 팬덤 프로젝트 보정 적용${dailyBoost.bond?` · 유대 +${dailyBoost.bond}`:''}${dailyBoost.climax?` · 올인 +${dailyBoost.climax}%p`:''}${dailyBoost.start?` · ${STATNM[runDirection]} +${dailyBoost.start}`:''}`);
+    try{ ProductTelemetry.track('run_start',{mode,run_no:runNo,retrain:!!retrainRid,direction:runDirection,daily_boost:dailyBoost?dailyBoost.kind:'none'}); }catch(e){}
     this.save();
     const go=()=>{ show("s-play"); this.startWeek(); this.armBackGuard(); toast(t("start_toast",{name:idolName(idol)})); };
     // 간이 육성: 온보딩 컷씬 스킵하고 바로 12턴 플레이(재료 빠르게 뽑기). 정식은 오프닝 컷씬.
@@ -1826,7 +1845,7 @@ const Game = {
         <div class="bar"><i style="width:${Math.min(100,stam)}%;background:${stamC}"></i></div></div>
        <div class="vital"><div class="vlbl"><span>🧠 멘탈</span><b>${Math.round(s.mental)}/100</b></div>
         <div class="bar"><i style="width:${Math.min(100,s.mental)}%;background:${s.mental<MENTAL_THRESH?'var(--bad)':'#9aa6c9'}"></i></div></div>
-       <div class="vital fandom-vital" title="${esc(fd.name)}와의 유대는 클라이맥스 승부 확률을 높여요"><div class="vlbl"><span>💞 ${esc(fd.name)} 유대</span><b>${bond}</b></div>
+       <div class="vital fandom-vital" title="${esc(fd.name==='팬덤'?'팬덤과의':fd.name+'와의')} 유대는 클라이맥스 승부 확률을 높여요"><div class="vlbl"><span>💞 ${esc(fd.name)} 유대</span><b>${bond}</b></div>
         <div class="bar"><i style="width:${bond}%;background:linear-gradient(90deg,#ff5fa2,#ffd35c)"></i></div><small>${bl.n}</small></div>
        <div class="cond-face ${cb}" title="컨디션 — 결과 배수"><div class="cf">${ci.cf}</div><div class="ct">${ci.ct}</div></div>`;
     // 스탯 = 색 스트립(숫자·라벨 제거, 이모지+색바+등급만). 정보 다이어트. data-k 유지(bumpStat 손맛)
@@ -2290,7 +2309,7 @@ const Game = {
     ov.innerHTML=`<div class="ev-card bond idol-moment">
       <div class="idol-moment-photo" ${img?`style="background-image:url('${img}')"`:''}></div>
       <div class="idol-moment-shade"></div><div class="idol-moment-body">
-      <div class="ev-banner">💞 ${esc(fd.name)}와의 약속</div>
+      <div class="ev-banner">💞 ${esc(fd.name==='팬덤'?'팬덤과의':fd.name+'와의')} 약속</div>
       <div class="ev-title">${esc(nm)}</div>
       <div class="ev-text">"${esc(ev.prompt.replace(/팬들/g,fd.name))}"</div>
       <div class="bond-now">현재 유대 ${Math.round(s.fanBond||0)} · ${bondLevel(s.fanBond).n}</div>
@@ -2325,7 +2344,7 @@ const Game = {
     const ov=document.getElementById("ov"); ov.className="ov on"; ov.onclick=null;
     const s=this.st, fd=fandomOf(s.idol), img=s.idol.img||'', bond=Math.round(s.fanBond||0);
     const diff=this.difficulty(s), diffPct=Math.round((diff-1)*100);
-    const allinPct=Math.min(72,55+Math.floor(bond*.2));
+    const dailyClimax=Math.round(s.dailyClimax||0), allinPct=Math.min(80,55+Math.floor(bond*.2)+dailyClimax);
     // ⭐지금 내 상태(안전/아슬/위험)를 보여줘 '감'이 아닌 '계산'으로 걸게 → 숙련·학습 루프(중독 요소)
     // 서술형(상태만) — '이렇게 하세요' 지시 대신 '이 정도예요' 재료만. 계산은 플레이어 몫.
     const foreMap={ safe:{ic:'🧘',cls:'safe',msg:'여유 있는 편이에요'},
@@ -2339,8 +2358,8 @@ const Game = {
     try{ localStorage.setItem('dg_seen_stagechoice','1'); }catch(e){}
     ov.innerHTML=`<div class="ev-card idol-moment stage-moment" style="text-align:center;max-width:330px">
       <div class="idol-moment-photo" ${img?`style="background-image:url('${img}')"`:''}></div><div class="idol-moment-shade"></div><div class="idol-moment-body">
-      <div class="stage-fandom">RUN ${s.runNo||1} · ${esc(fd.rally)} · 유대 ${bond}${diffPct>0?` · 라이벌 +${diffPct}%`:''}</div><div class="ev-title">${title}</div>
-      <p class="muted" style="margin:6px 3px 10px;font-size:13px">${esc(fd.name)}가 이름을 외친다. 마지막 무대, 어떻게 갈까?</p>
+      <div class="stage-fandom">RUN ${s.runNo||1} · ${esc(fd.rally)} · 유대 ${bond}${dailyClimax?` · 오늘의 응원 +${dailyClimax}%p`:''}${diffPct>0?` · 라이벌 +${diffPct}%`:''}</div><div class="ev-title">${title}</div>
+      <p class="muted" style="margin:6px 3px 10px;font-size:13px">${esc(fd.name==='팬덤'?'팬덤이':fd.name+'가')} 이름을 외친다. 마지막 무대, 어떻게 갈까?</p>
       ${hint}${foreChip}
       <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
         <button class="btn ghost" id="scSafe" style="text-align:left;padding:14px 16px">🧘 <b>침착하게</b><br><small class="muted" style="font-size:12px">안정 · 점수 +8% 확정</small></button>
@@ -2353,6 +2372,7 @@ const Game = {
   },
   _stageResolve(mult, msg, onPick){
     const ov=document.getElementById("ov"), s=this.st, fd=fandomOf(s.idol), img=s.idol.img||'';
+    try{ ProductTelemetry.track('stage_strategy',{run_no:s.runNo||1,strategy:mult===1.08?'safe':'all_in',outcome:mult>=1.2?'win':mult<1?'loss':'safe'}); }catch(e){}
     ov.innerHTML=`<div class="ev-card idol-moment resolve-moment" style="text-align:center;max-width:330px">
       <div class="idol-moment-photo" ${img?`style="background-image:url('${img}')"`:''}></div><div class="idol-moment-shade"></div><div class="idol-moment-body">
       <div class="stage-fandom">${mult>=1.2?esc(fd.rally)+'이 폭발했다':mult<1?'숨죽인 객석':'흔들림 없는 무대'}</div>
@@ -2374,7 +2394,7 @@ const Game = {
     this.logWeek(pass?t("debut_pass_log"):t("debut_fail_log"));
     const ov=document.getElementById("ov"), fd=fandomOf(s.idol), img=s.idol.img||''; ov.className="ov on"; ov.onclick=null;
     ov.innerHTML=`<div class="ev-card idol-moment debut-result ${pass?'pass':'fail'}"><div class="idol-moment-photo" ${img?`style="background-image:url('${img}')"`:''}></div><div class="idol-moment-shade"></div><div class="idol-moment-body">
-      <div class="stage-fandom">${pass?`${esc(fd.name)}가 첫 무대를 함께 열었다`:`${esc(fd.name)}의 응원은 끝나지 않았다`}</div>
+      <div class="stage-fandom">${pass?`${esc(fd.name==='팬덤'?'팬덤이':fd.name+'가')} 첫 무대를 함께 열었다`:`${esc(fd.name)}의 응원은 끝나지 않았다`}</div>
       <div class="ev-title">${pass?t("debut_pass_title"):t("debut_fail_title")}</div>
       <div class="ev-text">${pass?t("debut_pass_text"):t("debut_fail_text")}<br>
       ${t("debut_body",{bonus:fmt(bonus)})}</div>
@@ -2735,6 +2755,7 @@ const Game = {
       if(this.lastResult){ this.lastResult.titles=_dg.titles||[]; this.lastResult.topTitle=DG.topTitle(_dg.titles); }   // 전당 등재용 대표칭호
       const _dgr=document.getElementById("dgResult"); if(_dgr){ _dgr.style.display=""; DG.renderResult(_dgr, _dg); }
       const _ob=document.getElementById("dgOfficeBtn"); if(_ob) _ob.style.display="";
+      try{ ProductTelemetry.track('run_finish',{run_no:s.runNo||1,completed:!!reachedWorld,final_rank:finalRank||0,direction:s.runDirection,card_registered:!!_dg}); }catch(e){}
     }
     document.getElementById("endStage").textContent=
       reachedWorld?(finalRank?t("end_stage_world",{rank:finalRank}):t("end_stage_world_nr")):t("end_stage_out");
@@ -2771,6 +2792,7 @@ const Game = {
     const url=location.origin+location.pathname+"?"+enc;
     const r=this.lastResult;
     const shareData={title:t("t_title"), text:t("share_text",{name:r.name,ending:r.ending}), url};
+    try{ ProductTelemetry.track('result_share',{run_no:(this.st&&this.st.runNo)||1,method:navigator.share?'native':'copy'}); }catch(e){}
     if(navigator.share){
       navigator.share(shareData).catch(e=>{ if(e.name!=="AbortError") this.copyLink(url); });
     } else { this.copyLink(url); }
@@ -3185,8 +3207,9 @@ function show(id){
   const gm=document.getElementById('globalMenuBtn');
   if(gm) gm.style.display=['s-office','s-roster','s-cards','s-league','s-battle'].includes(id)?'flex':'none';
   // 폰 뒤로가기 가드: 서브화면(선택·도감·명전·결과) 진입 시 히스토리 확보 → popstate로 가로채 타이틀 복귀(게임 밖 이탈 방지). 플레이화면은 armBackGuard가 담당.
-  if(id==="s-select"||id==="s-dex"||id==="s-end"||id==="s-office"||id==="s-cardpick"||id==="s-cards"||id==="s-forge"||id==="s-agency"||id==="s-debut"||id==="s-roster"||id==="s-assign"||id==="s-league"||id==="s-battle"||id==="s-achv"||id==="s-menu"){ try{ history.pushState({scr:id},""); }catch(e){} }
+  if(id==="s-select"||id==="s-dex"||id==="s-end"||id==="s-office"||id==="s-cardpick"||id==="s-cards"||id==="s-forge"||id==="s-agency"||id==="s-debut"||id==="s-roster"||id==="s-assign"||id==="s-league"||id==="s-battle"||id==="s-daily"||id==="s-achv"||id==="s-menu"){ try{ history.pushState({scr:id},""); }catch(e){} }
   updateTabbar(id);
+  try{ ProductTelemetry.screen(id); }catch(e){}
   try{ setBgmTheme(id==='s-battle'?'battle':(/^s-(play|select|cardpick|end)$/.test(id)?'train':'home')); }catch(e){}   // BGM 3종: 배틀=강렬·육성=경쾌·그외=차분
 }
 // 하단 탭바: 어느 화면이 어느 탭에 속하는지 (없으면 탭바 숨김 = 육성 몰입/서브화면)
@@ -3473,7 +3496,7 @@ window.addEventListener("popstate", ()=>{
     return;
   }
   // 드림그룹 메타 화면들: 폰 뒤로가기 = 각 화면 ← 버튼과 동일 액션
-  const dgBack={"s-office":()=>Game.reset(),"s-cardpick":()=>Game.goSelect(),"s-cards":()=>DG.go(),"s-forge":()=>DG.goCards(),"s-agency":()=>DG.exitAgency(),"s-debut":()=>DG.go(),"s-roster":()=>DG.go(),"s-assign":()=>DG.go(),"s-league":()=>DG.go(),"s-battle":()=>DG.go(),"s-achv":()=>DG.showMenu(),"s-dex":()=>DG.showMenu(),"s-menu":()=>DG.go()};
+  const dgBack={"s-office":()=>Game.reset(),"s-cardpick":()=>Game.goSelect(),"s-cards":()=>DG.go(),"s-forge":()=>DG.goCards(),"s-agency":()=>DG.exitAgency(),"s-debut":()=>DG.go(),"s-roster":()=>DG.go(),"s-assign":()=>DG.go(),"s-league":()=>DG.go(),"s-battle":()=>DG.go(),"s-daily":()=>DG.go(),"s-achv":()=>DG.showMenu(),"s-dex":()=>DG.showMenu(),"s-menu":()=>DG.go()};
   const dgCur=Object.keys(dgBack).find(id=>document.getElementById(id).classList.contains("on"));
   if(dgCur){ try{ history.pushState({scr:dgCur},""); }catch(e){}
     if(manualOn){ Game.closeManual(); return; } if(sheetOn){ Game.closeSheet(); return; }
@@ -4422,6 +4445,32 @@ window.addEventListener("popstate", ()=>{
     display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;padding:0 10px;text-align:left;color:#dbe5f4;background:rgba(7,12,20,.88)}
   .hs3-daily span{font-size:9px;color:#7f8ca1}.hs3-daily b{font:700 10px inherit}.hs3-daily em{font:800 10px inherit;color:#6f8fff}
 
+  /* 오늘의 팬덤 프로젝트 — 최애와 하루 한 번 관계를 쌓고 다음 RUN에 실제 보정을 남긴다. */
+  #s-daily{background:
+    radial-gradient(circle at 82% 8%,rgba(255,78,145,.18),transparent 31%),
+    radial-gradient(circle at 12% 62%,rgba(68,103,255,.16),transparent 38%),#070c15;color:#eef3fb}
+  .daily-head{margin-left:auto;font-size:11px;font-weight:900;color:#ff91b7}
+  .daily-hero{position:relative;min-height:194px;overflow:hidden;border:1px solid #28364f;border-radius:18px;padding:17px;
+    background:linear-gradient(145deg,rgba(28,41,67,.96),rgba(11,17,29,.96));box-shadow:0 18px 36px -28px #000}
+  .daily-hero::after{content:"";position:absolute;right:-24px;bottom:-42px;width:164px;height:164px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,80,150,.25),transparent 69%);pointer-events:none}
+  .daily-kicker{font-size:9px;font-weight:1000;letter-spacing:1.8px;color:#ff79a8}.daily-title{margin-top:6px;font-size:20px;font-weight:1000;line-height:1.25}
+  .daily-copy{max-width:64%;margin-top:7px;font-size:11px;line-height:1.55;color:#9fadc2}
+  .daily-idol{position:absolute;z-index:2;right:12px;top:15px;width:108px;aspect-ratio:3/4.05;border-radius:12px;overflow:hidden;box-shadow:0 14px 30px -14px #000}
+  .daily-idol .rcard{width:100%;height:100%}.daily-idol .rinfo{padding:0 6px 7px}.daily-idol .rnm{font-size:12px}.daily-idol .rsub,.daily-idol .ic-next,.daily-idol .ic-bond{display:none}
+  .daily-idol .rstar{font-size:8px}.daily-idol .rbadge{font-size:7px}.daily-idol .ic-run{font-size:7px}
+  .daily-streak{display:flex;align-items:center;gap:6px;margin-top:15px}.daily-streak b{font-size:12px}.daily-streak span{font-size:10px;color:#91a0b7}
+  .daily-dots{display:flex;gap:4px;margin-left:auto}.daily-dots i{width:10px;height:4px;border-radius:9px;background:#27344a}.daily-dots i.on{background:#ff5f92;box-shadow:0 0 7px rgba(255,95,146,.7)}
+  .daily-section-title{display:flex;align-items:end;justify-content:space-between;margin:15px 2px 8px}.daily-section-title b{font-size:13px}.daily-section-title span{font-size:10px;color:#7f8ca1}
+  .daily-options{display:grid;gap:8px}.daily-option{display:grid;grid-template-columns:45px 1fr auto;align-items:center;gap:10px;width:100%;padding:12px;border-radius:14px;text-align:left;
+    border:1px solid #273650;background:linear-gradient(135deg,#101a29,#0b111c);color:#eef3fb;cursor:pointer}
+  .daily-option:active{transform:scale(.985)}.daily-option img{width:45px;height:45px;border-radius:11px;object-fit:cover;background:#182338}
+  .daily-option b{display:block;font-size:13px}.daily-option small{display:block;margin-top:3px;font-size:10px;line-height:1.4;color:#91a0b6}.daily-option em{font-style:normal;font-size:10px;font-weight:900;color:#ff83ad;white-space:nowrap}
+  .daily-done{margin-top:13px;padding:14px;border:1px solid rgba(255,95,146,.4);border-radius:15px;background:linear-gradient(135deg,rgba(255,95,146,.13),rgba(69,101,255,.1))}
+  .daily-done b{font-size:14px}.daily-done p{margin:5px 0 0;font-size:11px;line-height:1.55;color:#aab6c8}
+  .daily-memory{display:flex;gap:10px;padding:10px 11px;border-bottom:1px solid #1c2738}.daily-memory:last-child{border-bottom:0}.daily-memory time{font-size:9px;color:#718098;min-width:54px}.daily-memory span{font-size:11px;color:#b9c5d6}
+  .daily-locked{text-align:center;padding:28px 18px;border:1px solid #26354d;border-radius:17px;background:#0c1421}.daily-locked img{width:84px;height:84px;object-fit:contain}.daily-locked h3{margin:8px 0 5px}.daily-locked p{font-size:11px;line-height:1.55;color:#91a0b6}
+
   /* 상위 탭의 고정 헤더와 내부 스크롤 영역 */
   #s-roster>.sub-head,#s-cards>.sub-head,#s-league>.sub-head,#s-battle>.sub-head{flex:none;height:38px;margin:0 0 8px}
   #s-roster>.sub-head h2,#s-cards>.sub-head h2,#s-league>.sub-head h2,#s-battle>.sub-head h2{font-size:17px;letter-spacing:.5px}
@@ -4430,10 +4479,10 @@ window.addEventListener("popstate", ()=>{
   #cardsFilter{flex:none} #cardsHint{flex:none}
   #s-league #leagueBattle,#s-league .rank-seg,#s-league .rank-seg2,#s-league #leagueHead,#s-league #leagueNote{flex:none}
   /* 홈·턴 선택은 고정, 나머지 긴 도구/결과 화면은 740px에서도 끝까지 도달 가능 */
-  #s-forge,#s-achv,#s-dex,#s-menu,#s-debut,#s-agency,#s-assign,#s-cardpick,#s-result{
+  #s-forge,#s-daily,#s-achv,#s-dex,#s-menu,#s-debut,#s-agency,#s-assign,#s-cardpick,#s-result{
     height:100%;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
   #s-debut{padding-bottom:92px}
-  #s-forge::-webkit-scrollbar,#s-achv::-webkit-scrollbar,#s-dex::-webkit-scrollbar,#s-menu::-webkit-scrollbar,
+  #s-forge::-webkit-scrollbar,#s-daily::-webkit-scrollbar,#s-achv::-webkit-scrollbar,#s-dex::-webkit-scrollbar,#s-menu::-webkit-scrollbar,
   #s-debut::-webkit-scrollbar,#s-agency::-webkit-scrollbar,#s-assign::-webkit-scrollbar,#s-cardpick::-webkit-scrollbar,#s-result::-webkit-scrollbar{display:none}
 
   /* 육성은 1뷰포트 안에서 판단이 끝나도록 압축 */
@@ -5245,6 +5294,7 @@ window.addEventListener("popstate", ()=>{
       const g={gid:++this.data.groupSeq, name:(name||this.groupName()).slice(0,14), logo:logo||this.agency().logo,
                lineup, slots, grade:gi.grade, sum:gi.sum, n:gi.n, savedAt:Date.now()};
       this.data.groups.push(g); this.data.slots=this.defaultSlots(); this.data.slotSeq=3; this.data.lineup={}; this.persist();
+      try{ ProductTelemetry.track('group_debut',{member_count:g.n,group_grade:g.grade,total_groups:this.data.groups.length}); }catch(e){}
       setTimeout(()=>{ try{ this.checkAchv(); }catch(e){} }, 900);   // #7 데뷔 직후 업적 토스트
       return {ok:true, g}; },
 
@@ -5323,6 +5373,7 @@ window.addEventListener("popstate", ()=>{
       const tc=(st&&st.trainCount)||{}; let trainedK=this.topStat(stats), mxT=-1; STATS.forEach(x=>{ if((tc[x.k]||0)>mxT){mxT=tc[x.k]||0; trainedK=x.k;} });   // 기본 카드 = 능치 높은게 아니라 '가장 많이 훈련한 영역'
       const drops=this.rollCards(trainedK, gr, debuted, stats);
       const dropInfo=drops.map(id=>{ const wasNew=!this.owned(id); this.add(id,1,1); if(wasNew) this.data.newCards[id]=1; return {id, isNew:wasNew}; });
+      if(newRid&&this.data.favRid==null)this.data.favRid=newRid;   // 첫 완주 아이돌 = 첫 최애. 상세에서 언제든 변경 가능.
       this.data.runs++; this.persist();
       if(newRid) (this.data.groups||[]).filter(g=>Object.values(g.lineup||{}).includes(newRid)).forEach(g=>this.submitGroup(g));
       return {drops:dropInfo, joinMsg, debuted, newRid, titles, newRecord, fans:fansV, tier:(end&&end.tier)||'',
@@ -5449,6 +5500,8 @@ window.addEventListener("popstate", ()=>{
     _stageHero(o){
       const cards=(o.members||[]).slice(0,3), lead=cards[0]||{};
       const sg=o.sg||STAGE_HUE.center;
+      const daily=this.dailyState(), dailyOpen=!daily.done;
+      let achvOpen=false; try{ achvOpen=this.achvClaimable(); }catch(e){}
       const card=o.idol
         ? this.idolCardHTML(o.idol,{cls:'home-idol-card',state:o.cardState||'complete',progress:o.progress,onclick:o.idol.rid?`DG.showRosterDetail(${o.idol.rid})`:''})
         : (lead.img
@@ -5458,8 +5511,8 @@ window.addEventListener("popstate", ()=>{
       return `<div class="hero hero-stage3 ${o.extra?'has-extra':''}" style="--sg1:${sg[0]};--sg2:${sg[1]}">
         <div class="hs3-shade"></div>
         <div class="hs2-particles" aria-hidden="true"></div>
-        <button class="hs3-spot mission" onclick="DG.goAchv()"><b>미션</b><i></i></button>
-        <button class="hs3-spot gift" onclick="DG.showMenu()"><b>선물</b><i></i></button>
+        <button class="hs3-spot mission" onclick="DG.goDaily()"><b>오늘</b>${dailyOpen?'<i></i>':''}</button>
+        <button class="hs3-spot gift" onclick="DG.goAchv()"><b>업적</b>${achvOpen?'<i></i>':''}</button>
         <button class="hs3-spot dorm" onclick="DG.goRoster()"><b>숙소</b></button>
         <button class="hs3-spot cards" onclick="DG.goCards()"><b>카드 랩</b></button>
         <button class="hs3-spot stage" onclick="DG.showLeague()"><b>스테이지</b></button>
@@ -5819,8 +5872,60 @@ window.addEventListener("popstate", ()=>{
       this._achvT=setTimeout(()=>{ host.className='achv-fx out';
         setTimeout(()=>{ host.className='achv-fx'; this._nextAchvFx(); }, 380); }, 2200);
     },
+    // ===== 오늘의 팬덤 프로젝트 =====
+    // 하루 한 번 최애와 팬덤의 행동을 고르고, 관계 기억 + 다음 재육성의 실제 보정으로 이어진다.
+    kstDay(){ return DailyRetention.kstDay(); },
+    dayDiff(a,b){ return DailyRetention.dayDiff(a,b); },
+    dailyState(){ return DailyRetention.state((this.data&&this.data.daily)||{},this.kstDay()); },
+    dailyFavorite(){ const rs=(this.data&&this.data.roster)||[]; return this.rosterById(this.data&&this.data.favRid)||rs.slice().sort((a,b)=>(b.joinedAt||0)-(a.joinedAt||0))[0]||null; },
+    dailyChoices(fav){ const fd=fandomOf(fav||{}); return [
+      {id:'letter',img:'assets/emo/buddy.png',nm:'팬레터 모아 전하기',copy:`${fd.name}의 마음을 골라 오늘의 한마디를 전해요.`,effect:'유대 +8 · 다음 RUN 시작 유대 +6',bond:8,boost:{bond:6}},
+      {id:'chant',img:'assets/mascot.png',nm:'응원법 리허설',copy:`${fd.rally} 타이밍을 맞춰 다음 클라이맥스를 준비해요.`,effect:'유대 +5 · 다음 올인 성공 +8%p',bond:5,boost:{climax:8}},
+      {id:'idea',img:'assets/emo/act-charm.png',nm:'무대 아이디어 투표',copy:'팬들이 고른 한 장면을 다음 제작 방향의 시작점으로 남겨요.',effect:'유대 +5 · 다음 RUN 선택 방향 +12',bond:5,boost:{start:12}},
+    ]; },
+    goDaily(){ this.load(); this.renderDaily(); show('s-daily'); },
+    renderDaily(){ const box=document.getElementById('dailyBody'), head=document.getElementById('dailyHead'); if(!box)return;
+      const state=this.dailyState(), fav=this.dailyFavorite(); if(head) head.textContent=state.done?'오늘 완료':`연속 ${state.streak}일`;
+      if(!fav){ box.innerHTML=`<div class="daily-locked"><img src="assets/mascot.png" alt="최애돌 마스코트"><h3>첫 아이돌 카드가 필요해요</h3>
+          <p>육성을 한 번 완주하면 최애와 팬덤의 하루 프로젝트가 열려요.</p><button class="btn" style="margin-top:13px" onclick="Game.goSelect()">첫 최애 육성하기</button></div>`; return; }
+      const fd=fandomOf(fav), fdWith=fd.name==='팬덤'?'팬덤과':`${fd.name}와`, choices=this.dailyChoices(fav), hist=(this.data.bondHistory||[]).filter(x=>x.rid===fav.rid).slice(-4).reverse();
+      const weekDots=Array.from({length:7},(_,i)=>`<i class="${i<Math.min(7,state.streak)?'on':''}"></i>`).join('');
+      const hero=`<div class="daily-hero"><div class="daily-kicker">DAILY FANDOM PROJECT</div><div class="daily-title">${esc(fdWith)} 만드는<br>${esc(fav.name)}의 오늘</div>
+        <div class="daily-copy">하루의 선택이 관계 기록으로 남고, 다음 재육성에서 실제 힘이 돼요.</div>
+        <div class="daily-idol">${this.idolCardHTML(fav,{favorite:true})}</div>
+        <div class="daily-streak"><b>연속 ${state.streak}일</b><span>3일 마이크 · 7일 팬 소통 카드</span><div class="daily-dots">${weekDots}</div></div></div>`;
+      let action='';
+      if(state.done){ const picked=choices.find(x=>x.id===state.choice)||choices[0], pending=(this.data.dailyBoosts||[]).filter(x=>x.rid===fav.rid&&!x.usedAt).length;
+        action=`<div class="daily-done"><b>오늘의 프로젝트 완료</b><p>${esc(picked.nm)} · ${esc(picked.effect)}<br>다음 재육성 보정 ${pending}개 대기 중 · 내일 00:00(KST) 새 프로젝트</p></div>
+          <button class="btn" style="margin-top:10px;width:100%" onclick="DG.retrain(${fav.rid})">${esc(fav.name)} 다음 RUN 준비하기</button>`;
+      } else { action=`<div class="daily-section-title"><b>오늘 무엇을 함께할까?</b><span>하나만 선택</span></div><div class="daily-options">${choices.map(c=>
+          `<button class="daily-option" onclick="DG.completeDaily('${c.id}')"><img src="${c.img}" alt=""><span><b>${esc(c.nm)}</b><small>${esc(c.copy)}</small></span><em>${esc(c.effect)}</em></button>`).join('')}</div>`; }
+      const memory=hist.length?`<div class="daily-section-title"><b>${esc(fav.name)}와 함께한 기록</b><span>${hist.length}개 표시</span></div><div class="daily-done" style="padding:3px 10px">${hist.map(x=>
+        `<div class="daily-memory"><time>${esc(x.day)}</time><span>${esc(x.text)}</span></div>`).join('')}</div>`:'';
+      box.innerHTML=hero+action+memory+`<button class="btn ghost" style="margin-top:11px;width:100%" onclick="DG.goAchv()">전체 업적 보기</button><div style="height:14px"></div>`;
+    },
+    completeDaily(kind){ this.load(); const state=this.dailyState(), fav=this.dailyFavorite(); if(!fav||state.done){ this.renderDaily(); return; }
+      const choice=this.dailyChoices(fav).find(x=>x.id===kind); if(!choice)return;
+      const fd=fandomOf(fav), fdWith=fd.name==='팬덤'?'팬덤과':`${fd.name}와`;
+      fav.fanBond=Math.max(8,Math.min(100,Math.round((fav.fanBond||8)+choice.bond)));
+      if(this.data.favRid==null)this.data.favRid=fav.rid;
+      const done=DailyRetention.complete({daily:this.data.daily,boosts:this.data.dailyBoosts,history:this.data.bondHistory,today:state.today,
+        rid:fav.rid,kind,boost:choice.boost,text:`${fdWith} ${choice.nm} · 유대 ${fav.fanBond}`});
+      if(!done.accepted){ this.renderDaily(); return; }
+      const streak=done.streak; this.data.dailyBoosts=done.boosts; this.data.bondHistory=done.history;
+      let milestone='';
+      if(streak%7===0){ this.add('charmC',1,1); milestone=' · 7일 보상 팬 소통 플랜 +1'; }
+      else if(streak%3===0){ this._regenMic(); if(this.data.mic<this.MIC_MAX){this.data.mic++;this.data.micAt=Date.now();} milestone=' · 3일 보상 마이크 +1'; }
+      this.data.daily=done.daily; this.persist();
+      try{ ProductTelemetry.track('daily_complete',{choice:kind,streak,total:this.data.daily.total,milestone:streak%7===0?'7d':streak%3===0?'3d':'none'}); }catch(e){}
+      try{ sfx('fanfare'); if(Game.confetti)Game.confetti(70,false); toast(`${fd.name} 프로젝트 완료${milestone}`); }catch(e){}
+      this.renderDaily();
+    },
+    takeDailyBoost(rid){ this.load(); const used=DailyRetention.consume(this.data.dailyBoosts,rid); if(!used.boost)return null;
+      this.data.dailyBoosts=used.boosts; this.persist(); return used.boost; },
     goAchv(){ this.load(); this.checkAchv(); this.data.achvViewed=this.achvDone(); this.persist(); this.renderAchv(); show('s-achv'); },   // 메뉴 도트 해제 기준
     showMenu(){ this.load(); const m=document.getElementById('menuAchv'); if(m){ try{ m.textContent=this.achvDone()+' / '+ACHV.length; }catch(e){} }
+      const md=document.getElementById('menuDaily'); if(md){ const ds=this.dailyState(); md.textContent=ds.done?`완료 · ${ds.streak}일`:'오늘 참여 가능'; }
       const dot=document.getElementById('menuAchvDot'); if(dot){ try{ dot.style.display=this.achvClaimable()?'':'none'; }catch(e){} }   // 업적 항목 빨간불 = 미수령 보상
       show('s-menu'); },
     renderAchv(){ const box=document.getElementById('achvList'); if(!box) return;
@@ -7119,6 +7224,7 @@ window.addEventListener("popstate", ()=>{
     },
   };
   window.DG = DG; DG.load();
+  try{ ProductTelemetry.ready(); }catch(e){}
 
   // ===== 첫 실행 튜토리얼 (스포트라이트 코치마크) — 5스텝 =====
   // 각 스텝은 유저가 실제로 그 화면/상태에 도달했을 때 1회 발동(강제 순차 아님·건너뛰기 가능).
