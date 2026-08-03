@@ -7,6 +7,7 @@
   const EVENT_FIELDS={
     app_open:['standalone'],screen_view:['screen'],context_received:['has_favorite'],
     favorite_context_applied:['favorite_id'],favorite_context_change:['source'],favorite_context_unmatched:[],
+    fandom_first_contact:['run_id','choice','bond_after'],
     run_start:['run_id','prev_run_id','reply_run_id','reply_promise_id','source','mode','run_no','retrain','direction','season_edition_target','started_season','promise_id','promise_retry','daily_boost','mentor','mentor_rid'],
     promise_checkpoint:['run_id','promise_id','choice','progress','target','on_track'],mentor_moment:['run_id','run_no','mentor_rid','choice','direction'],stage_strategy:['run_no','strategy','outcome'],promise_result:['run_id','promise_id','status','retry'],
     run_finish:['run_id','prev_run_id','run_no','completed','final_rank','direction','season_edition_completed','season_edition_new','season_edition_best_updated','season_edition_version_added','season_no','card_registered','mentor','mentor_rid','mentor_choice','promise_id','promise_status','promise_retry'],

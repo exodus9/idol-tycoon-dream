@@ -6,7 +6,7 @@ const fail=[];
 const need=(ok,msg)=>{if(!ok)fail.push(msg);};
 
 need(html.includes('product-telemetry.js?v='),'telemetry bridge must load before the game');
-for(const event of ['run_start','run_finish','daily_complete','daily_reply_open','mentor_offer','mentor_select','mentor_home_start','mentor_moment','promise_offer','promise_selected','promise_checkpoint','promise_result','run_album_open','run_record_open','retrain_started','promise_reply_open','promise_reply_to_retrain','season_brief_open','season_retrain_click','favorite_context_applied','favorite_context_change','favorite_context_unmatched','group_debut','stage_strategy','result_share']) need(html.includes(`'${event}'`),`missing funnel event: ${event}`);
+for(const event of ['run_start','run_finish','daily_complete','daily_reply_open','mentor_offer','mentor_select','mentor_home_start','mentor_moment','promise_offer','promise_selected','promise_checkpoint','promise_result','run_album_open','run_record_open','retrain_started','promise_reply_open','promise_reply_to_retrain','season_brief_open','season_retrain_click','favorite_context_applied','favorite_context_change','favorite_context_unmatched','fandom_first_contact','group_debut','stage_strategy','result_share']) need(html.includes(`'${event}'`),`missing funnel event: ${event}`);
 need(html.includes('ProductTelemetry.screen(id)'),'screen transitions must be measurable');
 need(html.includes("ProductTelemetry.track('run_start'")&&html.includes('...replyLink')&&html.includes("ProductTelemetry.track('retrain_started'")&&html.includes('...link}'),'reply origin must join retrain_started to run_start');
 need(html.includes("window.addEventListener('dream-group-context'"),'app-provided favorite UX hint must reach the first-RUN selection flow');

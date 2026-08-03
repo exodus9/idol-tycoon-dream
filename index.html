@@ -1031,6 +1031,7 @@
 <script src="progress-action.js?v=20260803a"></script>
 <script src="mentor-inheritance.js?v=20260803a"></script>
 <script src="run-memory.js?v=20260803a"></script>
+<script src="fandom-onboarding.js?v=20260803a"></script>
 <script src="season-edition.js?v=20260803a"></script>
 <script src="product-telemetry.js?v=20260803b"></script>
 <script src="i18n.js?v=20260803a"></script>
@@ -1459,6 +1460,11 @@ const EVENTS = [
 //   ko-only(DG 톤). 반응 좋으면 B안(수치+보상)으로 확장 예정 — 그때도 이 풀 재사용.
 //   각 항목: {id, emoji, prompt(연습생 대사), cat?('M'/'F' 한정), replies:[{t, react, e(반응이모지), tag}]}
 const BOND_TALKS = [
+  {id:"predebut", emoji:"💬", prompt:"이번 RUN 연습 영상에 응원 댓글이 달렸어요. '무대에서 기다릴게요'래요.",
+   replies:[
+     {t:"그 약속, 첫 무대에서 꼭 돌려주자", react:"이번 RUN의 첫 약속으로 기억할게요. 무대에서 답해요!", e:"🥹", tag:"첫 약속"},
+     {t:"무대 전 루틴으로 같이 읽자", react:"팀이 함께 읽으니 긴장이 설렘으로 바뀌었어요.", e:"💞", tag:"한 팀"},
+   ]},
   {id:"dream", emoji:"✨", prompt:"저 진짜 무대에 설 수 있을까요? 가끔 무서워요.",
    replies:[
      {t:"넌 반드시 데뷔해. 내가 봤잖아", react:"그 말 한마디에 힘이 나요. 더 열심히 할게요!", e:"🥹", tag:"울컥"},
@@ -2246,6 +2252,8 @@ const Game = {
   startWeek(){
     const s=this.st, w=s.week, sc=this.sch();
     s.busy=false;
+    // 첫 오디션 전에 실제 팬덤 접점을 한 번 보장한다. 첫 유저가 유대 0의 '함성'을 갑자기 믿게 하지 않는다.
+    if(FandomOnboarding.shouldPrompt({week:w,debutWeek:sc.debut,fanBondMoments:s.fanBondMoments})){ this.render(); s.busy=true; return this.bondTalk(()=>{ s.busy=false; this.save(); this.debutJudge(); },'predebut'); }
     if(w===sc.debut){ this.render(); return this.debutJudge(); }
     if(sc.compets[w]){ this.render(); return this.runCompet(w); }
     // 안전망: 관문 주차를 건너뛴 세이브(스케줄 변경 후 이어하기 등)가 총 턴을 넘겨도 영원히 안 끝나던 잠복버그 → 최종 관문 즉시 실행
@@ -2348,7 +2356,7 @@ const Game = {
   },
 
   // 유대 커뮤: 아이돌과 팬덤 사이의 약속이 실제 유대/멘탈/팬 성장으로 남는다.
-  bondTalk(done){
+  bondTalk(done,forcedId){
     const s=this.st;
     try{ if(window.Tut&&Tut.clear) Tut.clear(); }catch(e){}
     if(!s.talkedIds) s.talkedIds=[];
@@ -2356,7 +2364,8 @@ const Game = {
     let pool=BOND_TALKS.filter(e=> catOk(e) && !s.talkedIds.includes(e.id));
     if(!pool.length) pool=BOND_TALKS.filter(catOk);
     if(!pool.length) pool=BOND_TALKS;
-    const ev=pool[Math.floor(Math.random()*pool.length)];
+    const forced=forcedId&&BOND_TALKS.find(e=>e.id===forcedId&&catOk(e));
+    const ev=forced||pool[Math.floor(Math.random()*pool.length)];
     if(!s.talkedIds.includes(ev.id)) s.talkedIds.push(ev.id);
     const nm=idolName(s.idol), fd=fandomOf(s.idol), img=s.idol.img||'';
     const ov=document.getElementById("ov");
@@ -2383,6 +2392,7 @@ const Game = {
         s.fanBond=Math.min(100,(s.fanBond||0)+gain); s.fanBondMoments=(s.fanBondMoments||0)+1;
         if(i===0) s.mental=Math.min(100,(s.mental||0)+4); else s.fans+=(120+i*80);
         clampState(s); this.save();
+        if(forcedId==='predebut'){ try{ProductTelemetry.track('fandom_first_contact',{run_id:s.runId||'',choice:i+1,bond_after:Math.round(s.fanBond||0)});}catch(e){} }
         this.showRoll({cls:"dg", emoji:ch.e||"💗", label:`${fd.name} 유대 +${gain}`},
           `<b style="color:#ff5fa2">${bondLevel(s.fanBond).n}</b><br><span style="color:var(--txt)">"${esc(ch.react.replace(/팬들/g,fd.name))}"</span>`, ()=>{ this.render(); done(); });
       };
