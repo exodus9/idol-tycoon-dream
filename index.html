@@ -1845,7 +1845,7 @@ const Game = {
         <div class="bar"><i style="width:${Math.min(100,stam)}%;background:${stamC}"></i></div></div>
        <div class="vital"><div class="vlbl"><span>🧠 멘탈</span><b>${Math.round(s.mental)}/100</b></div>
         <div class="bar"><i style="width:${Math.min(100,s.mental)}%;background:${s.mental<MENTAL_THRESH?'var(--bad)':'#9aa6c9'}"></i></div></div>
-       <div class="vital fandom-vital" title="${esc(fd.name==='팬덤'?'팬덤과의':fd.name+'와의')} 유대는 클라이맥스 승부 확률을 높여요"><div class="vlbl"><span>💞 ${esc(fd.name)} 유대</span><b>${bond}</b></div>
+       <div class="vital fandom-vital" title="${esc(koWith(fd.name,'과의','와의'))} 유대는 클라이맥스 승부 확률을 높여요"><div class="vlbl"><span>💞 ${esc(fd.name)} 유대</span><b>${bond}</b></div>
         <div class="bar"><i style="width:${bond}%;background:linear-gradient(90deg,#ff5fa2,#ffd35c)"></i></div><small>${bl.n}</small></div>
        <div class="cond-face ${cb}" title="컨디션 — 결과 배수"><div class="cf">${ci.cf}</div><div class="ct">${ci.ct}</div></div>`;
     // 스탯 = 색 스트립(숫자·라벨 제거, 이모지+색바+등급만). 정보 다이어트. data-k 유지(bumpStat 손맛)
@@ -2309,7 +2309,7 @@ const Game = {
     ov.innerHTML=`<div class="ev-card bond idol-moment">
       <div class="idol-moment-photo" ${img?`style="background-image:url('${img}')"`:''}></div>
       <div class="idol-moment-shade"></div><div class="idol-moment-body">
-      <div class="ev-banner">💞 ${esc(fd.name==='팬덤'?'팬덤과의':fd.name+'와의')} 약속</div>
+      <div class="ev-banner">💞 ${esc(koWith(fd.name,'과의','와의'))} 약속</div>
       <div class="ev-title">${esc(nm)}</div>
       <div class="ev-text">"${esc(ev.prompt.replace(/팬들/g,fd.name))}"</div>
       <div class="bond-now">현재 유대 ${Math.round(s.fanBond||0)} · ${bondLevel(s.fanBond).n}</div>
@@ -2359,7 +2359,7 @@ const Game = {
     ov.innerHTML=`<div class="ev-card idol-moment stage-moment" style="text-align:center;max-width:330px">
       <div class="idol-moment-photo" ${img?`style="background-image:url('${img}')"`:''}></div><div class="idol-moment-shade"></div><div class="idol-moment-body">
       <div class="stage-fandom">RUN ${s.runNo||1} · ${esc(fd.rally)} · 유대 ${bond}${dailyClimax?` · 오늘의 응원 +${dailyClimax}%p`:''}${diffPct>0?` · 라이벌 +${diffPct}%`:''}</div><div class="ev-title">${title}</div>
-      <p class="muted" style="margin:6px 3px 10px;font-size:13px">${esc(fd.name==='팬덤'?'팬덤이':fd.name+'가')} 이름을 외친다. 마지막 무대, 어떻게 갈까?</p>
+      <p class="muted" style="margin:6px 3px 10px;font-size:13px">${esc(koWith(fd.name,'이','가'))} 이름을 외친다. 마지막 무대, 어떻게 갈까?</p>
       ${hint}${foreChip}
       <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
         <button class="btn ghost" id="scSafe" style="text-align:left;padding:14px 16px">🧘 <b>침착하게</b><br><small class="muted" style="font-size:12px">안정 · 점수 +8% 확정</small></button>
@@ -2394,7 +2394,7 @@ const Game = {
     this.logWeek(pass?t("debut_pass_log"):t("debut_fail_log"));
     const ov=document.getElementById("ov"), fd=fandomOf(s.idol), img=s.idol.img||''; ov.className="ov on"; ov.onclick=null;
     ov.innerHTML=`<div class="ev-card idol-moment debut-result ${pass?'pass':'fail'}"><div class="idol-moment-photo" ${img?`style="background-image:url('${img}')"`:''}></div><div class="idol-moment-shade"></div><div class="idol-moment-body">
-      <div class="stage-fandom">${pass?`${esc(fd.name==='팬덤'?'팬덤이':fd.name+'가')} 첫 무대를 함께 열었다`:`${esc(fd.name)}의 응원은 끝나지 않았다`}</div>
+      <div class="stage-fandom">${pass?`${esc(koWith(fd.name,'이','가'))} 첫 무대를 함께 열었다`:`${esc(fd.name)}의 응원은 끝나지 않았다`}</div>
       <div class="ev-title">${pass?t("debut_pass_title"):t("debut_fail_title")}</div>
       <div class="ev-text">${pass?t("debut_pass_text"):t("debut_fail_text")}<br>
       ${t("debut_body",{bonus:fmt(bonus)})}</div>
@@ -3249,6 +3249,8 @@ const Nav={
   exit(){ try{ if(window.CheddolBridge&&CheddolBridge.exit){CheddolBridge.exit();return;} }catch(e){} Game.reset(); }   // 하트오락실 복귀 브릿지(개발팀 연동) · 폴백=타이틀
 };
 function fmt(n){return Math.round(n||0).toLocaleString("en-US");}
+function koWith(word,finalJosa,vowelJosa){ const s=String(word||''), cp=s.codePointAt(s.length-1), hangul=cp>=0xAC00&&cp<=0xD7A3;
+  return s+(hangul&&((cp-0xAC00)%28!==0)?finalJosa:vowelJosa); }
 function clampState(s){ s.cond=Math.max(0,Math.min(100,s.cond)); s.mental=Math.max(0,Math.min(100,s.mental));  // 멘탈 100 캡(이벤트 초과 버그 수정)
   s.fans=Math.max(0,Math.round(s.fans)); STATS.forEach(st=>s[st.k]=Math.max(0,Math.min(800,Math.round(s[st.k])))); }  // 스탯 800 캡
 function loadImg(src, cross){ return new Promise(res=>{ if(!src){res(null);return;}
@@ -5888,7 +5890,7 @@ window.addEventListener("popstate", ()=>{
       const state=this.dailyState(), fav=this.dailyFavorite(); if(head) head.textContent=state.done?'오늘 완료':`연속 ${state.streak}일`;
       if(!fav){ box.innerHTML=`<div class="daily-locked"><img src="assets/mascot.png" alt="최애돌 마스코트"><h3>첫 아이돌 카드가 필요해요</h3>
           <p>육성을 한 번 완주하면 최애와 팬덤의 하루 프로젝트가 열려요.</p><button class="btn" style="margin-top:13px" onclick="Game.goSelect()">첫 최애 육성하기</button></div>`; return; }
-      const fd=fandomOf(fav), fdWith=fd.name==='팬덤'?'팬덤과':`${fd.name}와`, choices=this.dailyChoices(fav), hist=(this.data.bondHistory||[]).filter(x=>x.rid===fav.rid).slice(-4).reverse();
+      const fd=fandomOf(fav), fdWith=koWith(fd.name,'과','와'), choices=this.dailyChoices(fav), hist=(this.data.bondHistory||[]).filter(x=>x.rid===fav.rid).slice(-4).reverse();
       const weekDots=Array.from({length:7},(_,i)=>`<i class="${i<Math.min(7,state.streak)?'on':''}"></i>`).join('');
       const hero=`<div class="daily-hero"><div class="daily-kicker">DAILY FANDOM PROJECT</div><div class="daily-title">${esc(fdWith)} 만드는<br>${esc(fav.name)}의 오늘</div>
         <div class="daily-copy">하루의 선택이 관계 기록으로 남고, 다음 재육성에서 실제 힘이 돼요.</div>
@@ -5900,13 +5902,13 @@ window.addEventListener("popstate", ()=>{
           <button class="btn" style="margin-top:10px;width:100%" onclick="DG.retrain(${fav.rid})">${esc(fav.name)} 다음 RUN 준비하기</button>`;
       } else { action=`<div class="daily-section-title"><b>오늘 무엇을 함께할까?</b><span>하나만 선택</span></div><div class="daily-options">${choices.map(c=>
           `<button class="daily-option" onclick="DG.completeDaily('${c.id}')"><img src="${c.img}" alt=""><span><b>${esc(c.nm)}</b><small>${esc(c.copy)}</small></span><em>${esc(c.effect)}</em></button>`).join('')}</div>`; }
-      const memory=hist.length?`<div class="daily-section-title"><b>${esc(fav.name)}와 함께한 기록</b><span>${hist.length}개 표시</span></div><div class="daily-done" style="padding:3px 10px">${hist.map(x=>
+      const memory=hist.length?`<div class="daily-section-title"><b>${esc(koWith(fav.name,'과','와'))} 함께한 기록</b><span>${hist.length}개 표시</span></div><div class="daily-done" style="padding:3px 10px">${hist.map(x=>
         `<div class="daily-memory"><time>${esc(x.day)}</time><span>${esc(x.text)}</span></div>`).join('')}</div>`:'';
       box.innerHTML=hero+action+memory+`<button class="btn ghost" style="margin-top:11px;width:100%" onclick="DG.goAchv()">전체 업적 보기</button><div style="height:14px"></div>`;
     },
     completeDaily(kind){ this.load(); const state=this.dailyState(), fav=this.dailyFavorite(); if(!fav||state.done){ this.renderDaily(); return; }
       const choice=this.dailyChoices(fav).find(x=>x.id===kind); if(!choice)return;
-      const fd=fandomOf(fav), fdWith=fd.name==='팬덤'?'팬덤과':`${fd.name}와`;
+      const fd=fandomOf(fav), fdWith=koWith(fd.name,'과','와');
       fav.fanBond=Math.max(8,Math.min(100,Math.round((fav.fanBond||8)+choice.bond)));
       if(this.data.favRid==null)this.data.favRid=fav.rid;
       const done=DailyRetention.complete({daily:this.data.daily,boosts:this.data.dailyBoosts,history:this.data.bondHistory,today:state.today,
