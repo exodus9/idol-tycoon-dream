@@ -1026,6 +1026,7 @@
 <script src="progress-action.js?v=20260803a"></script>
 <script src="mentor-inheritance.js?v=20260803a"></script>
 <script src="run-memory.js?v=20260803a"></script>
+<script src="season-edition.js?v=20260803a"></script>
 <script src="product-telemetry.js?v=20260803b"></script>
 <script src="i18n.js?v=20260803a"></script>
 <script src="idols.js?v=sync202608030520"></script>
@@ -1771,6 +1772,7 @@ const Game = {
     const mode=(this.trainMode==="quick")?"quick":"full";
     const runDirection=this.runDirection;
     if(!STATS.some(x=>x.k===runDirection)){ try{toast('이번 RUN 무대 방향을 먼저 골라줘');}catch(e){} return; }
+    const seasonTarget=DG.seasonEditionFor(runDirection);
     const runPromise=DG.runPromiseForStart(this.runPromiseId);
     if(!runPromise){ try{toast('이번 RUN에서 지킬 약속을 골라줘');}catch(e){} return; }
     idol.runDirection=runDirection;
@@ -1789,7 +1791,7 @@ const Game = {
     let runNo=1; try{ DG.load(); runNo=Math.max(1,(DG.data.runs||0)+1); }catch(e){}
     const runId=this.pendingRunId||newRunId(), replySource=this.replyPromiseSource, replyLink=window.RunMemory?RunMemory.replyLink(replySource):{}; let prevRunId=''; try{ prevRunId=localStorage.getItem('dg_last_finished_run_id')||''; }catch(e){}
     this.pendingRunId=null;
-    this.st = {idol, runDirection, retrainRid, runId, prevRunId, ...base, cond:100, stam:100, hand:[], combo:0, comboStat:null, buff:null, fans:0, runNo,
+    this.st = {idol, runDirection, startedSeason:DG.seasonNo(), seasonTarget, retrainRid, runId, prevRunId, ...base, cond:100, stam:100, hand:[], combo:0, comboStat:null, buff:null, fans:0, runNo,
       fanBond:inheritedBond, fanBondMoments:0, dailyClimax:(dailyBoost&&dailyBoost.climax)||0,
       replyRunId:replyLink.reply_run_id||'',replyPromiseId:replyLink.reply_promise_id||'',
       week:1, busy:false, log:[], mode, trainCount:{}};   // 팬덤 유대는 회차 안에서 성장하고 재육성 때 일부 계승
@@ -1809,7 +1811,7 @@ const Game = {
     this.logWeek(t("start_log",{name:esc(idolName(idol))}));
     if(mentorApplied) this.logWeek(`🫶 ${esc(this.st.mentor.name)} 멘토의 ${statLabel(mentorApplied.direction)} 제작 노하우 +${mentorApplied.boost}`);
     if(dailyBoost) this.logWeek(`💞 오늘의 팬덤 프로젝트 보정 적용${dailyBoost.bond?` · 유대 +${dailyBoost.bond}`:''}${dailyBoost.climax?` · 올인 +${dailyBoost.climax}%p`:''}${dailyBoost.start?` · ${statLabel(runDirection)} +${dailyBoost.start}`:''}`);
-    try{ ProductTelemetry.track('run_start',{run_id:runId,prev_run_id:prevRunId,...replyLink,mode,run_no:runNo,retrain:!!retrainRid,direction:runDirection,promise_id:this.st.runPromise&&this.st.runPromise.id||'',promise_retry:!!(this.st.runPromise&&this.st.runPromise.retryOf),daily_boost:dailyBoost?dailyBoost.kind:'none',mentor:!!mentorApplied,mentor_rid:mentorApplied&&this.st.mentor?String(this.st.mentor.rid):''}); }catch(e){}
+    try{ ProductTelemetry.track('run_start',{run_id:runId,prev_run_id:prevRunId,...replyLink,mode,run_no:runNo,retrain:!!retrainRid,direction:runDirection,season_edition_target:!!seasonTarget,started_season:this.st.startedSeason,promise_id:this.st.runPromise&&this.st.runPromise.id||'',promise_retry:!!(this.st.runPromise&&this.st.runPromise.retryOf),daily_boost:dailyBoost?dailyBoost.kind:'none',mentor:!!mentorApplied,mentor_rid:mentorApplied&&this.st.mentor?String(this.st.mentor.rid):''}); }catch(e){}
     this.save();
     const go=()=>{ show("s-play"); this.startWeek(); this.armBackGuard(); toast(t("start_toast",{name:idolName(idol)})); };
     // 간이 육성: 온보딩 컷씬 스킵하고 바로 12턴 플레이(재료 빠르게 뽑기). 정식은 오프닝 컷씬.
@@ -2847,11 +2849,12 @@ const Game = {
       document.getElementById("againBtn").onclick=()=>Game.confirmReset();
       this.prepCard();   // 카드 미리 생성 (저장 버튼 제스처 소진 방지). 결과화면 전당 조회는 제거(홈>전설의 연습생에서만)
       // 드림그룹: 육성카드 드랍 + 자리 등록
+      s.seasonQualified=!!reachedWorld;
       const _dg=DG.onFinish(s, statVals, end);
-      if(this.lastResult){ this.lastResult.titles=_dg.titles||[]; this.lastResult.topTitle=DG.topTitle(_dg.titles); }   // 전당 등재용 대표칭호
+      if(this.lastResult){ this.lastResult.titles=_dg.titles||[]; this.lastResult.topTitle=DG.topTitle(_dg.titles); this.lastResult.seasonEdition=_dg.seasonEdition||null; }   // 전당 등재용 대표칭호
       const _dgr=document.getElementById("dgResult"); if(_dgr){ _dgr.style.display=""; DG.renderResult(_dgr, _dg); }
       const _ob=document.getElementById("dgOfficeBtn"); if(_ob) _ob.style.display="";
-      try{ ProductTelemetry.track('run_finish',{run_id:s.runId||'',prev_run_id:s.prevRunId||'',run_no:s.runNo||1,completed:!!reachedWorld,final_rank:finalRank||0,direction:s.runDirection,card_registered:!!_dg,mentor:!!s.mentor,mentor_rid:s.mentor?String(s.mentor.rid):'',mentor_choice:s.mentorChoice||'',promise_id:s.runMemory&&s.runMemory.promiseId||'',promise_status:s.runMemory&&s.runMemory.status||'',promise_retry:!!(s.runMemory&&s.runMemory.retry)}); }catch(e){}
+      try{ ProductTelemetry.track('run_finish',{run_id:s.runId||'',prev_run_id:s.prevRunId||'',run_no:s.runNo||1,completed:!!reachedWorld,final_rank:finalRank||0,direction:s.runDirection,season_edition_completed:!!(_dg&&_dg.seasonEdition),season_edition_new:!!(_dg&&_dg.seasonEdition&&_dg.seasonEdition.newCollection),season_edition_best_updated:!!(_dg&&_dg.seasonEdition&&_dg.seasonEdition.bestUpdated),season_edition_version_added:!!(_dg&&_dg.seasonEdition&&_dg.seasonEdition.versionAdded),season_no:_dg&&_dg.seasonEdition?_dg.seasonEdition.no:null,card_registered:!!_dg,mentor:!!s.mentor,mentor_rid:s.mentor?String(s.mentor.rid):'',mentor_choice:s.mentorChoice||'',promise_id:s.runMemory&&s.runMemory.promiseId||'',promise_status:s.runMemory&&s.runMemory.status||'',promise_retry:!!(s.runMemory&&s.runMemory.retry)}); }catch(e){}
       try{ if(s.runId)localStorage.setItem('dg_last_finished_run_id',s.runId); }catch(e){}
     }
     document.getElementById("endStage").textContent=
@@ -4392,6 +4395,8 @@ window.addEventListener("popstate", ()=>{
   .card-kind-note button{margin-left:auto;border:0;background:transparent;color:#6e8dff;font-size:10px;font-weight:800;font-family:inherit;cursor:pointer}
   .dg-card-ver{font-size:8.5px;color:#6f8fff;font-weight:900;letter-spacing:.2px;margin-top:1px}
   .version-album{margin-top:8px;padding-top:7px;border-top:1px solid rgba(255,255,255,.1)}
+  .idol-card .ic-season{position:absolute;z-index:6;right:7px;top:29px;max-width:58%;padding:3px 6px;border-radius:6px;background:linear-gradient(90deg,rgba(35,96,255,.92),rgba(178,50,208,.92));box-shadow:0 4px 12px rgba(18,45,120,.35);font:900 6.5px/1.1 -apple-system,BlinkMacSystemFont,sans-serif;color:#fff;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .season-edition-result{margin:9px 0;padding:11px 12px;border-radius:13px;background:linear-gradient(135deg,rgba(35,96,255,.2),rgba(206,59,186,.16));border:1px solid rgba(105,139,255,.46);text-align:left}.season-edition-result b,.season-edition-result span{display:block}.season-edition-result b{font-size:13px;color:#dce7ff}.season-edition-result span{margin-top:3px;font-size:10.5px;color:var(--sub)}
   .va-head{display:flex;justify-content:space-between;color:#7798ff;font-size:9px;font-weight:900;letter-spacing:1px}
   .va-head span{color:#8793a8;letter-spacing:0}
   .va-run{display:grid;width:100%;border:0;color:inherit;font-family:inherit;grid-template-columns:54px 58px 1fr;align-items:center;gap:4px;margin-top:5px;padding:7px 6px;border-radius:7px;background:rgba(255,255,255,.045);font-size:9px;text-align:left;cursor:pointer}
@@ -4897,6 +4902,7 @@ window.addEventListener("popstate", ()=>{
       }catch(e){ d={}; legacyBackup=null; }
       d.roster = Array.isArray(d.roster)? d.roster : [];
       d.runRecords = Array.isArray(d.runRecords)? d.runRecords.filter(x=>x&&typeof x==='object') : [];
+      d.seasonEditions = Array.isArray(d.seasonEditions)? d.seasonEditions.filter(x=>x&&typeof x==='object'&&x.rid!=null&&Number.isFinite(+x.no)) : [];
       d.dailyEchoes = Array.isArray(d.dailyEchoes)? d.dailyEchoes.filter(x=>x&&typeof x==='object') : [];
       d.lineup = (d.lineup&&typeof d.lineup==='object'&&!Array.isArray(d.lineup))? d.lineup : {};
       if(typeof d.runs!=='number') d.runs=0;
@@ -4919,9 +4925,11 @@ window.addEventListener("popstate", ()=>{
       // NEW 뱃지(수집형 국룰): 새로 얻고 아직 상세로 확인 안 한 카드 표시
       if(!d.newCards||typeof d.newCards!=='object'||Array.isArray(d.newCards)) d.newCards={};
       // 애정⑥ 함께한 기록 + 팬덤 유대: 구카드는 첫 약속 단계에서 이어지도록 마이그레이션
-      let bondMigrated=false, directionMigrated=false, runRecordMigrated=false;
+      let bondMigrated=false, directionMigrated=false, runRecordMigrated=false, seasonEditionMigrated=false;
       const fixPromiseTitle=m=>{if(m&&typeof m.title==='string'){const next=m.title.replace(/과 앙코르 약속$/,' 앙코르 약속');if(next!==m.title){m.title=next;runRecordMigrated=true;}}};
       d.runRecords.forEach(x=>{fixPromiseTitle(x.runMemory);if(x.runMemory&&!x.runMemory.run&&x.run){x.runMemory.run=x.run;runRecordMigrated=true;}});
+      const editionMigration=SeasonEditionLedger.migrate(d.runRecords,d.seasonEditions,ORDER);
+      d.seasonEditions=editionMigration.rows; if(editionMigration.changed)seasonEditionMigrated=true;
       d.dailyEchoes.forEach(x=>{if(typeof x.promiseTitle==='string'){const next=x.promiseTitle.replace(/과 앙코르 약속$/,' 앙코르 약속');if(next!==x.promiseTitle){x.promiseTitle=next;runRecordMigrated=true;}}});
       d.roster.forEach(r=>{
         if(!r.joinedAt) r.joinedAt=Date.now();
@@ -4929,6 +4937,9 @@ window.addEventListener("popstate", ()=>{
         if(!r.bestRunNo&&r.bestRunId){const br=d.runRecords.find(x=>String(x.runId)===String(r.bestRunId)&&String(x.rid)===String(r.rid));if(br&&br.run){r.bestRunNo=br.run;runRecordMigrated=true;}}
         fixPromiseTitle(r.lastRunMemory);fixPromiseTitle(r.unresolvedPromise);
         for(const m of [r.lastRunMemory,r.unresolvedPromise])if(m&&!m.run&&m.runId){const rr=d.runRecords.find(x=>String(x.runId)===String(m.runId)&&String(x.rid)===String(r.rid));if(rr&&rr.run){m.run=rr.run;runRecordMigrated=true;}}
+        const editions=d.seasonEditions.filter(e=>String(e.rid)===String(r.rid)).sort((a,b)=>(+b.no)-(+a.no));
+        if(editions.length){const latest=editions[0],nextEdition={no:+latest.no,name:latest.name||'',icon:latest.icon||'🎬',pos:latest.pos||'',direction:latest.direction||''};if(!r.seasonEdition||JSON.stringify(r.seasonEdition)!==JSON.stringify(nextEdition))seasonEditionMigrated=true;r.seasonEdition=nextEdition;}
+        else if(r.seasonEdition){delete r.seasonEdition;seasonEditionMigrated=true;}
       });
       if(Array.isArray(d.bondHistory)) d.bondHistory.forEach(x=>{
         if(x&&typeof x.text==='string'&&x.text.indexOf('팬덤와 ')===0){ x.text='팬덤과 '+x.text.slice(4); bondMigrated=true; }
@@ -4954,7 +4965,7 @@ window.addEventListener("popstate", ()=>{
       if(!d.groupAll){ d.groupAll={}; if(d.battleAll){ const rg=(d.groups||[]).some(g=>g.gid===d.repGid)?d.repGid:((d.groups||[])[0]||{}).gid; if(rg!=null) d.groupAll[rg]=d.battleAll; } }
       if(!d.groupLog){ d.groupLog={}; if(Array.isArray(d.battleLog)){ const rg=(d.groups||[]).some(g=>g.gid===d.repGid)?d.repGid:((d.groups||[])[0]||{}).gid; if(rg!=null) d.groupLog[rg]=d.battleLog; } }
       delete d.battleSeason; delete d.battleAll; delete d.battleLog;
-      this.data=d; if(bondMigrated||directionMigrated||runRecordMigrated) this.persist();
+      this.data=d; if(bondMigrated||directionMigrated||runRecordMigrated||seasonEditionMigrated) this.persist();
       if(saved&&saved.recovered&&!this._recoveryNotified){ this._recoveryNotified=true; setTimeout(()=>{ try{toast('저장 손상을 감지해 직전 기획사 기록으로 복구했어');}catch(e){} },250); }
       if(runMigration.recoveredLineup&&!this._compatNotified){ this._compatNotified=true; setTimeout(()=>{ try{toast('기존 데뷔조 편성을 복구했어 · 바로 이어서 플레이할 수 있어');}catch(e){} },350); }
       return d;
@@ -5114,6 +5125,18 @@ window.addEventListener("popstate", ()=>{
     seasonNo(){ return Math.max(0, Math.floor((Date.now()-SEASON_EPOCH)/SEASON_MS)); },
     currentTrend(){ return TRENDS[this.seasonNo()%TRENDS.length]; },
     seasonEndsInDays(){ const next=(this.seasonNo()+1)*SEASON_MS+SEASON_EPOCH; return Math.max(0,Math.ceil((next-Date.now())/86400000)); },
+    seasonEditionFor(direction){
+      const trend=this.currentTrend(), expected=this.TREND_STAT[trend.pos]||'vocal';
+      return SeasonEditionLedger.qualify({registered:true,reachedFinal:true,direction,expectedDirection:expected,seasonNo:this.seasonNo(),trend});
+    },
+    seasonEditionsOf(rid){ return SeasonEditionLedger.editionsOf(this.data.seasonEditions,rid); },
+    seasonEditionOf(rid,no){ return this.seasonEditionsOf(rid).find(e=>no==null||+e.no===+no)||null; },
+    registerSeasonEdition(rid,edition,record){
+      const out=SeasonEditionLedger.upsert(this.data.seasonEditions,{rid,edition,record},ORDER); this.data.seasonEditions=out.rows;
+      const row=out.row; if(!row)return null;
+      const saved=this.rosterById(rid); if(saved){const latest=this.seasonEditionsOf(rid)[0];if(latest)saved.seasonEdition={no:+latest.no,name:latest.name||'',icon:latest.icon||'🎬',pos:latest.pos||'',direction:latest.direction||''};}
+      return {row,created:!!out.created,versionAdded:!!out.versionAdded,bestChanged:!!out.bestChanged};
+    },
     // 시즌 결과가 단순 리셋 안내로 끝나지 않고, 대표 그룹의 다음 RUN 제작으로 이어지게 한다.
     seasonRunProposal(trend,g){
       trend=trend||this.currentTrend(); g=g||this.repGroup(); if(!g)return null;
@@ -5490,6 +5513,8 @@ window.addEventListener("popstate", ()=>{
       const top=this.idolTop(stats), gr=grade(top.score);
       // 첫 12턴은 수집 약속을 깨지 않는 프롤로그: 성적과 무관하게 첫 아이돌 카드는 등록한다.
       const debuted=top.score>=55 || firstEver;
+      // 시즌 에디션은 첫 카드 보장과 분리한다. 완주 시점의 트렌드와 맞고 실제 파이널에 도달한 RUN만 획득.
+      const _finishTrend=this.currentTrend(), seasonEdition=SeasonEditionLedger.qualify({registered:debuted,reachedFinal:!!(st&&st.seasonQualified),direction:st&&st.runDirection,expectedDirection:this.TREND_STAT[_finishTrend.pos]||'vocal',seasonNo:this.seasonNo(),trend:_finishTrend});
       const idkey = st.idol.id==='custom' ? 'c:'+st.idol.name : 'i:'+(st.idol.id!=null?st.idol.id:st.idol.name);
       const titles = debuted ? this.titlesOf(stats, {firstEver}) : [];
       let joinMsg, newRid=null, adoptedCurrent=false, priorBest=null;
@@ -5497,7 +5522,8 @@ window.addEventListener("popstate", ()=>{
         const old=st&&st.retrainRid?this.rosterById(st.retrainRid):null;
         const overallNow=grade(Math.round(STATS.reduce((a,x)=>a+(stats[x.k]||0),0)/STATS.length));
         if(old){
-          priorBest={rid:old.rid,idkey:old.idkey,name:old.name,run:old.runs||1,runDirection:old.runDirection||null,stats:Object.assign({},old.stats||{}),grade:old.grade,fans:old.fans||0,fanBond:old.fanBond||0,savedAt:old.lastTrainedAt||old.joinedAt||Date.now(),runId:old.bestRunId||''};
+          const _oldBestRecord=(this.data.runRecords||[]).find(x=>String(x.runId)===String(old.bestRunId||''));
+          priorBest={rid:old.rid,idkey:old.idkey,name:old.name,run:old.runs||1,runDirection:old.runDirection||null,seasonEdition:_oldBestRecord&&_oldBestRecord.seasonEdition?Object.assign({},_oldBestRecord.seasonEdition):null,stats:Object.assign({},old.stats||{}),grade:old.grade,fans:old.fans||0,fanBond:old.fanBond||0,savedAt:old.lastTrainedAt||old.joinedAt||Date.now(),runId:old.bestRunId||''};
           const oldScore=ORDER.reduce((a,k)=>a+((old.stats&&old.stats[k])||0),0);
           const newScore=ORDER.reduce((a,k)=>a+(stats[k]||0),0);
           const adopt=!!old.incomplete||!!old.legacyRun||newScore>=oldScore;
@@ -5507,9 +5533,9 @@ window.addEventListener("popstate", ()=>{
           const nextRun=(old.runs||1)+1;
           // 기존 최고와 이번 시도를 각각 복제해 남기고, 강해진 경우에만 대표 버전을 교체.
           if(!this.data.memories.some(m=>m.rid===old.rid&&m.run===(old.runs||1)))
-            this.data.memories.push({rid:old.rid,idkey:old.idkey,name:old.name,img:'',runDirection:old.runDirection||null,stats:Object.assign({},old.stats||{}),
+            this.data.memories.push({rid:old.rid,idkey:old.idkey,name:old.name,img:'',runDirection:old.runDirection||null,seasonEdition:old.seasonEdition?Object.assign({},old.seasonEdition):null,stats:Object.assign({},old.stats||{}),
               grade:old.grade,fans:old.fans||0,run:old.runs||1,adopted:true,savedAt:old.lastTrainedAt||old.joinedAt||Date.now()});
-          this.data.memories.push({rid:old.rid,idkey,name:st.idol.name,img:'',runDirection:st.runDirection,stats:Object.assign({},stats),
+          this.data.memories.push({rid:old.rid,idkey,name:st.idol.name,img:'',runDirection:st.runDirection,seasonEdition,stats:Object.assign({},stats),
             grade:gr,fans:Math.round((st&&st.fans)||0),fanBond:Math.round((st&&st.fanBond)||0),run:nextRun,adopted:adopt,savedAt:Date.now()});
           if(adopt){
             Object.assign(old,{name:st.idol.name,img:st.idol.img||old.img||'',runDirection:st.runDirection,cat:st.idol.cat||old.cat||'F',
@@ -5531,10 +5557,11 @@ window.addEventListener("popstate", ()=>{
       } else {
         const old=st&&st.retrainRid?this.rosterById(st.retrainRid):null;
         if(old){
-          priorBest={rid:old.rid,idkey:old.idkey,name:old.name,run:old.runs||1,runDirection:old.runDirection||null,stats:Object.assign({},old.stats||{}),grade:old.grade,fans:old.fans||0,fanBond:old.fanBond||0,savedAt:old.lastTrainedAt||old.joinedAt||Date.now(),runId:old.bestRunId||''};
+          const _oldBestRecord=(this.data.runRecords||[]).find(x=>String(x.runId)===String(old.bestRunId||''));
+          priorBest={rid:old.rid,idkey:old.idkey,name:old.name,run:old.runs||1,runDirection:old.runDirection||null,seasonEdition:_oldBestRecord&&_oldBestRecord.seasonEdition?Object.assign({},_oldBestRecord.seasonEdition):null,stats:Object.assign({},old.stats||{}),grade:old.grade,fans:old.fans||0,fanBond:old.fanBond||0,savedAt:old.lastTrainedAt||old.joinedAt||Date.now(),runId:old.bestRunId||''};
           newRid=old.rid; old.runs=(old.runs||1)+1; old.lastTrainedAt=Date.now();
           if(!this.data.memories)this.data.memories=[];
-          this.data.memories.push({rid:old.rid,idkey,name:st.idol.name,img:'',runDirection:st.runDirection,stats:Object.assign({},stats),
+          this.data.memories.push({rid:old.rid,idkey,name:st.idol.name,img:'',runDirection:st.runDirection,seasonEdition:null,stats:Object.assign({},stats),
             grade:gr,fans:Math.round((st&&st.fans)||0),fanBond:Math.round((st&&st.fanBond)||0),run:old.runs,adopted:false,failed:true,savedAt:Date.now()});
           joinMsg=old.incomplete
             ? `💤 <b>${esc(st.idol.name)}</b> 오디션 탈락 — 미완성 카드 유지<br><span class="muted">다시 육성해 부족한 기록을 넘으면 정식 등록</span>`
@@ -5548,16 +5575,18 @@ window.addEventListener("popstate", ()=>{
         this.data.fails=(this.data.fails||0)+1;
       }   // ㉔ 히든업적 카운터
       // RUN 원장: 대표 카드와 분리해 성공/실패/동일 회차 번호까지 한 판씩 불변 기록한다.
+      let editionRegistration=null;
       if(newRid){
         if(!Array.isArray(this.data.runRecords))this.data.runRecords=[];
         if(priorBest&&!this.data.runRecords.some(x=>String(x.rid)===String(newRid))){
           const legacyId=priorBest.runId||`legacy-best-${newRid}-${priorBest.run}`;
-          this.data.runRecords.push({runId:legacyId,rid:newRid,idkey:priorBest.idkey,name:priorBest.name,run:priorBest.run,runDirection:priorBest.runDirection,stats:priorBest.stats,grade:priorBest.grade,fans:priorBest.fans,fanBond:priorBest.fanBond,adopted:true,failed:false,legacy:true,savedAt:priorBest.savedAt});
+          this.data.runRecords.push({runId:legacyId,rid:newRid,idkey:priorBest.idkey,name:priorBest.name,run:priorBest.run,runDirection:priorBest.runDirection,seasonEdition:priorBest.seasonEdition,seasonQualified:!!priorBest.seasonEdition,stats:priorBest.stats,grade:priorBest.grade,fans:priorBest.fans,fanBond:priorBest.fanBond,adopted:true,failed:false,completed:true,legacy:true,savedAt:priorBest.savedAt});
           const priorRoster=this.rosterById(newRid); if(priorRoster){if(!priorRoster.bestRunId)priorRoster.bestRunId=legacyId;if(!priorRoster.bestRunNo)priorRoster.bestRunNo=priorBest.run;}
         }
-        const record={runId:String(st.runId||newRunId()),prevRunId:String(st.prevRunId||''),rid:newRid,idkey,name:st.idol.name,run:Math.max(1,(this.rosterById(newRid)||{}).runs||1),runDirection:st.runDirection,
-          stats:Object.assign({},stats),grade:gr,fans:Math.round((st&&st.fans)||0),fanBond:Math.round((st&&st.fanBond)||0),adopted:!!adoptedCurrent,failed:!debuted,completed:!!debuted,runMemory:st.runMemory?Object.assign({},st.runMemory):null,savedAt:Date.now()};
+        const record={runId:String(st.runId||newRunId()),prevRunId:String(st.prevRunId||''),rid:newRid,idkey,name:st.idol.name,run:Math.max(1,(this.rosterById(newRid)||{}).runs||1),runDirection:st.runDirection,seasonEdition,
+          seasonQualified:!!(st&&st.seasonQualified),finishedSeason:this.seasonNo(),stats:Object.assign({},stats),grade:gr,fans:Math.round((st&&st.fans)||0),fanBond:Math.round((st&&st.fanBond)||0),adopted:!!adoptedCurrent,failed:!debuted,completed:!!debuted,runMemory:st.runMemory?Object.assign({},st.runMemory):null,savedAt:Date.now()};
         if(!this.data.runRecords.some(x=>x.runId===record.runId))this.data.runRecords.push(record);
+        if(seasonEdition)editionRegistration=this.registerSeasonEdition(newRid,seasonEdition,record);
         const saved=this.rosterById(newRid);
         if(saved){
           if(adoptedCurrent||!saved.bestRunId){saved.bestRunId=record.runId;saved.bestRunNo=record.run;}
@@ -5592,7 +5621,8 @@ window.addEventListener("popstate", ()=>{
       if(newRid&&st&&st.mentor){ const saved=this.rosterById(newRid); if(saved){ saved.mentorRid=st.mentor.rid; saved.mentorName=st.mentor.name; saved.mentorChoice=st.mentorChoice||''; } }
       this.data.runs++; this.persist();
       if(newRid) (this.data.groups||[]).filter(g=>Object.values(g.lineup||{}).includes(newRid)).forEach(g=>this.submitGroup(g));
-      return {drops:dropInfo, joinMsg, debuted, adopted:!!adoptedCurrent, newRid, titles, newRecord, fans:fansV, tier:(end&&end.tier)||'',runMemory:st&&st.runMemory||null,
+      const editionResult=editionRegistration?Object.assign({},seasonEdition,{newCollection:editionRegistration.created,bestUpdated:editionRegistration.bestChanged,versionAdded:editionRegistration.versionAdded,versionCount:editionRegistration.row.runIds.length}):null;
+      return {drops:dropInfo, joinMsg, debuted, adopted:!!adoptedCurrent, newRid, titles, newRecord, fans:fansV, tier:(end&&end.tier)||'',runMemory:st&&st.runMemory||null,seasonEdition:editionResult,
         fandom:fandomOf(st&&st.idol).name, fanBond:Math.round((st&&st.fanBond)||0), mentorName:st&&st.mentor&&st.mentor.name||'', mentorChoice:st&&st.mentorChoice||''};
     },
     // ⑳⑲ 드랍 재설계(재율애비 확정): 최다 훈련영역 1장 확정 + 랜덤 추가 최대 2장(안 나올 수도).
@@ -5689,6 +5719,7 @@ window.addEventListener("popstate", ()=>{
       const stars='★'.repeat(m.star)+'☆'.repeat(Math.max(0,5-m.star));
       const topK=(m.top&&m.top.k)||this.topStat((r&&r.stats)||{});
       const directionKey=(r&&r.runDirection)||'', directionNm=STATNM[directionKey]||'이전 버전';
+      const edition=r&&r.seasonEdition&&Number.isFinite(+r.seasonEdition.no)?r.seasonEdition:null;
       const interactive=!!opt.onclick, tag=interactive?'button':'div';
       const action=interactive?` type="button" aria-label="${esc(name)} 아이돌 카드 상세" onclick="${opt.onclick}"`:'';
       const state=opt.state||(r&&r.incomplete?'incomplete':'complete');
@@ -5701,6 +5732,7 @@ window.addEventListener("popstate", ()=>{
         <div class="ic-kicker">${stateLabel}</div>
         <div class="rbadge">${isLegacy?'이전 체계 카드':'RUN 완성도 '+esc(runGrade)}</div>
         <div class="ic-run">${state==='training'?'육성 중':`RUN ${String((r&&r.bestRunNo)||m.runs).padStart(2,'0')}`}</div>
+        ${edition?`<div class="ic-season">${esc(edition.icon||'🎬')} S${+edition.no+1} · ${esc(edition.name||'시즌 에디션')}</div>`:''}
         ${opt.tag?`<div class="rtag">${esc(opt.tag)}</div>`:''}
         ${opt.favorite?'<span class="rfav">♥</span>':''}
         ${opt.progress!=null?`<div class="ic-progress"><i style="width:${Math.max(5,Math.min(100,opt.progress))}%"></i></div>`:''}
@@ -6343,17 +6375,18 @@ window.addEventListener("popstate", ()=>{
       const isFav=this.data.favRid===rid;
       const front=this.idolCardHTML(r,{tag:isFav?('최애'+(tag?' · '+tag:'')):tag,favorite:isFav});
       const records=(this.data.runRecords||[]).filter(m=>String(m.rid)===String(rid)).sort((a,b)=>(b.savedAt||0)-(a.savedAt||0));
+      const seasonEditionCount=this.seasonEditionsOf(rid).length;
       const memories=(this.data.memories||[]).filter(m=>m.rid===rid).sort((a,b)=>(b.savedAt||0)-(a.savedAt||0));
       const versions=records.length?records.map(v=>Object.assign({},v,{current:String(v.runId)===String(r.bestRunId)}))
         :[{runId:`legacy-current-${rid}`,run:r.runs||1,grade:r.grade,stats:r.stats,fans:r.fans||0,adopted:true,current:true,incomplete:r.incomplete},...memories.map((m,i)=>Object.assign({runId:`legacy-memory-${rid}-${i}`},m))];
       const album=versions.length?`<div class="version-album"><div class="va-head">VERSION ALBUM <span>${versions.length} RECORDS</span></div>
-        ${versions.map(v=>{const memory=v.runMemory, state=memory?(memory.status==='success'?'장면 완성':'미완결'):(v.incomplete||v.failed?'미완성':(v.current?'전시 RUN':(v.adopted?'BEST RUN':'추억')));
-          return `<button type="button" class="va-run ${v.current?'current':''} ${v.failed||memory&&memory.status==='failed'?'failed':''}" onclick="event.stopPropagation();DG.showRunRecord(${rid},'${encodeURIComponent(v.runId||'')}')"><b>RUN ${String(v.run||1).padStart(2,'0')}</b><span>${esc(state)}</span><em>${memory?esc(memory.title):`완성도 ${esc(v.grade||'F')} · 팬 ${fmt(v.fans||0)}`}</em></button>`;}).join('')}</div>`:'';
+        ${versions.map(v=>{const memory=v.runMemory, edition=v.seasonEdition, state=edition&&v.completed?'시즌 에디션':memory?(memory.status==='success'?'장면 완성':'미완결'):(v.incomplete||v.failed?'미완성':(v.current?'전시 RUN':(v.adopted?'BEST RUN':'추억')));
+          return `<button type="button" class="va-run ${v.current?'current':''} ${v.failed||memory&&memory.status==='failed'?'failed':''}" onclick="event.stopPropagation();DG.showRunRecord(${rid},'${encodeURIComponent(v.runId||'')}')"><b>RUN ${String(v.run||1).padStart(2,'0')}</b><span>${esc(state)}</span><em>${edition&&v.completed?`${esc(edition.icon||'🎬')} S${+edition.no+1} · ${esc(edition.name||'시즌')}`:(memory?esc(memory.title):`완성도 ${esc(v.grade||'F')} · 팬 ${fmt(v.fans||0)}`)}</em></button>`;}).join('')}</div>`:'';
       const lastScene=r.lastRunMemory?`<div class="res-bond" style="margin:7px 0"><div><span>🎬 LAST SCENE</span><b>${r.lastRunMemory.status==='success'?'완성':'미완결'}</b></div><small style="display:block;margin-top:5px">${esc(r.lastRunMemory.title)} · ${esc(r.lastRunMemory.evidence||r.lastRunMemory.goal||'')}</small></div>`:'';
       // 애정⑥ 함께한 기록
       const days=Math.max(1, Math.floor((Date.now()-(r.joinedAt||Date.now()))/86400000)+1);
       const back=`<div class="fb-name">${isFav?'💖 ':''}${esc(r.name)}</div>
-        <div class="fb-sub">IDOL CARD · BEST RUN ${(r.bestRunNo||r.runs||1)} · 누적 ${(r.runs||1)}회 · ★${this.idolCardMeta(r).star}${commit?` · ${esc(cg?cg.name:'전속')}`:''}</div>
+        <div class="fb-sub">IDOL CARD · BEST RUN ${(r.bestRunNo||r.runs||1)} · 누적 ${(r.runs||1)}회 · ★${this.idolCardMeta(r).star}${seasonEditionCount?` · 시즌 에디션 ${seasonEditionCount}`:''}${commit?` · ${esc(cg?cg.name:'전속')}`:''}</div>
         ${lastScene}
         <canvas id="rosRadar" width="340" height="340" style="width:150px;height:150px;margin:0 auto"></canvas>
         <div class="fb-sub" style="margin-top:5px">이번 RUN 제작 로그</div><div class="fb-rows" style="margin-top:4px">${rows}</div>
@@ -6381,7 +6414,8 @@ window.addEventListener("popstate", ()=>{
         v=String(runId).startsWith('legacy-current-')?{run:r.runs||1,grade:r.grade,fans:r.fans||0,adopted:true,stats:r.stats}:memories[idx]; }
       if(!v)return; const m=v.runMemory, ov=document.getElementById('ov'), failed=!!(v.failed||m&&m.status==='failed');
       try{ ProductTelemetry.track('run_record_open',{rid:String(rid),run_id:v.runId||runId,run_no:v.run||1,promise_status:m&&m.status||'none',adopted:!!v.adopted}); }catch(e){}
-      ov.className='ov on'; ov.onclick=null; ov.innerHTML=`<div class="ev-card" style="text-align:left"><div class="ev-banner">RUN ${String(v.run||1).padStart(2,'0')} · ${v.adopted?'BEST 채택':failed?'미완결 기록':'추억 기록'}</div>
+      const edition=v.seasonEdition&&v.completed?v.seasonEdition:null;
+      ov.className='ov on'; ov.onclick=null; ov.innerHTML=`<div class="ev-card" style="text-align:left"><div class="ev-banner">RUN ${String(v.run||1).padStart(2,'0')} · ${edition?`${esc(edition.icon||'🎬')} S${+edition.no+1} 시즌 에디션`:(v.adopted?'BEST 채택':failed?'미완결 기록':'추억 기록')}</div>
         <div class="ev-title">${m?esc(m.title):`${esc(r.name)}의 RUN 기록`}</div>
         <div class="ev-text">${m?esc(m.evidence||m.goal||''):`RUN 완성도 ${esc(v.grade||'F')} · 팬 ${fmt(v.fans||0)}`}</div>
         ${m?`<div class="res-bond"><div><span>${m.status==='success'?'🎬 장면 완성':'↻ 미완결 약속'}</span><b>${esc(m.checkpoint==='commit'?'끝까지 밀어붙임':m.checkpoint==='adapt'?'재해석':'결과')}</b></div><small style="display:block;margin-top:6px">${esc(m.reward||'')}</small></div>`:''}
@@ -6611,6 +6645,10 @@ window.addEventListener("popstate", ()=>{
         <div class="res-bond-track"><i style="width:${_fb}%"></i></div><small>${_fb>=80?'최고 유대 완성 · 다음 회차에서 더 강한 함성 계승':`다음 약속까지 ${Math.max(0,_bl.next-_fb)} · 유대가 올인 성공률을 높여`}</small>
         ${res.mentorName?`<small style="display:block;margin-top:5px;color:#ffd35c">🫶 ${esc(res.mentorName)}의 완주 기록을 이어받은 RUN</small>`:''}</div>`;
       const _rm=res.runMemory, memoryResult=_rm?`<div class="res-bond" style="border-color:${_rm.status==='success'?'rgba(255,211,92,.45)':'rgba(255,87,126,.5)'}"><div><span>🎬 이번 RUN의 한 장면</span><b>${_rm.status==='success'?'완성':'미완결'}</b></div><div style="font-size:13px;font-weight:900;margin-top:7px">${esc(_rm.title)}</div><small style="display:block;margin-top:4px">${esc(_rm.evidence||_rm.goal||'')}</small><small style="display:block;margin-top:5px;color:${_rm.status==='success'?'#ffd35c':'#ff91aa'}">${esc(_rm.reward||'')}</small></div>`:'';
+      const _se=res.seasonEdition;
+      const _seTitle=_se?(_se.newCollection?`SEASON ${+_se.no+1} EDITION 수집`:_se.bestUpdated?`SEASON ${+_se.no+1} 대표 RUN 갱신`:`SEASON ${+_se.no+1} 새 버전 기록`):'';
+      const _seCopy=_se?(_se.newCollection?`${esc(_se.name||'이번 시즌')} 에디션이 아이돌별 시즌 컬렉션에 영구 등록됐어`:_se.bestUpdated?`같은 시즌 최고 기록을 넘어 대표 버전이 교체됐어`:`컬렉션은 그대로 유지되고 이번 RUN이 버전 앨범에 추가됐어`):'';
+      const seasonResult=_se?`<div class="season-edition-result"><b>${esc(_se.icon||'🎬')} ${_seTitle}</b><span>${_seCopy}</span></div>`:'';
       // ⭐한 명 더 육성 훅: 방금 완주로 진척된 다음 목표 노출 → 최고 몰입 순간에 다음 런 유도
       const ng=this.nextGoals(2);
       const goalPull = ng.length ? `<div class="res-goals"><div class="res-goals-h">🎯 다음 목표</div>
@@ -6626,7 +6664,7 @@ window.addEventListener("popstate", ()=>{
         ${this.idolCardHTML(idolR,{cls:'result-idol-card',state:idolR.incomplete?'incomplete':(keptAfterFail||!res.adopted?'complete':'new'),onclick:`DG.showRosterDetail(${idolR.rid})`})}
         <div class="res-card-copy"><b>${esc(idolR.name)} ${idolR.incomplete?'미완성 카드가 남았어':keptAfterFail||!res.adopted?'기존 BEST 카드를 유지했어':'카드가 영구 보관됐어'}</b><span>${idolR.incomplete?'이 아이로 다시 도전하면 정식 카드 완성':keptAfterFail||!res.adopted?'이번 RUN은 장면과 버전 앨범에 따로 보관됨':(this.idolCardMeta(idolR).star>=5?'최고 단계 완성':`다음 ★ 조건 · ${this.idolNextGoal(this.idolCardMeta(idolR))}`)}</span></div>
       </div>`:'';
-      box.innerHTML=`<div class="dg-res">${rec}<div class="dg-res-slot">${res.joinMsg}</div>${thanks}${memoryResult}${bondResult}
+      box.innerHTML=`<div class="dg-res">${rec}<div class="dg-res-slot">${res.joinMsg}</div>${thanks}${seasonResult}${memoryResult}${bondResult}
         ${idolReveal}
         ${titleChips}
         <div class="dg-res-cards"><b>SUPPORT CARD · 다음 육성 장비</b><div class="dg-chips" style="margin-top:6px">${chips}</div></div>
@@ -7298,7 +7336,11 @@ window.addEventListener("popstate", ()=>{
       // 헤드박스 = 내 최고 연습생(팬 기준). 세그: 이번 시즌(joinedAt이 이번 시즌) / 역대(전체). 아래 목록은 글로벌 유지.
       const seasonMode=this._leagueSub!=='alltime';
       const mine=(this.data.roster||[]);
-      const pool = seasonMode ? mine.filter(r=>Math.floor(((r.joinedAt||0)-SEASON_EPOCH)/SEASON_MS)===this.seasonNo()) : mine;
+      const seasonRows=(this.data.seasonEditions||[]).filter(e=>+e.no===this.seasonNo()).map(e=>{
+        const r=this.rosterById(e.rid), v=(this.data.runRecords||[]).find(x=>String(x.runId)===String(e.bestRunId||''));
+        return r?Object.assign({},r,{fans:v&&v.fans!=null?v.fans:r.fans,grade:v&&v.grade||r.grade,seasonEdition:e}):null;
+      }).filter(Boolean);
+      const pool = seasonMode ? seasonRows : mine;
       const best = pool.slice().sort((a,b)=>(b.fans||0)-(a.fans||0))[0];
       const lbl = seasonMode ? '이번 시즌 내 최고 연습생' : '역대 내 최고 연습생';
       if(head){
@@ -7316,6 +7358,12 @@ window.addEventListener("popstate", ()=>{
             <div class="lg-tier-nm">${lbl}</div>
             <div class="lg-tier-sub">${seasonMode?'이번 시즌 완주한 연습생이 아직 없어':'아직 완주한 연습생이 없어'}</div></div>`;
         }
+      }
+      if(seasonMode){
+        if(box) box.innerHTML=`<div class="lb-cap">🎬 시즌 ${this.seasonNo()+1} 에디션 컬렉션 · ${seasonRows.length}명</div>`+(seasonRows.length?seasonRows.sort((a,b)=>(b.fans||0)-(a.fans||0)).map((r,i)=>
+          `<div class="lb-row" style="cursor:pointer" onclick="DG.showRosterDetail(${r.rid})"><span class="r">${i+1}</span><span class="who">${esc(r.seasonEdition.icon||'🎬')} ${esc(r.name)}<small>· ${esc(r.seasonEdition.name||'시즌 에디션')} · RUN 완성도 ${esc(r.grade||'F')}</small></span><span class="sc">${fmt(r.fans||0)}</span></div>`).join('')
+          :`<div class="lb-row"><span class="who muted">이번 시즌 대세 방향으로 파이널에 도달하면<br>아이돌별 시즌 에디션이 여기에 남아요.</span></div>`);
+        return;
       }
       if(box) box.innerHTML=`<div class="lb-cap">🏅 전설의 연습생 — 전 세계 프로듀서의 최고 연습생</div><div class="lb-row"><span class="who muted">${t("hall_loading")}</span></div>`;
       Game.fetchBoard().then(()=>{
