@@ -141,6 +141,12 @@
   .cropvp .cring::after{content:"";position:absolute;inset:10px;border:1.5px dashed rgba(255,255,255,.6);border-radius:50%}
   .cropzoom{width:240px;margin:12px auto 0;display:block;accent-color:var(--accent)}
   .specpick{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding-bottom:4px}
+  .run-direction{margin:10px 0 0;padding:12px;border:1px solid rgba(255,255,255,.12);border-radius:16px;background:rgba(16,12,31,.84)}
+  .run-direction-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:9px}
+  .run-direction-head b{font-size:13px;color:#fff}.run-direction-head span{font-size:10px;color:var(--muted);text-align:right}
+  .run-direction .specpick{padding:0}.run-direction .sp{min-height:50px;font-size:11px;line-height:1.15;padding:7px 3px}
+  .run-direction .sp small{display:block;margin-top:3px;font-size:9px;color:var(--muted)}
+  .run-direction-effect{margin-top:8px;padding:7px 9px;border-radius:10px;background:rgba(78,112,255,.13);color:#c9d7ff;font-size:10px;line-height:1.35}
   .sp{appearance:none;border:1px solid var(--line);border-radius:12px;padding:11px 4px;
     background:var(--panel);color:var(--txt);font-size:13px;font-weight:700;cursor:pointer;transition:.1s}
   .sp.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
@@ -701,7 +707,7 @@
     </div>
 
     <div id="mode-search" class="modebox">
-      <input class="srch" id="idolSearch" placeholder="이름·그룹 검색 (예: 리사, BTS)" data-i18n-ph="sel_search_ph" oninput="Game.search()" autocomplete="off">
+      <input class="srch" id="idolSearch" aria-label="아이돌 이름 또는 그룹 검색" placeholder="이름·그룹 검색 (예: 리사, BTS)" data-i18n-ph="sel_search_ph" oninput="Game.search()" autocomplete="off">
       <div class="grid" id="idolGrid"></div>
     </div>
 
@@ -710,13 +716,13 @@
         <input type="file" accept="image/*" id="customFile" onchange="Game.customPhoto(event)" hidden>
         <span id="upPh">📷<br><small data-i18n="sel_photo">사진 올리기 (선택)</small></span>
       </label>
-      <input class="srch" id="customName" placeholder="아이돌 이름 (최대 10자)" data-i18n-ph="sel_name_ph" maxlength="10" oninput="Game.customValidate()" autocomplete="off">
+      <input class="srch" id="customName" aria-label="커스텀 아이돌 이름" placeholder="아이돌 이름 (최대 10자)" data-i18n-ph="sel_name_ph" maxlength="10" oninput="Game.customValidate()" autocomplete="off">
       <p class="muted" style="margin:2px 0 5px" data-i18n="sel_pick_gender">성별을 골라</p>
       <div class="genderpick" id="genderPick">
         <button type="button" class="gsel on" data-g="F" onclick="Game.pickGender('F')"><span data-i18n="gender_f">👩 여자</span></button>
         <button type="button" class="gsel" data-g="M" onclick="Game.pickGender('M')"><span data-i18n="gender_m">👨 남자</span></button>
       </div>
-      <p class="muted" style="margin:8px 0 7px" data-i18n="sel_pick_spec">타고난 특기를 골라</p>
+      <p class="muted" style="margin:8px 0 7px" data-i18n="sel_pick_spec">첫 RUN 무대 방향을 골라</p>
       <div class="specpick" id="specPick"></div>
     </div>
 
@@ -740,6 +746,7 @@
       <h2>이번 육성 덱</h2>
     </div>
     <div id="cardPickHero" class="cardpick-hero"></div>
+    <div id="runDirectionPick"></div>
     <div class="cardpick-rule"><b>SUPPORT CARD</b><span>최대 2장 · 사용 시 내구도 1 소모</span></div>
     <div id="cardPickList"></div>
     <div style="height:92px"></div>
@@ -820,9 +827,10 @@
       <div class="muted" style="font-size:12px;margin-top:4px">그룹 로고 · 탭해서 사진 올리기 · 또는 아래에서 고르기</div>
     </div>
     <div class="ag-emojis" id="dbEmojis"></div>
-    <input class="srch" id="dbGroupName" placeholder="그룹 이름 (예: STELLAR, 최대 14자)" maxlength="14" style="margin-top:12px" oninput="var ok=!!this.value.trim();var b=document.getElementById('debutBtn');if(b)b.disabled=!ok;var d=document.getElementById('debutCta');if(d)d.classList.toggle('hide',!ok);">
+    <input class="srch" id="dbGroupName" aria-label="데뷔 그룹 이름" placeholder="그룹 이름 (예: STELLAR, 최대 14자)" maxlength="14" style="margin-top:12px" oninput="var ok=!!this.value.trim();var b=document.getElementById('debutBtn');if(b)b.disabled=!ok;var d=document.getElementById('debutCta');if(d)d.classList.toggle('hide',!ok);">
+    <p class="muted" style="font-size:11.5px;margin:8px 2px 0;text-align:center">첫 그룹은 대표 그룹으로 지정되어 공개 순위전에 등록돼요.</p>
     <div style="height:88px"></div>
-    <div class="cta-float hide" id="debutCta"><button class="btn" id="debutBtn" onclick="DG.confirmDebut()" disabled>🎬 데뷔 시키기!</button></div>
+    <div class="cta-float hide" id="debutCta"><button class="btn" id="debutBtn" onclick="DG.confirmDebut()" disabled>🎬 데뷔시키기 · 순위전 등록</button></div>
   </section>
 
   <!-- 연습생 숙소 -->
@@ -839,7 +847,7 @@
       <button class="menu-btn" onclick="DG.go()" aria-label="back" title="뒤로">←</button>
       <h2 id="assignTitle">배치</h2>
     </div>
-    <p class="muted" style="margin:2px 0 6px">이 자리에 세울 연습생을 골라 (적합도 높은 순). 자리마다 <b>능력치 2개 이상</b>이 반영돼 — 뭐가 맞을진 직접 찾는 재미! 이미 다른 자리에 있으면 눌러서 옮길 수 있어.</p>
+    <p class="muted" style="margin:2px 0 6px">이 자리에 세울 RUN 카드를 골라 (팀 기여도 높은 순). 자리마다 <b>준비 영역 2개 이상</b>이 반영돼. 이미 다른 자리에 있으면 눌러서 옮길 수 있어.</p>
     <div id="assignList"></div>
   </section>
 
@@ -910,7 +918,7 @@
 
   <!-- 랭킹 (그룹 차트 + 전설의 연습생) -->
   <section class="screen" id="s-league">
-    <div class="sub-head"><h2 style="margin:0">LIVE STAGE</h2><button class="mini-head-action" onclick="DG.showBattleLobby()">대결 로비 ›</button></div>
+    <div class="sub-head"><h2 style="margin:0">GHOST LEAGUE</h2><button class="mini-head-action" onclick="DG.showBattleLobby()">고스트 리그 ›</button></div>
     <div id="leagueBattle"></div>
     <div class="segtab rank-seg">
       <button class="seg on" id="rseg-group" onclick="DG.setRankTab('group')">🏆 그룹</button>
@@ -926,11 +934,11 @@
     <div class="spacer" style="max-height:12px"></div>
   </section>
 
-  <!-- ⚔️ 배틀 로비 (⑨ 차트에서 분리 — 비슷한 승점 상대 순차 매칭) -->
+  <!-- ⚔️ 고스트 리그 (저장된 상대 기록과 비동기 대결) -->
   <section class="screen" id="s-battle">
     <div class="sub-head">
       <button class="menu-btn" onclick="DG.go()" aria-label="back" title="뒤로">←</button>
-      <h2>LIVE STAGE</h2>
+      <h2>GHOST LEAGUE</h2>
     </div>
     <div id="battleMine"></div>
     <div class="dg-sub" style="margin-top:15px"><b>🎯 다음 상대</b><span class="muted">비슷한 승점끼리 매칭</span></div>
@@ -982,7 +990,9 @@
 </div>
 
 <!-- 콘텐츠(다국어·아이돌DB) 갱신 시 v= 날짜를 올려 캐시 무효화 → 재방문 유저에게도 반영 -->
-<script src="i18n.js?v=20260724c"></script>
+<script src="storage-journal.js?v=20260803a"></script>
+<script src="run-migration.js?v=20260803a"></script>
+<script src="i18n.js?v=20260803a"></script>
 <script src="idols.js?v=sync202608030520"></script>
 <script>
 // 검색용 아이돌: idols.js의 window.IDOL_DB (최애돌 실데이터 = 활성 아이돌만, 전일 하트투표 순위로 정렬됨). 로드 실패 시 빈 배열.
@@ -991,16 +1001,16 @@ const IDOLS = window.IDOL_DB || [];
 function idolName(i){ return (typeof LANG!=="undefined" && LANG==="en" && i && i.nameEn) ? i.nameEn : (i ? i.name : ""); }
 function idolGrp(i){ return (typeof LANG!=="undefined" && LANG==="en" && i && i.grpEn) ? i.grpEn : (i ? (i.grp||"") : ""); }
 
-// 6대 능력치 (육각형)
+// 이번 RUN의 6대 무대 준비 영역. 실존 인물의 고정 능력치가 아니라 프로듀서가 만든 제작 결과다.
 // ⚠️ 내부키(vocal/acting/dance/visual/charm/creative)는 세이브·카드 호환 위해 유지, 표시이름만 신(新)스탯으로 교체(2026-07-21 개편).
 //   vocal=발성 · acting=리듬감 · dance=체력 · visual=스타일 · charm=화술 · creative=창조. (dance키가 화면엔 '체력', charm키가 '화술'인 내부 불일치는 이 주석으로 감당)
 const STATS = [
-  {k:"vocal",   n:"발성",   ico:"🎵", c:"#ff7ab8"},
-  {k:"acting",  n:"리듬감", ico:"🎤", c:"#ff8a6b"},
-  {k:"dance",   n:"체력",   ico:"💪", c:"#5fc9ff"},
-  {k:"visual",  n:"스타일", ico:"✨", c:"#ffca5f"},
-  {k:"charm",   n:"화술",   ico:"💬", c:"#a97bff"},
-  {k:"creative",n:"창조",   ico:"🎼", c:"#4fe0c0"},
+  {k:"vocal",   n:"보컬 무대", ico:"🎵", c:"#ff7ab8"},
+  {k:"acting",  n:"랩 무대",   ico:"🎤", c:"#ff8a6b"},
+  {k:"dance",   n:"퍼포먼스", ico:"💪", c:"#5fc9ff"},
+  {k:"visual",  n:"스타일링", ico:"✨", c:"#ffca5f"},
+  {k:"charm",   n:"팬 소통",   ico:"💬", c:"#a97bff"},
+  {k:"creative",n:"무대 기획", ico:"🎼", c:"#4fe0c0"},
 ];
 const MENTAL = {k:"mental", n:"멘탈", ico:"🧠", c:"#9aa6c9"};
 // 시즌 트렌드(pos) → 육성 스탯 매핑. 이번 시즌 '대세' 스탯 훈련에 보너스 → 매 시즌 유리한 빌드 변별(반복 리텐션). Game/DG 공용 스코프.
@@ -1014,26 +1024,26 @@ function progOf(p){ p=Math.max(0,p); return levelOf(p)>=7 ? Math.min(100,Math.ro
 function grade(p){ return GRADES[levelOf(p)]; }
 const GRADE_COLOR={SS:"#ffd35c",S:"#ff5fa2",A:"#c48bff",B:"#5fc9ff",C:"#4fd6a0",D:"#8f9bbf",E:"#77809e",F:"#606784"};
 
-// 타고난 재능 (특기 기반 — 검색·커스텀 공통). 스탯은 누적 P 스케일(0~800).
-function talentOf(spec){
+// RUN 방향 기반 제작 보정. 방향은 매 RUN 사용자가 고르며 idols.js의 사전 spec은 읽지 않는다.
+function talentOf(runDirection){
   const keys = STATS.map(s=>s.k);
-  if(!keys.includes(spec)) spec=keys[0];
+  if(!keys.includes(runDirection)) runDirection=keys[0];
   const base = {}; keys.forEach(k=>base[k]=12);
   base.mental=60;   // 초기멘탈 60(2026-07-15): 시작부터 임계(56) 위 → "초반 1회 멘탈케어 강제" 지배전략 제거
-  base[spec] += 18;                                   // 특기 (초기 살짝 앞섬)
-  const si=keys.indexOf(spec);
+  base[runDirection] += 18;                            // 선택한 제작 방향의 초기 세팅
+  const si=keys.indexOf(runDirection);
   base[keys[(si+3)%keys.length]] += 2;                // 준특기(맞은편)
-  return {base, spec};
+  return {base, runDirection};
 }
 
 // 순서 = STATS/그래프 순서(발성·리듬감·체력·스타일·화술·창조)와 일치시킴
 const TRAININGS = [
-  {k:"vocal",   ico:"🎵", t:"발성 훈련",   d:"음정·성량"},
-  {k:"acting",  ico:"🎤", t:"리듬 훈련",   d:"플로우·라임"},
-  {k:"dance",   ico:"💪", t:"체력 단련",   d:"안무·기초체력"},
-  {k:"visual",  ico:"✨", t:"스타일 관리", d:"패션·비주얼"},
-  {k:"charm",   ico:"💬", t:"화술 훈련",   d:"말솜씨·예능"},
-  {k:"creative",ico:"🎼", t:"창작 작업",   d:"작사·작곡"},
+  {k:"vocal",   ico:"🎵", t:"보컬 디렉팅",   d:"키·파트·하모니"},
+  {k:"acting",  ico:"🎤", t:"랩 디렉팅",     d:"플로우·파트 구성"},
+  {k:"dance",   ico:"💪", t:"퍼포먼스 구성", d:"동선·안무 난도"},
+  {k:"visual",  ico:"✨", t:"스타일링 회의", d:"의상·무드보드"},
+  {k:"charm",   ico:"💬", t:"팬 소통 기획", d:"콘텐츠·팬 약속"},
+  {k:"creative",ico:"🎼", t:"무대 기획",     d:"콘셉트·편곡"},
 ];
 const REST = {k:"rest", ico:"😴", t:"휴식", d:"컨디션 회복 + 멘탈 ↑"};
 
@@ -1059,7 +1069,7 @@ const RARE_CARD = {id:"special", kind:"rare", stat:null, ic:"🌟", nm:"스페�
 const SITUATIONAL = ["live","burst","focus"];   // 3번째 슬롯 로테이션(레슨 외 상황/특수 카드)
 // 컨디션 → 결과 배수(好調/보통/부진). 카드 성장의 손맛 레버.
 function condBucket(cond){ return cond>=66 ? "good" : cond>=34 ? "norm" : "bad"; }
-const COND_INFO = { good:{cf:"🤩",ct:"好調",mult:1.4}, norm:{cf:"🙂",ct:"보통",mult:1.0}, bad:{cf:"😵",ct:"부진",mult:0.6} };
+const COND_INFO = { good:{cf:"🤩",ct:"호조",mult:1.4}, norm:{cf:"🙂",ct:"보통",mult:1.0}, bad:{cf:"😵",ct:"부진",mult:0.6} };
 // 매 턴 손패 3장: 레슨 2장 + 상황/특수 1장. 22% 레어 섞음. 기력 바닥이면 휴식 보장.
 function drawHand(stam){
   const lessons = TRAIN_CARDS.filter(c=>c.kind==="lesson"||c.kind==="light");
@@ -1167,7 +1177,7 @@ const EVENTS = [
             fx:s=>{s.mental-=15;s.cond-=14;s.fans=Math.round(s.fans*0.88);}}},
      {t:"연습에 집중 (멘탈 +7)", fx:s=>{s.mental+=7;}},
    ]},
-  {id:"drama", emoji:"🎤", title:"힙합 사이퍼 섭외", text:"실력파로 눈도장 찍을 기회. 근데 삑사리 나면 이미지 타격이 커.",
+  {id:"drama", emoji:"🎤", title:"힙합 사이퍼 섭외", text:"랩 중심 제작안을 시험할 기회. 파트와 동선이 꼬이면 이미지 타격이 커.",
    choices:[
      {t:"사이퍼 도전", odds:s=>0.34+s.acting/1100+s.mental/500,
        win:{label:"인생 벌스!",emoji:"🎤",desc:"리듬감 <b>+40</b> · 팬 <b>↑↑↑</b> · 컨디션 <b>-12</b>",
@@ -1203,7 +1213,7 @@ const EVENTS = [
             fx:s=>{s.visual+=5;s.mental-=12;s.fans=Math.round(s.fans*0.93);}}},
      {t:"내실부터 다지기 (스타일 +12)", fx:s=>{s.visual+=12;}},
    ]},
-  {id:"surv", emoji:"🎙️", title:"서바이벌 프로 출연", text:"경연 프로에서 실력 검증 무대. 이기면 급상승, 지면 굴욕.",
+  {id:"surv", emoji:"🎙️", title:"서바이벌 프로 출연", text:"이번 RUN 제작안을 검증하는 경연 무대. 결과에 따라 다음 제작안을 다시 짜야 해.",
    choices:[
      {t:"경연 참가", odds:s=>0.28+(s.vocal+s.dance)/2600+s.cond/500,
        win:{label:"올킬 무대!",emoji:"🏅",desc:"보컬·체력 <b>+24</b> · 팬 <b>대폭↑↑</b>",
@@ -1278,7 +1288,7 @@ const EVENTS = [
             fx:s=>{s.mental-=14;s.fans=Math.round(s.fans*0.9);}}},
      {t:"적당히 편집 (화술 +11)", fx:s=>{s.charm+=11;}},
    ]},
-  {id:"dancebattle", emoji:"🕺", title:"댄스 배틀 프로그램", text:"실력파 댄서들과 맞붙는 배틀 무대. 이기면 각인, 지면 굳은 몸 굴욕.",
+  {id:"dancebattle", emoji:"🕺", title:"댄스 배틀 프로그램", text:"퍼포먼스 제작안으로 맞붙는 배틀 무대. 결과에 따라 동선을 다시 짜야 해.",
    choices:[
      {t:"배틀 참가", odds:s=>0.32+s.dance/1200+s.cond/500,
        win:{label:"무대 씹어먹음!",emoji:"🔥",desc:"체력 <b>+34</b> · 팬 <b>대폭↑↑</b>",
@@ -1429,7 +1439,7 @@ const BOND_TALKS = [
   {id:"mirror", emoji:"🪞", prompt:"거울 볼 때마다 아직 부족한 게 보여요. 조급해지네요.",
    replies:[
      {t:"어제의 너랑만 비교해", react:"…맞아요. 어제보단 분명 나아졌어요.", e:"🙂", tag:"차분"},
-     {t:"부족함을 아는 게 재능이야", react:"그렇게 생각하니까 마음이 좀 놓여요.", e:"😌", tag:"안도"},
+     {t:"완벽한 초안은 없어, 같이 다듬자", react:"같이 고친다고 하니 마음이 놓여요.", e:"😌", tag:"안도"},
    ]},
   {id:"team", emoji:"🤝", prompt:"같이 연습하는 애들이랑 많이 친해졌어요. 든든해요.",
    replies:[
@@ -1456,7 +1466,7 @@ const BOND_TALKS = [
      {t:"그 감성, 무대에서 살려보자", react:"우와, 벌써 무대가 그려져요!", e:"🤩", tag:"신남"},
      {t:"네 색깔을 찾아가는 중이네", react:"제 색깔… 그 말 왠지 멋져요.", e:"😊", tag:"뿌듯"},
    ]},
-  {id:"slump", emoji:"🌧️", prompt:"요즘 실력이 안 느는 것 같아서 좀 우울했어요.",
+  {id:"slump", emoji:"🌧️", prompt:"요즘 무대 준비가 제자리인 것 같아서 좀 우울했어요.",
    replies:[
      {t:"정체기는 도약 직전이야", react:"…그 말 붙잡고 조금만 더 해볼게요.", e:"🙂", tag:"위로"},
      {t:"쉬어가도 돼. 급할 것 없어", react:"프로듀서님이 그렇게 말해주니 마음이 가벼워요.", e:"😌", tag:"안도"},
@@ -1520,6 +1530,13 @@ const SCHEDULES = {
     },
   },
 };
+// 다회차 난이도: 첫 판은 온보딩 보호, 이후 카드·계승 성장에 맞춰 라이벌도 성장한다.
+// 숨은 보정처럼 느껴지지 않도록 stageChoice에 현재 회차/상승폭을 공개한다.
+const RUN_DIFFICULTY = [1, 1, 1.18, 1.27, 1.35];
+function runDifficulty(mode, runNo){
+  const n=Math.min(RUN_DIFFICULTY.length-1,Math.max(1,Math.round(runNo||1)));
+  return RUN_DIFFICULTY[n] * (mode==='quick'&&n>1 ? 1.15 : 1);
+}
 // 하위호환: 전역 상수는 full 프로파일을 가리킴(st 없는 경로·초기 렌더·옛 세이브 안전)
 const TOTAL_W = SCHEDULES.full.total;
 const DEBUT_W = SCHEDULES.full.debut;
@@ -1547,11 +1564,13 @@ function bondLevel(v){ v=Math.max(0,Math.min(100,+v||0));
 
 // ===== 엔딩 도감 (반복 플레이 훅) =====
 
+const RUN_SAVE_KEY='idol_save', RUN_BACKUP_KEY='idol_save_backup_v1';
+const validRunSave=s=>!!(s&&s.idol&&typeof s.week==='number'&&s.week>=1);
 const Game = {
-  st:null, lastResult:null, selIdol:null, curMode:"search", trainMode:"full", customSpec:null, customImg:null, customGender:"F",
+  st:null, lastResult:null, selIdol:null, curMode:"search", trainMode:"full", customSpec:null, runDirection:null, customImg:null, customGender:"F",
 
   goSelect(){
-    this.selIdol=null; this.customImg=null; this.customSpec=null; this.customGender="F";
+    this.selIdol=null; this.customImg=null; this.customSpec=null; this.runDirection=null; this.customGender="F";
     this._retrainRid=null; this._retrainIdkey=null;   // 재육성 취소 후 다른 아이돌이 기존 카드에 덮이는 것 방지
     // ⭐첫 플레이어는 간이(12턴)를 기본으로 = 짧고 확실한 첫 맛(간이는 오프닝 컷씬도 스킵). 완주 경험 있으면 마지막 선택 유지.
     try{ DG.load(); if((DG.data.roster||[]).length===0) this.trainMode='quick'; }catch(e){}
@@ -1574,7 +1593,7 @@ const Game = {
     try{ if(window.Tut) Tut.onSelect(); }catch(e){}
   },
   mode(m){
-    this.curMode=m; this.selIdol=null;
+    this.curMode=m; this.selIdol=null; this.runDirection=null;
     document.getElementById("seg-search").classList.toggle("on", m==="search");
     document.getElementById("seg-custom").classList.toggle("on", m==="custom");
     document.getElementById("mode-search").style.display = m==="search"?"":"none";
@@ -1597,6 +1616,7 @@ const Game = {
   },
   pick(id){
     this.selIdol = IDOLS.find(i=>i.id===id) || null;
+    this.runDirection=null;
     document.querySelectorAll("#idolGrid .card").forEach(c=>{ const on=(+c.dataset.id===id); c.classList.toggle("sel", on);
       if(on){ c.classList.remove("pickpop"); void c.offsetWidth; c.classList.add("pickpop"); } });
     try{ sfx("sparkle"); if(navigator.vibrate)navigator.vibrate(12); }catch(e){}
@@ -1608,7 +1628,7 @@ const Game = {
         <span class="spico">${s.ico}</span>${t("st_"+s.k)}</button>`).join("");
   },
   pickSpec(k){
-    this.customSpec=k;
+    this.customSpec=k; this.runDirection=k;
     document.querySelectorAll("#specPick .sp").forEach(b=>b.classList.toggle("on", b.dataset.k===k));
     this.customValidate();
   },
@@ -1709,14 +1729,18 @@ const Game = {
     const idol=this._pickIdol(); if(!idol) return;
     this._finished=false;   // 새 판 = finish 멱등 가드 해제
     const mode=(this.trainMode==="quick")?"quick":"full";
-    const {base} = talentOf(idol.spec);
+    const runDirection=this.runDirection;
+    if(!STATS.some(x=>x.k===runDirection)){ try{toast('이번 RUN 무대 방향을 먼저 골라줘');}catch(e){} return; }
+    idol.runDirection=runDirection;
+    const {base} = talentOf(runDirection);
     let retrainRid=this._retrainRid||null;
     if(retrainRid){ const prev=DG.rosterById(retrainRid), pickedKey=idol.id==='custom'?'c:'+idol.name:'i:'+(idol.id!=null?idol.id:idol.name);
       if(!prev || prev.idkey!==pickedKey || (this._retrainIdkey&&this._retrainIdkey!==pickedKey)) retrainRid=null; }
     this._retrainRid=null; this._retrainIdkey=null;
     let inheritedBond=8;
     if(retrainRid){ const prev=DG.rosterById(retrainRid); if(prev) inheritedBond=Math.min(45,Math.max(8,Math.round((prev.fanBond||8)*.55))); }
-    this.st = {idol, retrainRid, ...base, cond:100, stam:100, hand:[], combo:0, comboStat:null, buff:null, fans:0,
+    let runNo=1; try{ DG.load(); runNo=Math.max(1,(DG.data.runs||0)+1); }catch(e){}
+    this.st = {idol, runDirection, retrainRid, ...base, cond:100, stam:100, hand:[], combo:0, comboStat:null, buff:null, fans:0, runNo,
       fanBond:inheritedBond, fanBondMoments:0, week:1, busy:false, log:[], mode, trainCount:{}};   // 팬덤 유대는 회차 안에서 성장하고 재육성 때 일부 계승
     DG.applyEquipped(this.st);   // 드림그룹: 장착한 육성카드 시작 보정
     // 아이돌 카드 계승: 같은 아이돌 재육성은 이전 영구 카드의 별 단계만큼 시작치가 실제로 강해진다.
@@ -1742,12 +1766,13 @@ const Game = {
       const nm=(document.getElementById("customName").value||t("my_idol")).trim().slice(0,10) || t("my_idol");
       if(!this.customSpec) return null;
       try{ DG.load(); if((DG.data.roster||[]).some(r=>r.idkey==='c:'+nm)){ toast("같은 이름의 연습생이 이미 숙소에 있어"); show("s-select"); return null; } }catch(e){}
-      return {id:"custom", name:nm, grp:t("custom_idol"), spec:this.customSpec, img:this.customImg||"", cat:this.customGender||"F"};
+      return {id:"custom", name:nm, grp:t("custom_idol"), runDirection:this.runDirection||this.customSpec, img:this.customImg||"", cat:this.customGender||"F"};
     }
-    return this.selIdol || null;
+    return this.selIdol ? {...this.selIdol, spec:undefined, runDirection:this.runDirection} : null;
   },
   // 현재 판(run)의 스케줄. st.mode(full/quick) 기준. st 없거나 옛 세이브면 full 폴백.
   sch(){ return SCHEDULES[(this.st&&this.st.mode)||"full"] || SCHEDULES.full; },
+  difficulty(s){ s=s||this.st||{}; return runDifficulty(s.mode||'full',s.runNo||1); },
   actName(w){ const sc=this.sch(); return w<=sc.debut?t("act_debut"):w<=Math.round(sc.total*0.72)?t("act_domestic"):t("act_world"); },
   // 다음 관문 돌파 예상(runCompet/debutJudge 공식에서 랜덤 뺀 기대치 vs 기준선). 스탯 변할 때마다 실시간 갱신.
   gateForecast(s, nxw){
@@ -1767,7 +1792,7 @@ const Game = {
       const avg=STATS.reduce((a,st)=>a+s[st.k],0)/6, peak=Math.max(...STATS.map(st=>s[st.k]));
       mine=Math.max(avg,peak*AWARD_PEAK_K)*(1+Math.min(0.45,s.fans/60000));
     }
-    const r=mine/c.base;   // 라이벌 기대 파워≈base, 1등/통과엔 여유 필요
+    const r=mine/(c.base*this.difficulty(s));   // 다회차 라이벌 성장까지 포함한 기대치
     return r>=1.15?'safe':r>=0.88?'tight':'risk';
   },
   // 상황 반응형 코치 한 줄(버디 멘트) — 관문 임박·저컨디션·저멘탈·호조에 반응
@@ -1807,7 +1832,7 @@ const Game = {
     // 스탯 = 색 스트립(숫자·라벨 제거, 이모지+색바+등급만). 정보 다이어트. data-k 유지(bumpStat 손맛)
     document.getElementById("statBox").innerHTML=STATS.map(st=>{
       const p=Math.round(s[st.k]); const g=grade(p); const prog=progOf(p); const maxed=p>=800;
-      const isSpec=st.k===s.idol.spec;
+      const isSpec=st.k===s.runDirection;
       return `<div class="sbar${isSpec?" spec":""}${maxed?" maxed":""}" data-k="${st.k}" title="${t("st_"+st.k)}">
         <i style="height:${Math.max(7,prog)}%;background:${maxed?"linear-gradient(0deg,#ffd35c,#ff9de0)":st.c}"></i>
         <span class="se">${st.ico}</span>
@@ -1839,7 +1864,7 @@ const Game = {
     let _trendStat=null; try{ if(window.DG&&DG.currentTrend) _trendStat=TREND_STAT[DG.currentTrend().pos]; }catch(e){}
     // 카드 = 아이콘 + 이름 + ⚡코스트. 설명 문장 없음(암묵지 — 특수 카드는 뱃지·색으로, 나머진 플레이로 학습)
     const cardHTML=(id,i)=>{ const c=cardById(id); if(!c) return "";
-      const spec=c.stat && c.stat===s.idol.spec;
+      const spec=c.stat && c.stat===s.runDirection;
       const onTrend=c.stat && c.stat===_trendStat;
       const tc = c.kind==="rest"?"#3a4a6a":c.kind==="live"?"#6a4a6a":c.kind==="rare"?"#b98a2a":c.kind==="burst"?"#c9482a":c.kind==="buff"?"#2a8a7a":stc(c.stat);
       const stamNow=(s.stam!=null?s.stam:100);
@@ -1848,7 +1873,7 @@ const Game = {
       const badge = c.kind==="rare"?'<span class="hc-tag">RARE ✦</span>'
         : c.kind==="burst"?'<span class="hc-tag" style="color:#ff7a4d">RISK ⚠</span>'
         : (spec?'<span class="spk">⭐</span>':'');
-      const impact=c.base?`${c.stat?stnm(c.stat):'특기'} 기대 +${Math.round(c.base*ci.mult)}${(s.mental<MENTAL_THRESH||cb==='bad')?' · 실패 위험↑':''}`
+      const impact=c.base?`${c.stat?stnm(c.stat):'핵심 무대'} 기대 +${Math.round(c.base*ci.mult)}${(s.mental<MENTAL_THRESH||cb==='bad')?' · 제작 사고 위험↑':''}`
         : c.kind==='rest'?'기력 +44 · 컨디션/멘탈 회복'
         : c.kind==='live'?'팬 획득 · 기력 소모'
         : c.kind==='focus'?'3턴 레슨 성장 +30%':'특수 효과';
@@ -1907,8 +1932,8 @@ const Game = {
       return;
     }
     // lesson / light / rare / burst → 스탯 성장 (⭐판정을 굴린다: 대실패~각성. 죽어있던 rollJudge/JUDGE 복원)
-    const stat = (c.kind==="rare"||c.kind==="burst") ? s.idol.spec : c.stat;
-    const spec = stat===s.idol.spec;
+    const stat = (c.kind==="rare"||c.kind==="burst") ? s.runDirection : c.stat;
+    const spec = stat===s.runDirection;
     if(s.comboStat===stat) s.combo=(s.combo||0)+1; else { s.combo=1; s.comboStat=stat; }
     const comboMult = 1 + Math.min(0.6, (s.combo-1)*0.15);
     const buffOn = !!(s.buff && s.buff.turns>0);
@@ -1937,13 +1962,13 @@ const Game = {
     const newV=Math.round(s[stat]), newG=grade(newV), newL=levelOf(newV);
     if(newL>oldL) this.logWeek(t("gradeup_log",{ico:(STATS.find(x=>x.k===stat)||{}).ico,stat:t("st_"+stat),from:oldG,to:newG}));
     const sname=(STATS.find(x=>x.k===stat)||{}).n, sico=(STATS.find(x=>x.k===stat)||{}).ico;
-    const bloomLine = c.kind==="rare" ? `<div class="bloom-line">✨ 스페셜 레슨! 특기가 만개했다</div>` : (c.kind==="burst"&&J.mult>=2 ? `<div class="bloom-line">🔥 혹독한 특훈이 통했다! 한계를 넘었다</div>` : "");
+    const bloomLine = c.kind==="rare" ? `<div class="bloom-line">✨ 스페셜 레슨! 핵심 무대가 살아났다</div>` : (c.kind==="burst"&&J.mult>=2 ? `<div class="bloom-line">🔥 혹독한 특훈이 통했다! 한계를 넘었다</div>` : "");
     const comboTag = (g>0&&s.combo>=2) ? ` · 🔥${s.combo}연속` : "";
     const buffTag = (g>0&&buffOn) ? ` · 🧘몰입` : "";
     const trendTag = (g>0&&onTrend) ? ` · 📈트렌드` : "";
     const sign = g>=0?'+':'';
     this.trainReveal(s.idol, stat, jk, J,
-      bloomLine + `${sico} ${sname} <b>${sign}${g}</b> · 팬 +${fmt(fanGain)}${spec?' · ⭐특기':''}${trendTag}${comboTag}${buffTag}`,
+      bloomLine + `${sico} ${sname} <b>${sign}${g}</b> · 팬 +${fmt(fanGain)}${spec?' · 🎯핵심 방향':''}${trendTag}${comboTag}${buffTag}`,
       t("say_"+jk),
       ()=>{ this.render(); this.bumpStat(stat,oldV,newV,oldG,newG); setTimeout(()=>this.afterTurn(),820); });
   },
@@ -1987,10 +2012,10 @@ const Game = {
     const stat=STATS.find(x=>x.k===kind);
     const baseGain=25+Math.round(Math.random()*7);   // 밸런스 패치: 22→25 (E등급 도배 완화, 몬테카를로 기반. 관문 base와 세트 조정)
     // ⑭ 특기 가점: 타고난 특기 훈련이 더 잘 자람 (준특기는 소폭). 버튼 ⭐특기 배지로 노출.
-    const keys=STATS.map(x=>x.k), si=keys.indexOf(s.idol.spec);
-    const talent = kind===s.idol.spec ? 1.22 : (kind===keys[(si+3)%keys.length] ? 1.1 : 1.0);
-    // ⑭ 재능 개화: 특기 훈련 + 성공 계열 판정(실패/대실패 제외)이면 18% 확률로 성장 ×1.6 ⚠️수치 임시
-    const bloom = kind===s.idol.spec && j!=='fail' && j!=='dbad' && J.mult>0 && Math.random()<0.18;
+    const keys=STATS.map(x=>x.k), si=Math.max(0,keys.indexOf(s.runDirection));
+    const talent = kind===s.runDirection ? 1.22 : (kind===keys[(si+3)%keys.length] ? 1.1 : 1.0);
+    // 선택한 RUN 방향을 반복 실행하면 제작 시너지가 터진다.
+    const bloom = kind===s.runDirection && j!=='fail' && j!=='dbad' && J.mult>0 && Math.random()<0.18;
     // 🌿잡초근성: 육성 전반부(절반 이전)에 성장 부스트
     const early = (s.earlyGrow>0 && s.week<=this.sch().total/2) ? (1+s.earlyGrow) : 1;
     let gain = J.mult>0 ? Math.round(baseGain*J.mult*growthMult(s[kind])*talent*(s.cardGrowth||1)*(bloom?1.6:1)*early)
@@ -2015,7 +2040,7 @@ const Game = {
     if(s.combo>=2){ comboBonus=Math.round(fanGain*Math.min(0.5,(s.combo-1)*0.1)); s.fans+=comboBonus; }
     const comboLine = s.combo>=2 ? `<div><span class="combo-badge">🔥 ${s.combo} COMBO! <small>팬 +${fmt(comboBonus)}</small></span></div>` : '';
     const say=t("say_"+j);
-    const bloomLine = bloom ? `<div class="bloom-line">⭐ 재능 개화! 타고난 특기가 만개했다</div>` : '';   // ⑭ 크리 연출
+    const bloomLine = bloom ? `<div class="bloom-line">⭐ 제작 시너지! 선택한 무대 방향이 맞물렸다</div>` : '';
     this.trainReveal(s.idol, kind, j, J,
       bloomLine + t("train_delta",{ico:stat.ico,stat:t("st_"+kind),sign,gain,fans:fmt(fanGain),cond:condD}) + comboLine,
       say,
@@ -2166,22 +2191,37 @@ const Game = {
   },
 
   // ===== 중간 저장(localStorage) =====
-  save(){ try{ if(this.st) localStorage.setItem("idol_save", JSON.stringify(this.st)); this._saveError=false; return true; }
+  save(){ try{ if(this.st) StorageJournal.write(localStorage,RUN_SAVE_KEY,RUN_BACKUP_KEY,this.st,validRunSave); this._saveError=false; return true; }
     catch(e){ if(!this._saveError){ this._saveError=true; try{toast('저장 공간이 부족해. 오래된 이미지/기록을 정리해줘');}catch(_){} } return false; } },
-  clearSave(){ try{ localStorage.removeItem("idol_save"); }catch(e){} },
-  hasSave(){ try{ return !!localStorage.getItem("idol_save"); }catch(e){ return false; } },
+  clearSave(){ try{ StorageJournal.clear(localStorage,RUN_SAVE_KEY,RUN_BACKUP_KEY); }catch(e){} },
+  hasSave(){ try{ return !!StorageJournal.read(localStorage,RUN_SAVE_KEY,RUN_BACKUP_KEY,validRunSave).value; }catch(e){ return false; } },
   continueGame(){
-    let raw; try{ raw=localStorage.getItem("idol_save"); }catch(e){}
-    if(!raw){ toast(t("toast_no_save")); return; }
-    try{ this.st=JSON.parse(raw); }catch(e){ toast(t("toast_save_broken")); this.clearSave(); return; }
+    let saved; try{ saved=StorageJournal.read(localStorage,RUN_SAVE_KEY,RUN_BACKUP_KEY,validRunSave); }catch(e){}
+    if(!saved||!saved.value){ toast(t("toast_save_broken")); return; }
+    this.st=saved.value;
+    if(saved.recovered) setTimeout(()=>{ try{toast('저장 손상을 감지해 직전 RUN 기록으로 복구했어');}catch(e){} },250);
+    // 구 진행 저장의 spec은 실아이돌 사전평가 값이라 자동 승계하지 않는다. 이어가기 전에 사용자가 직접 새 의미를 확정한다.
+    if(!STATS.some(x=>x.k===this.st.runDirection)){
+      const ov=document.getElementById('ov'); ov.className='ov on'; ov.onclick=null;
+      ov.innerHTML=`<div class="ev-card"><div class="ev-title">이전 RUN은 방향을 선택해 이어가기</div><p class="muted">진행 기록은 그대로 유지돼. 이번 무대의 제작 방향만 직접 고르면 바로 이어갈 수 있어.</p><div class="specpick">${STATS.map(s=>`<button type="button" class="sp" onclick="Game.migrateSavedRunDirection('${s.k}')"><span class="spico">${s.ico}</span>${esc(s.n)}</button>`).join('')}</div></div>`;
+      return;
+    }
     this._finished=false;   // 이어하기도 진행 중인 판 = finish 가드 해제
     if(!this.st.log) this.st.log=[];
     if(this.st.fanBond==null) this.st.fanBond=8;
     if(this.st.fanBondMoments==null) this.st.fanBondMoments=0;
+    if(this.st.runNo==null){ try{ DG.load(); this.st.runNo=Math.max(1,(DG.data.runs||0)+1); }catch(e){ this.st.runNo=1; } }
     this.save();   // 구세이브 팬덤 유대 마이그레이션을 즉시 영속화
     this._fansShown=this.st.fans;   // 이어하기: 저장된 팬 수부터(0→튐 방지)
     show("s-play"); this.startWeek(); this.armBackGuard();
     toast(t("toast_resume",{w:this.st.week}));
+  },
+  migrateSavedRunDirection(k){
+    if(!this.st||!STATS.some(x=>x.k===k)) return;
+    this.st.runDirection=k;
+    if(this.st.idol){ this.st.idol.runDirection=k; delete this.st.idol.spec; }
+    this.save(); const ov=document.getElementById('ov'); if(ov){ov.className='ov';ov.onclick=null;}
+    this.continueGame();
   },
 
   showEvent(done){
@@ -2284,6 +2324,7 @@ const Game = {
     try{ if(window.Tut&&Tut.clear) Tut.clear(); }catch(e){}
     const ov=document.getElementById("ov"); ov.className="ov on"; ov.onclick=null;
     const s=this.st, fd=fandomOf(s.idol), img=s.idol.img||'', bond=Math.round(s.fanBond||0);
+    const diff=this.difficulty(s), diffPct=Math.round((diff-1)*100);
     const allinPct=Math.min(72,55+Math.floor(bond*.2));
     // ⭐지금 내 상태(안전/아슬/위험)를 보여줘 '감'이 아닌 '계산'으로 걸게 → 숙련·학습 루프(중독 요소)
     // 서술형(상태만) — '이렇게 하세요' 지시 대신 '이 정도예요' 재료만. 계산은 플레이어 몫.
@@ -2298,7 +2339,7 @@ const Game = {
     try{ localStorage.setItem('dg_seen_stagechoice','1'); }catch(e){}
     ov.innerHTML=`<div class="ev-card idol-moment stage-moment" style="text-align:center;max-width:330px">
       <div class="idol-moment-photo" ${img?`style="background-image:url('${img}')"`:''}></div><div class="idol-moment-shade"></div><div class="idol-moment-body">
-      <div class="stage-fandom">LIVE · ${esc(fd.rally)} · 유대 ${bond}</div><div class="ev-title">${title}</div>
+      <div class="stage-fandom">RUN ${s.runNo||1} · ${esc(fd.rally)} · 유대 ${bond}${diffPct>0?` · 라이벌 +${diffPct}%`:''}</div><div class="ev-title">${title}</div>
       <p class="muted" style="margin:6px 3px 10px;font-size:13px">${esc(fd.name)}가 이름을 외친다. 마지막 무대, 어떻게 갈까?</p>
       ${hint}${foreChip}
       <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
@@ -2325,8 +2366,8 @@ const Game = {
     const s=this.st, cut=this.sch().debutCut;
     const total=STATS.reduce((a,st)=>a+s[st.k],0) * mult;   // ⭐마지막 전략 반영
     const peak=Math.max(...STATS.map(st=>s[st.k])) * mult;
-    // 첫판 보호: 완주 경험 0이면 데뷔심사 컷 15% 완화(온보딩 첫 경험에서 1/3이 실패하는 가혹함 방지)
-    let cm=1; try{ DG.load(); if(!(DG.data.runs>0)) cm=0.85; }catch(e){}
+    // 첫판 보호 + 다회차 성장: 카드가 강해지는 만큼 심사도 조금씩 상승(상승폭은 무대 선택 화면에 공개).
+    const diff=this.difficulty(s), cm=(s.runNo||1)===1 ? 0.85 : Math.min(1.14,1+(diff-1)*0.45);
     const pass = peak>=cut.min*cm && (total>=cut.total*cm || peak>=cut.peak*cm);   // 올F 컷: 최소 한 스탯 F 탈출 없으면 데뷔 실패(훈련 안 하고 초기스탯·이벤트만으론 못 뚫음)
     const bonus = pass ? Math.round(1500+total*4) : Math.round(total*2);
     s.fans+=bonus;
@@ -2362,7 +2403,8 @@ const Game = {
     }
     mine *= (s.cardGate||1) * (mult||1);   // 카드 보정 × ⭐마지막 전략(침착/올인)
     const idxs=[]; while(idxs.length<3){ const r=Math.floor(Math.random()*RIVAL_PEOPLE.length); if(!idxs.includes(r)) idxs.push(r); }
-    const rivals=idxs.map(i=>({name:RIVAL_PEOPLE[i], emoji:PEOPLE_EMOJI[i], score:c.base*(0.75+Math.random()*0.5), me:false}));   // #14 개인 오디션 경쟁자
+    const rivalBase=c.base*this.difficulty(s);
+    const rivals=idxs.map(i=>({name:RIVAL_PEOPLE[i], emoji:PEOPLE_EMOJI[i], score:rivalBase*(0.75+Math.random()*0.5), me:false}));   // 다회차 라이벌 성장 반영
     const board=[{name:idolName(s.idol), emoji:"⭐", score:mine, me:true}, ...rivals].sort((a,b)=>b.score-a.score);
     const myRank=board.findIndex(r=>r.me)+1;
     this.resolveCompet(c, board, myRank);
@@ -2414,7 +2456,7 @@ const Game = {
     const emojiCls = "comp-emoji"+(tier===3?" t3":"")+(win?" win":"");
     const N=board.length;
     // 뼈대: 타이틀 + 발표중 문구 + 빈 보드(아래→위로 채움) + 헤드/서브/버튼
-    const reqTxt = c.type==="stage" ? c.field.map(k=>(STATS.find(x=>x.k===k)||{}).n).join("·") : "종합력";
+    const reqTxt = c.type==="stage" ? c.field.map(k=>(STATS.find(x=>x.k===k)||{}).n).join("·") : "RUN 종합 완성도";
     const stampGrade = win?"S":(podium?"A":(myRank<=Math.ceil(N/2)?"B":"C"));
     st.innerHTML=`${idolImg?`<div class="comp-idol-bg" style="background-image:url('${idolImg}')"></div>`:''}<div class="comp-in">
         <div class="${emojiCls}">${c.emoji}</div>
@@ -2549,7 +2591,7 @@ const Game = {
     try{ const so={}; STATS.forEach(st=>so[st.k]=Math.round(s[st.k])); topScore=DG.idolTop(so).score; }catch(e){}   // topK=최고 성장스탯(arr[0].k) 유지, 등급점수만 포지션적합도로
     const stObj=STATS.find(x=>x.k===topK)||STATS[0];
     const stName = topK==='creative' ? t('st_creative_short') : t('st_'+topK);
-    // 대표재능(육각형·종합에서 이미 보임)은 결과 타이틀에서 제거 → 종합등급 기반 서사 타이틀만
+    // 결과 타이틀은 최고 영역이 아니라 이번 RUN의 전체 제작 서사를 보여준다.
     // ⑯ 패턴 다양화: 등급별 이름 풀에서 랜덤 픽('새내기 연습생' 단조 해소)
     const OT={SS:['정상급 아이돌','시대의 아이콘','국보급 아이돌'],
               S: ['톱클래스 스타','차트 브레이커','대세 그 자체'],
@@ -2647,12 +2689,12 @@ const Game = {
     // 레이더 라벨은 짧은 형(작곡 등 긴 라벨 캔버스 밖 잘림 방지). creative만 별도 단축키.
     const statVals=STATS.map(st=>({n:t(st.k==="creative"?"st_creative_short":"st_"+st.k),k:st.k,c:st.c,v:Math.round(s[st.k]),g:grade(Math.round(s[st.k]))}));
     const overall=grade(Math.round(statTotal/STATS.length));
-    const spStat=STATS.find(x=>x.k===s.idol.spec)||STATS[0];
+    const spStat=STATS.find(x=>x.k===s.runDirection)||STATS[0];
     this.lastResult={name:idolName(s.idol),grp:idolGrp(s.idol),ending:end.name,emoji:end.emoji,
       tier:end.tier,fans:s.fans,reachedWorld,statVals,overall,finalRank:finalRank||null,
       fandom:fandomOf(s.idol).name, fanBond:Math.round(s.fanBond||0), fanBondMoments:s.fanBondMoments||0,
-      spec:s.idol.spec, specName:spStat.n, specIco:spStat.ico, specColor:spStat.c, img:s.idol.img||"",
-      stage:reachedWorld?(finalRank?`파이널 오디션 ${finalRank}위`:"그룹 후보 자격 획득"):"오디션 탈락"};
+      direction:s.runDirection, spec:s.runDirection, specName:spStat.n, specIco:spStat.ico, specColor:spStat.c, img:s.idol.img||"",
+      stage:reachedWorld?(finalRank?`파이널 오디션 ${finalRank}위`:"그룹 후보 자격 획득"):"이번 RUN 종료"};
     document.getElementById("endIdolBox").style.display="";
     const eav=document.getElementById("endAvatar");
     if(s.idol.img){ eav.src=s.idol.img; eav.style.display=""; } else { eav.style.display="none"; }
@@ -2663,7 +2705,7 @@ const Game = {
     document.getElementById("endName").textContent=end.name;
     const dexChip = dexNew ? `<div class="dex-unlock">${t("end_dex_unlock")}</div>` : "";
     document.getElementById("endSub").innerHTML=`${dexChip}${end.sub}<br><br>${t("end_fans",{fans:fmt(s.fans)})}`;
-    document.getElementById("oGrade").innerHTML=t("end_overall",{g:overall});   // 종합 등급만(대표재능은 육각형에 있음)
+    document.getElementById("oGrade").innerHTML=t("end_overall",{g:overall});
     const gbox=document.getElementById("growthBox");
     if(s.log && s.log.length){ gbox.style.display="";   // 기본 접힘 → 스크롤 길이 축소(재율애비). 제목 탭하면 펼침
       gbox.innerHTML=`<h3 class="growth-toggle" onclick="Game.toggleGrowth()"><span>${t("end_growth_title",{name:esc(idolName(s.idol))})}</span><span class="growth-caret" id="growthCaret">▼</span></h3>`
@@ -2700,6 +2742,7 @@ const Game = {
     const _ghost = (s.day1 && STATS.every(st=>s.day1[st.k]!=null)) ? STATS.map(st=>s.day1[st.k]) : null;
     drawRadar(document.getElementById("radar"), statVals, {dark:false, big:true, ghost:_ghost});  // 온스크린 육각형 라벨 키움(재율애비: 항목 폰트 너무 작음)
     const _rad=document.getElementById("radar");
+    if(_rad&&!shared) _rad.style.display="";
     if(_rad && _ghost && !document.getElementById("day1cap")){
       const cap=document.createElement("div"); cap.id="day1cap"; cap.className="muted";
       cap.style.cssText="text-align:center;font-size:11.5px;margin-top:-4px";
@@ -2712,15 +2755,15 @@ const Game = {
   // 결과 → 공유 링크 인코딩/디코딩
   encodeResult(){
     const r=this.lastResult; if(!r) return "";
-    const arr=[r.name, r.grp, r.spec, ...r.statVals.map(v=>v.v), Math.round(r.fans),
-      r.finalRank||0, r.reachedWorld?1:0];
+    // 공유 URL에는 실명 옆 개별 6영역 절대수치를 싣지 않는다. RUN 산출물 요약만 전송한다.
+    const arr=['run-v3',r.name,r.grp,r.direction||r.spec,r.overall,Math.round(r.fans),r.finalRank||0,r.reachedWorld?1:0,r.ending||'',r.emoji||'🎤'];
     try{ return "r="+encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(arr))))); }
     catch(e){ return ""; }
   },
   decodeResult(enc){
     try{ const arr=JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(enc)))));
-      return {name:arr[0], grp:arr[1], spec:arr[2], v:arr.slice(3,9).map(Number),
-        fans:+arr[9], rank:+arr[10]||null, world:!!arr[11]}; }
+      if(arr[0]==='run-v3') return {name:arr[1],grp:arr[2],direction:arr[3],overall:arr[4],fans:+arr[5],rank:+arr[6]||null,world:!!arr[7],ending:arr[8],emoji:arr[9]};
+      return null; }
     catch(e){ return null; }
   },
   shareLink(){
@@ -2741,11 +2784,16 @@ const Game = {
   // 공유 링크로 열렸을 때 결과 재현
   showSharedResult(d){
     const st=STATS.map(x=>x.k);
-    this.st={idol:{name:d.name, grp:d.grp||t("custom_idol"), spec:d.spec, img:""},
+    const gi=Math.max(0,GRADES.indexOf(d.overall)); const summaryScore=Math.min(800,gi*100+50);
+    this.st={idol:{name:d.name, grp:d.grp||t("custom_idol"), img:""},runDirection:d.direction,
       mental:60, fans:d.fans, week:52, log:[]};
-    st.forEach((k,i)=>this.st[k]=d.v[i]||0);
+    st.forEach(k=>this.st[k]=summaryScore);
     this.lastResult=null;
     this.finish(d.world, d.rank, true);
+    if(d.ending) document.getElementById('endName').textContent=d.ending;
+    if(d.emoji) document.getElementById('endEmoji').textContent=d.emoji;
+    const radar=document.getElementById('radar'); if(radar) radar.style.display='none';
+    const cap=document.getElementById('day1cap'); if(cap) cap.remove();
   },
 
   // ===== 결과 카드 이미지 =====
@@ -2798,8 +2846,8 @@ const Game = {
     x.font="60px 'Apple Color Emoji','Noto Color Emoji',sans-serif"; x.fillText(r.emoji, W/2, 536);
     // 엔딩명 (긴 엔딩명 자동 축소)
     x.fillStyle="#ffd35c"; fit(r.ending,W-140,"800",46); x.fillText(r.ending, W/2, 590);
-    // 타고난 재능
-    x.fillStyle="#c3b6dd"; fit(t("card_talent",{spec:t("st_"+r.spec)}),W-160,"600",28); x.fillText(t("card_talent",{spec:t("st_"+r.spec)}), W/2, 632);
+    // 이번 RUN 핵심 무대
+    x.fillStyle="#c3b6dd"; fit(t("card_talent",{spec:t("st_"+(r.direction||r.spec))}),W-160,"600",28); x.fillText(t("card_talent",{spec:t("st_"+(r.direction||r.spec))}), W/2, 632);
     // radar — 아래로 내리고 축소해 상단 꼭짓점 라벨이 위 텍스트와 안 겹치게
     drawRadarCtx(x, W/2, 884, 164, r.statVals, {dark:true, big:true});
     // 하단 바 (다크 패널)
@@ -2923,9 +2971,9 @@ const Game = {
   // 전설의 연습생 등록 완료 → 순위 페이지로 유도 팝업(재율애비)
   _afterSaveModal(local){
     DG.confirmModal({
-      title:"🏆 전설의 연습생 등록 완료!",
-      body:(local?"이 기기에 기록했어.<br>":"명예의 전당에 이름을 올렸어!<br>")+"지금 순위를 확인하러 갈까?",
-      ok:"🏅 순위 보기", cancel:"닫기",
+      title:"🏆 프로듀서 RUN 등록 완료!",
+      body:(local?"이 기기에 RUN을 기록했어.<br>":"시즌 RUN 차트에 기록했어!<br>")+"지금 순위를 확인하러 갈까?",
+      ok:"🏅 RUN 차트 보기", cancel:"닫기",
       onOk:()=>Game.showBoard()
     });
   },
@@ -3007,12 +3055,12 @@ const Game = {
   openMenu(home){
     if(home!==undefined) this._menuHome=!!home;   // 홈(타이틀)에선 저장/나가기 없이 설정만
     const h=this._menuHome;
-    const langs=(typeof langList==="function"?langList():[{code:"ko",name:"한국어"},{code:"en",name:"EN"}]);
+    const langs=(typeof langList==="function"?langList():[{code:"ko",name:"한국어"}]);
     const langBtns=langs.map(l=>`<button class="${l.code===window.LANG?"sel":""}" onclick="Game.changeLang('${l.code}');Game.openMenu()">${l.name}</button>`).join("");
     this.openSheet(`
       <div class="sheet-title">${t("menu_title")}</div>
-      <div class="sheet-sub">${t("menu_settings")} · ${t("menu_lang")}</div>
-      <div class="sheet-lang">${langBtns}</div>
+      <div class="sheet-sub">${t("menu_settings")}${langs.length>1?` · ${t("menu_lang")}`:''}</div>
+      ${langs.length>1?`<div class="sheet-lang">${langBtns}</div>`:''}
       <div class="sheet-lang">
         <button onclick="Game.toggleSfx()">${sfxOn()?t("sfx_on"):t("sfx_off")}</button>
         <button onclick="Game.toggleBgm()">${bgmOn()?t("bgm_on"):t("bgm_off")}</button>
@@ -3129,7 +3177,11 @@ function show(id){
   // 코치마크는 현재 화면의 특정 타깃에만 유효하다. 화면 전환 뒤 남아 콘텐츠를 가리지 않게 정리한다.
   try{ if(window.Tut&&Tut.clear) Tut.clear(); }catch(e){}
   document.querySelectorAll(".screen").forEach(s=>s.classList.remove("on"));
-  document.getElementById(id).classList.add("on"); document.getElementById("app").scrollTop=0;
+  const nextScreen=document.getElementById(id);
+  nextScreen.classList.add("on");
+  // 긴 결과/도구 화면은 자체 스크롤을 가진다. 재진입 때 이전 위치가 남아
+  // 보상 헤더를 건너뛰지 않도록 화면과 앱 스크롤을 모두 첫 줄로 되돌린다.
+  nextScreen.scrollTop=0; document.getElementById("app").scrollTop=0;
   const gm=document.getElementById('globalMenuBtn');
   if(gm) gm.style.display=['s-office','s-roster','s-cards','s-league','s-battle'].includes(id)?'flex':'none';
   // 폰 뒤로가기 가드: 서브화면(선택·도감·명전·결과) 진입 시 히스토리 확보 → popstate로 가로채 타이틀 복귀(게임 밖 이탈 방지). 플레이화면은 armBackGuard가 담당.
@@ -3169,7 +3221,7 @@ const Nav={
     else if(tab==='training'){ if(Game.hasSave())Game.continueGame(); else Game.goSelect(); }
     else if(tab==='idols')DG.goRoster();
     else if(tab==='cards')DG.goCards();
-    else if(tab==='stage'){ const rep=DG.repGroup&&DG.repGroup(); if(rep)DG.showBattleLobby(); else DG.showLeague(); }
+    else if(tab==='stage'){ const rep=DG.repGroup&&DG.repGroup(); if(rep&&DG.groupMembers(rep).length>=3)DG.showBattleLobby(); else DG.showLeague(); }
     try{ if(window.Tut) Tut.onTab(tab); }catch(e){} },
   exit(){ try{ if(window.CheddolBridge&&CheddolBridge.exit){CheddolBridge.exit();return;} }catch(e){} Game.reset(); }   // 하트오락실 복귀 브릿지(개발팀 연동) · 폴백=타이틀
 };
@@ -3380,12 +3432,12 @@ Game.refreshEndTexts=function(){
   if(!r){ this.showBoard(); return; }        // 명예의 전당(리더보드) 뷰
   if(!this.st) return;
   const end=this.ending(r.reachedWorld, r.finalRank);
-  const spStat=STATS.find(x=>x.k===this.st.idol.spec)||STATS[0];
+  const spStat=STATS.find(x=>x.k===this.st.runDirection)||STATS[0];
   const isCustom=this.st.idol.grp===t("custom_idol")||this.st.idol.grp==="커스텀 아이돌";
   document.getElementById("endEmoji").textContent=end.emoji;
   document.getElementById("endName").textContent=end.name;
   document.getElementById("endSub").innerHTML=`${end.sub}<br><br>${t("end_fans",{fans:fmt(r.fans)})}`;
-  const _ti=DG.idolTop(this.st), _rep=STATS.find(x=>x.k===DG.topStat(this.st))||STATS[0];   // 대표재능=최고 성장스탯, 등급점수=포지션 적합도
+  const _ti=DG.idolTop(this.st), _rep=STATS.find(x=>x.k===DG.topStat(this.st))||STATS[0];
   document.getElementById("oGrade").innerHTML=t("end_overall",{g:r.overall,rg:grade(_ti.score),c:_rep.c,ico:_rep.ico,spec:t("st_"+_rep.k)});
   document.getElementById("endStage").textContent=
     r.reachedWorld?(r.finalRank?t("end_stage_world",{rank:r.finalRank}):t("end_stage_world_nr")):t("end_stage_out");
@@ -3442,7 +3494,7 @@ window.addEventListener("popstate", ()=>{
   const enc=new URLSearchParams(location.search).get("r");
   if(!enc) return;
   const d=Game.decodeResult(enc);
-  if(d && d.name && d.v && d.v.length===6) Game.showSharedResult(d);
+  if(d && d.name && d.overall) Game.showSharedResult(d);
 })();
 // 앱 부팅: 공유링크(?r=) 아니면 스플래시 잠깐 → 로비(홈) 자동 진입 (하트오락실서 입장하면 바로 로비)
 (function(){
@@ -3845,6 +3897,7 @@ window.addEventListener("popstate", ()=>{
   .tgrid.two{grid-template-columns:repeat(2,1fr);gap:11px}
   .tcard{position:relative;border-radius:16px;overflow:hidden;padding:10px 10px 9px;display:flex;flex-direction:column;
     color:#fff;isolation:isolate;aspect-ratio:134/186;box-shadow:0 10px 24px -8px rgba(0,0,0,.55);cursor:pointer}
+  button.tcard{width:100%;border:0;text-align:left;font:inherit}
   .tcard .tc-top{display:flex;justify-content:space-between;align-items:center;font-size:10.5px;font-weight:900;letter-spacing:.4px;z-index:3}
   .tcard .tc-badge{padding:1.5px 7px;border-radius:999px;background:rgba(0,0,0,.28);backdrop-filter:blur(2px)}
   .tcard .tc-art{flex:1;display:flex;align-items:center;justify-content:center;z-index:2;position:relative;min-height:0}
@@ -4144,6 +4197,7 @@ window.addEventListener("popstate", ()=>{
   #s-roster > p.muted b{color:#ffd98a}
   .rgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px}
   .rcard{position:relative;aspect-ratio:3/4.05;border-radius:14px;overflow:hidden;cursor:pointer;isolation:isolate;box-shadow:0 10px 24px -10px rgba(0,0,0,.7)}
+  button.rcard{display:block;width:100%;padding:0;border:0;background:transparent;text-align:left;font:inherit;color:inherit}
   .rcard .rph{position:absolute;inset:0;background-size:cover;background-position:top center;z-index:0}
   .rcard .rph.noimg{display:flex;align-items:center;justify-content:center;font-size:48px;background:linear-gradient(160deg,#3a3350,#241f38)}
   /* 그룹카드 앞면 3인 사선 겹침(리더+상위2인) */
@@ -4264,9 +4318,10 @@ window.addEventListener("popstate", ()=>{
   #s-select .grid{grid-auto-rows:max-content}
   #s-select .card{min-height:205px}
   #s-select .startfab,#s-cardpick .cta-float{bottom:72px}
-  #s-cardpick{background:
+  #s-cardpick{overflow-y:auto;scrollbar-width:none;background:
     radial-gradient(circle at 70% 8%,rgba(39,76,170,.24),transparent 36%),
     radial-gradient(circle at 15% 65%,rgba(196,29,101,.15),transparent 42%),#070c15;color:#eef3fb}
+  #s-cardpick::-webkit-scrollbar{display:none}
   #s-cardpick .sub-head h2{color:#f3f6fb}
   #s-cardpick .menu-btn{background:#111a28;border-color:#26344a;color:#dce6f4}
   #s-cardpick .cardpick-hero{background:linear-gradient(135deg,#121b2a,#0b111c);border-color:#26344a;box-shadow:0 18px 36px -24px #000}
@@ -4464,13 +4519,13 @@ window.addEventListener("popstate", ()=>{
     attend:  {nm:'개근왕',   em:'📅', rr:0, eff:{all:6, condSave:0.30}},        // 꾸준함 = 컨디션 덜 닳음
     positive:{nm:'긍정왕',   em:'🙂', rr:0, eff:{all:6, mentalSave:0.30}},      // 긍정 = 멘탈 덜 깎임
     grit:    {nm:'잡초근성', em:'🌿', rr:0, eff:{all:6, earlyGrow:0.20}},       // 근성 = 초반(절반) 성장 부스트
-    vocalC:  {nm:'황금성대', em:'🎙️', rr:1, eff:{stat:{vocal:55}}},
-    danceC:  {nm:'무한체력', em:'💪', rr:1, eff:{stat:{dance:55}}},
-    visualC: {nm:'스타일신', em:'✨', rr:1, eff:{stat:{visual:55}}},
-    charmC:  {nm:'달변가',   em:'💬', rr:1, eff:{stat:{charm:55}}},
-    actingC: {nm:'라임장인', em:'🎤', rr:1, eff:{stat:{acting:55}}},
-    creatC:  {nm:'작곡센스', em:'🎼', rr:1, eff:{stat:{creative:55}}},
-    genius:  {nm:'천재',     em:'👑', rr:2, eff:{all:35}},
+    vocalC:  {nm:'보컬 디렉팅', em:'🎙️', rr:1, eff:{stat:{vocal:55}}},
+    danceC:  {nm:'퍼포먼스 캠프',em:'💪', rr:1, eff:{stat:{dance:55}}},
+    visualC: {nm:'스타일링 보드', em:'✨', rr:1, eff:{stat:{visual:55}}},
+    charmC:  {nm:'팬 소통 플랜',  em:'💬', rr:1, eff:{stat:{charm:55}}},
+    actingC: {nm:'랩 디렉팅',     em:'🎤', rr:1, eff:{stat:{acting:55}}},
+    creatC:  {nm:'무대 기획안',   em:'🎼', rr:1, eff:{stat:{creative:55}}},
+    genius:  {nm:'올인원 플랜',   em:'👑', rr:2, eff:{all:35}},
   };
   const STATCARD = {vocal:'vocalC',dance:'danceC',visual:'visualC',charm:'charmC',acting:'actingC',creative:'creatC'};
   // 2축 분리(카드게임 국룰): 레어도(고정) × 강화 별(★1~5, 머지)
@@ -4490,7 +4545,7 @@ window.addEventListener("popstate", ()=>{
     dancer:  {dance:0.6, acting:0.3, creative:0.1},
     producer:{creative:0.7, visual:0.3},
   };
-  const STATNM={vocal:'발성',dance:'체력',visual:'스타일',charm:'화술',acting:'리듬감',creative:'창조'};
+  const STATNM={vocal:'보컬 무대',dance:'퍼포먼스',visual:'스타일링',charm:'팬 소통',acting:'랩 무대',creative:'무대 기획'};
   // ===== ④ 카드 조합: 상위 레어도 카드(합성 결과물) =====
   // R+R → 하이브리드 SR(2스탯 동시) · SR+SR → SSR · SSR+SSR → UR. 특수효과=성장률(growth)·관문보정(gate).
   // 하이브리드 15종 전부 고유 이름·이모지(중복 금지). 키=ORDER 정렬된 스탯쌍.
@@ -4541,7 +4596,7 @@ window.addEventListener("popstate", ()=>{
   const TRENDS = [
     {pos:'vocal',    nm:'보컬 대세',     ic:'🎤', desc:'가창력이 곧 화제'},
     {pos:'rapper',   nm:'힙합 전성시대', ic:'🔥', desc:'플로우가 씬을 지배해'},
-    {pos:'dancer',   nm:'퍼포먼스 열풍', ic:'💃', desc:'무대가 곧 실력'},
+    {pos:'dancer',   nm:'퍼포먼스 열풍', ic:'💃', desc:'무대 동선이 시즌을 지배'},
     {pos:'center',   nm:'비주얼 시대',   ic:'✨', desc:'첫인상이 전부'},
     {pos:'producer', nm:'자컨 붐',       ic:'🎬', desc:'창작이 팬을 모아'},
   ];
@@ -4567,10 +4622,10 @@ window.addEventListener("popstate", ()=>{
   // ===== 전설의 연습생 칭호(수집형 훈장). 완주 스탯·포지션·서사 기반 판정. rare=희귀도(대표칭호 선정용, 클수록 희귀) =====
   // ⚠️ DG 모듈이라 ko-only(게임 UI i18n화 후속 과제). 칭호 조정은 이 맵만 수정하면 판정/표시 전역 반영.
   const TITLES = {
-    legend:      {ic:'👑', nm:'전설',         rare:5},   // 종합 SS
-    star:        {ic:'⭐', nm:'스타성',       rare:4},   // 종합 S
-    allround:    {ic:'🌈', nm:'육각형 재능',  rare:4},   // 고르게 성장
-    ace:         {ic:'🔥', nm:'에이스',       rare:3},   // 대표능력치 A+급
+    legend:      {ic:'👑', nm:'시즌 대표작',   rare:5},
+    star:        {ic:'⭐', nm:'화제의 RUN',    rare:4},
+    allround:    {ic:'🌈', nm:'올라운드 제작', rare:4},
+    ace:         {ic:'🔥', nm:'시그니처 무대', rare:3},
     pos_leader:  {ic:'🎖️', nm:'타고난 리더',   rare:2},
     pos_center:  {ic:'🌟', nm:'센터 재목',     rare:2},
     pos_producer:{ic:'🎛️', nm:'만능 프로듀서', rare:2},
@@ -4598,11 +4653,11 @@ window.addEventListener("popstate", ()=>{
     {id:'runs50',  ic:'🏅', nm:'육성 마스터',    desc:'육성 50회 완주',            goal:50,  cur:d=>d.data.runs||0},
     {id:'runs100', ic:'💠', nm:'육성의 신',      desc:'육성 100회 완주',           goal:100, cur:d=>d.data.runs||0},
     {id:'custom1', ic:'🎨', nm:'나만의 원석',    desc:'커스텀 연습생 육성',         goal:1,   cur:d=>(d.data.roster||[]).filter(r=>String(r.idkey||'').indexOf('c:')===0).length},
-    {id:'max800',  ic:'💯', nm:'만점 재능',      desc:'능력치 800(SS만점) 달성',    goal:1,   cur:d=>(d.data.roster||[]).filter(r=>ORDER.some(k=>((r.stats&&r.stats[k])||0)>=800)).length},
+    {id:'max800',  ic:'💯', nm:'무대 준비 MAX',   desc:'한 제작 영역 800 달성',       goal:1,   cur:d=>(d.data.roster||[]).filter(r=>ORDER.some(k=>((r.stats&&r.stats[k])||0)>=800)).length},
     // ── 연습생 등급/수
-    {id:'sclass',  ic:'⭐', nm:'스타 발굴',      desc:'S급 이상 연습생 육성',       goal:1,   cur:d=>(d.data.roster||[]).filter(r=>grank(r.grade)>=6).length},
-    {id:'sclass5', ic:'✨', nm:'A&R의 눈',       desc:'S급 이상 5명 육성',          goal:5,   cur:d=>(d.data.roster||[]).filter(r=>grank(r.grade)>=6).length},
-    {id:'ssclass', ic:'🌟', nm:'육각형 스타',    desc:'SS급 연습생 육성',           goal:1,   cur:d=>(d.data.roster||[]).filter(r=>grank(r.grade)>=7).length},
+    {id:'sclass',  ic:'⭐', nm:'화제의 RUN',     desc:'RUN 완성도 S 이상 1회',      goal:1,   cur:d=>(d.data.roster||[]).filter(r=>grank(r.grade)>=6).length},
+    {id:'sclass5', ic:'✨', nm:'A&R의 눈',       desc:'RUN 완성도 S 이상 5회',      goal:5,   cur:d=>(d.data.roster||[]).filter(r=>grank(r.grade)>=6).length},
+    {id:'ssclass', ic:'🌟', nm:'시즌 대표작',    desc:'RUN 완성도 SS 달성',          goal:1,   cur:d=>(d.data.roster||[]).filter(r=>grank(r.grade)>=7).length},
     {id:'roster8', ic:'📋', nm:'인재 숙소',      desc:'연습생 8명 보유',            goal:8,   cur:d=>(d.data.roster||[]).length},
     {id:'roster20',ic:'🏬', nm:'인재풀',         desc:'연습생 20명 보유',           goal:20,  cur:d=>(d.data.roster||[]).length},
     {id:'roster40',ic:'🏙️', nm:'대형 아카데미',  desc:'연습생 40명 보유',           goal:40,  cur:d=>(d.data.roster||[]).length},
@@ -4652,19 +4707,20 @@ window.addEventListener("popstate", ()=>{
     // ── 팬덤(엔드게임)
     {id:'fans1m',  ic:'💗', nm:'백만 팬덤',      desc:'최고 팬 100만 돌파',         goal:1000000, cur:d=>+(localStorage.getItem('dg_best_fans')||0)},
     // ── ㉔ 히든(역업적 — 변태 플레이 상정. 달성 전엔 ??? 표시)
-    {id:'worst1',  ic:'🥴', nm:'반면교사',       desc:'전 능력치 250 미만으로 완주(?)', goal:1, hidden:true, cur:d=>(d.data.roster||[]).filter(r=>ORDER.every(k=>((r.stats&&r.stats[k])||0)<250)).length},
-    {id:'worstG',  ic:'🤡', nm:'오합지졸',       desc:'D등급 이하 그룹을 당당히 데뷔', goal:1, hidden:true, cur:d=>(d.data.groups||[]).filter(g=>grank(g.grade)<=2).length},
+    {id:'worst1',  ic:'🥴', nm:'첫 시행착오',     desc:'모든 준비도 250 미만으로 완주(?)', goal:1, hidden:true, cur:d=>(d.data.roster||[]).filter(r=>ORDER.every(k=>((r.stats&&r.stats[k])||0)<250)).length},
+    {id:'worstG',  ic:'🤡', nm:'언더독 데뷔',     desc:'D등급 이하 프로젝트로 데뷔',     goal:1, hidden:true, cur:d=>(d.data.groups||[]).filter(g=>grank(g.grade)<=2).length},
     {id:'fail3',   ic:'🌧️', nm:'실패는 성공의 어머니', desc:'데뷔 실패 3회 겪기',    goal:3, hidden:true, cur:d=>d.data.fails||0},
   ];
 
   function pid(){ let id=localStorage.getItem('idol_pid'); if(!id){ id='local-'+Date.now(); localStorage.setItem('idol_pid',id);} return id; }
   const KEY = ()=>'dg_save_'+pid();
-  function blank(){ return {v:4, roster:[], lineup:{}, groups:[], groupSeq:0, cards:{}, ridSeq:0, runs:0}; }   // roster=육성한 아이돌, lineup=편성중 데뷔조{slotId:rid}, groups=데뷔(저장)한 그룹 프리셋(멤버 전속)
+  const validDgSave=d=>!!(d&&Array.isArray(d.roster));
+  function blank(){ return {v:5, roster:[], lineup:{}, groups:[], groupSeq:0, cards:{}, ridSeq:0, runs:0}; }   // v5=실아이돌 고정 spec 격리 + RUN 방향 분리
 
   const DG = {
     data: blank(), equipped: [],
     load(){
-      var d; try{ d=JSON.parse(localStorage.getItem(KEY()))||{}; }catch(e){ d={}; }
+      var saved,d; try{ saved=StorageJournal.read(localStorage,KEY(),KEY()+'_backup_v1',validDgSave); d=saved.value||{}; }catch(e){ d={}; }
       d.roster = Array.isArray(d.roster)? d.roster : [];
       d.lineup = (d.lineup&&typeof d.lineup==='object'&&!Array.isArray(d.lineup))? d.lineup : {};
       if(typeof d.runs!=='number') d.runs=0;
@@ -4687,8 +4743,11 @@ window.addEventListener("popstate", ()=>{
       // NEW 뱃지(수집형 국룰): 새로 얻고 아직 상세로 확인 안 한 카드 표시
       if(!d.newCards||typeof d.newCards!=='object'||Array.isArray(d.newCards)) d.newCards={};
       // 애정⑥ 함께한 기록 + 팬덤 유대: 구카드는 첫 약속 단계에서 이어지도록 마이그레이션
-      let bondMigrated=false;
-      d.roster.forEach(r=>{ if(!r.joinedAt) r.joinedAt=Date.now(); if(r.fanBond==null){r.fanBond=8;bondMigrated=true;} });
+      let bondMigrated=false, directionMigrated=false;
+      d.roster.forEach(r=>{
+        if(!r.joinedAt) r.joinedAt=Date.now();
+        if(r.fanBond==null){r.fanBond=8;bondMigrated=true;}
+      });
       if(d.favRid!=null && !d.roster.some(r=>r.rid===d.favRid)) delete d.favRid;   // 은퇴/소실된 최애 정리
       Object.keys(d.wear).forEach(k=>{ const p=k.split(':'), n=(d.cards[p[0]]&&d.cards[p[0]][p[1]])||0, w=d.wear[k];
         if(!n || typeof w!=='number' || w<1 || w>=3) delete d.wear[k]; });
@@ -4699,17 +4758,22 @@ window.addEventListener("popstate", ()=>{
       // v<3: 옛 자동슬롯 group{stat:rec} → 숙소 아이돌로 이관(알려진 스탯 1개만)
       if(d.group && typeof d.group==='object' && !(d.v>=3)){
         Object.keys(d.group).forEach(sk=>{ const r=d.group[sk]; if(!r)return; const stats={}; ORDER.forEach(k=>stats[k]=0); stats[sk]=r.value||0;
-          d.roster.push({rid:++d.ridSeq, idkey:'legacy'+d.ridSeq, name:r.name||'연습생', img:r.img||'', spec:sk, cat:'F', stats, grade:r.grade||'F'}); });
+          d.roster.push({rid:++d.ridSeq, idkey:'legacy'+d.ridSeq, name:r.name||'연습생', img:r.img||'', legacySpec:sk, legacyRun:true, cat:'F', stats, grade:r.grade||'F'}); });
       }
-      delete d.group; delete d.lv; delete d.mat; d.v=4;
+      delete d.group; delete d.lv; delete d.mat; d.v=5;
+      // 이전 체계 카드는 현재 편성/경쟁에서 막되, 이미 데뷔한 그룹 스냅샷과 대표 지정은 보존한다.
+      const runMigration=RunMigration.migrateV5(d,{posScore:(stats,type)=>this.posScore(stats,type),grade});
+      if(runMigration.changed) directionMigrated=true;
       // ⑦ 그룹별 승점 마이그레이션: 옛 단일 battleSeason/battleAll/battleLog → 현재 대표그룹으로 이관
       if(!d.groupSeasons){ d.groupSeasons={}; if(d.battleSeason){ const rg=(d.groups||[]).some(g=>g.gid===d.repGid)?d.repGid:((d.groups||[])[0]||{}).gid; if(rg!=null) d.groupSeasons[rg]=d.battleSeason; } }
       if(!d.groupAll){ d.groupAll={}; if(d.battleAll){ const rg=(d.groups||[]).some(g=>g.gid===d.repGid)?d.repGid:((d.groups||[])[0]||{}).gid; if(rg!=null) d.groupAll[rg]=d.battleAll; } }
       if(!d.groupLog){ d.groupLog={}; if(Array.isArray(d.battleLog)){ const rg=(d.groups||[]).some(g=>g.gid===d.repGid)?d.repGid:((d.groups||[])[0]||{}).gid; if(rg!=null) d.groupLog[rg]=d.battleLog; } }
       delete d.battleSeason; delete d.battleAll; delete d.battleLog;
-      this.data=d; if(bondMigrated) this.persist(); return d;
+      this.data=d; if(bondMigrated||directionMigrated) this.persist();
+      if(saved&&saved.recovered&&!this._recoveryNotified){ this._recoveryNotified=true; setTimeout(()=>{ try{toast('저장 손상을 감지해 직전 기획사 기록으로 복구했어');}catch(e){} },250); }
+      return d;
     },
-    persist(){ try{ localStorage.setItem(KEY(), JSON.stringify(this.data)); this._persistError=false; return true; }
+    persist(){ try{ StorageJournal.write(localStorage,KEY(),KEY()+'_backup_v1',this.data,validDgSave); this._persistError=false; return true; }
       catch(e){ if(!this._persistError){ this._persistError=true; try{toast('저장 공간이 부족해. 오래된 기록을 정리해줘');}catch(_){} } return false; } },
     // ===== ⑥ 마이크 재화(랭킹전 스태미나) — 캔디크러시식. 최대 5, 6분당 1개 충전, 패배 시만 소모. 애돌 하트/다이아와 무관 =====
     MIC_MAX: 5, MIC_REFILL_MS: 6*60*1000,
@@ -4756,7 +4820,7 @@ window.addEventListener("popstate", ()=>{
     starStr(star){ return star>0?'★'+star:''; },
     cardDesc(type, star){ const c=CARDS[type]; const m=STAR_MULT[(star||this.bestStar(type)||1)-1]||1;
       const parts=[];
-      if(c.eff.all!=null) parts.push(`전 재능 +${Math.round(c.eff.all*m)}`);
+      if(c.eff.all!=null) parts.push(`전 제작 영역 +${Math.round(c.eff.all*m)}`);
       if(c.eff.stat) for(const k in c.eff.stat) parts.push(`${STATNM[k]||k} +${Math.round(c.eff.stat[k]*m)}`);
       let s = parts.length ? parts.join(' · ')+'로 시작' : '';
       const sp=[];   // 특수효과(별배수 미적용, 지속효과)
@@ -4815,6 +4879,7 @@ window.addEventListener("popstate", ()=>{
     titleChip(id){ const T=TITLES[id]; return T?`<span class="dg-title">${T.ic} ${T.nm}</span>`:''; },
     titleMini(id){ const T=TITLES[id]; return T?`${T.ic}${T.nm}`:''; },   // 전당 랭킹 인라인 표시용(텍스트)
     rosterById(rid){ return (this.data.roster||[]).find(r=>r.rid===rid); },
+    isEligibleRosterMember(r){ return !!(r&&!r.incomplete&&!r.legacyRun); },
     lineupRids(){ return Object.keys(this.data.lineup||{}).map(k=>this.data.lineup[k]); },
     // 전속: 데뷔(저장)한 그룹에 속한 rid는 다른 데뷔조에 재사용 불가 (좋은 9명 무한복제 방지 = 육성 계속할 이유)
     committedRids(){ const s=new Set(); (this.data.groups||[]).forEach(g=>{ for(const k in (g.lineup||{})){ s.add(g.lineup[k]); } }); return s; },
@@ -4834,8 +4899,8 @@ window.addEventListener("popstate", ()=>{
       const idx=same.findIndex(s=>String(s.sid)===String(slot.sid));
       const PRE=['메인','리드','서브'];
       return (idx<PRE.length? PRE[idx] : (idx+1)+'번')+base; },   // 메인보컬·리드보컬·서브보컬·4번보컬…
-    filledCount(){ let n=0; this.slots().forEach(s=>{ if(this.rosterById(this.data.lineup[s.sid])) n++; }); return n; },
-    groupInfo(){ let sum=0,n=0; this.slots().forEach(s=>{ const r=this.rosterById(this.data.lineup[s.sid]); if(r){ sum+=this.posScore(r.stats,s.type); n++; } }); return {sum,n,grade:n?grade(Math.round(sum/n)):'–'}; },
+    filledCount(){ let n=0; this.slots().forEach(s=>{ if(this.isEligibleRosterMember(this.rosterById(this.data.lineup[s.sid]))) n++; }); return n; },
+    groupInfo(){ let sum=0,n=0; this.slots().forEach(s=>{ const r=this.rosterById(this.data.lineup[s.sid]); if(this.isEligibleRosterMember(r)){ sum+=this.posScore(r.stats,s.type); n++; } }); return {sum,n,grade:n?grade(Math.round(sum/n)):'–'}; },
     // K. 포지션 적합도 = posScore 숫자 대신 3단계 등급표현(어떤 능력치인지도 비공개 — 탐색의 재미)
     fitLabel(val){ const L = val>=520?['최적','#ffd35c'] : val>=320?['우수','#5fc9ff'] : ['적합','#c3b6dd']; return `<b style="color:${L[1]}">${L[0]}</b>`; },
     // ===== 트렌드 (경쟁전③) = 2주 시즌 '대세' =====
@@ -4873,7 +4938,7 @@ window.addEventListener("popstate", ()=>{
     // ===== 시너지 조합 (경쟁전②) — 4축 합산, 상한 없음(수치 대폭↓으로 다양성 유도). members 미지정=현재 편성, trend 미지정=이번 시즌 =====
     // ⚠️수치 초안(밸런싱 대기). ①콘셉트 몰이는 트렌드 포지션 일치 시 ×1.5.
     groupSynergy(members, trend){
-      if(!members){ members=this.slots().map(s=>({type:s.type, r:this.rosterById(this.data.lineup[s.sid])})).filter(m=>m.r); }
+      if(!members){ members=this.slots().map(s=>({type:s.type, r:this.rosterById(this.data.lineup[s.sid])})).filter(m=>m.r&&!m.r.legacyRun); }
       if(trend===undefined) trend=this.currentTrend();
       const n=members.length;
       if(n<3) return {pct:0, raw:0, capped:false, list:[]};
@@ -4937,12 +5002,14 @@ window.addEventListener("popstate", ()=>{
     battle(myMembers, oppPower){ const mp=this.battlePower(myMembers), mc=this.critChance(myMembers);
       const my=this.battleRoll(mp.power, mc), opp=this.battleRoll(oppPower||1, 0.12);
       return {win:my.final>=opp.final, my, opp, myPower:mp.power, oppPower:oppPower||1, myInfo:mp}; },
-    // ===== 배틀 UI (경쟁전④): 대표 그룹 vs 고스트 대결 연출 =====
-    groupMembers(g){ return ((g&&g.slots)||[]).map(s=>({type:s.type, r:this.rosterById((g.lineup||{})[s.sid])})).filter(m=>m.r); },
+    // ===== 고스트 리그 UI: 대표 그룹 vs 저장된 상대 기록 =====
+    groupRosterMembers(g){ return ((g&&g.slots)||[]).map(s=>({type:s.type,r:this.rosterById((g.lineup||{})[s.sid])})).filter(m=>m.r&&!m.r.incomplete); },
+    groupMembers(g){ return this.groupRosterMembers(g).filter(m=>this.isEligibleRosterMember(m.r)); },
     openBattleAt(i){ const r=(this._board||[])[i]; if(!r||r.me) return; this.openBattle(r.name, r.logo, r.score); },
-    // ⑨ 배틀 로비 — 차트에서 분리. 내 승점과 가까운 상대 3팀 순차 매칭(밑바닥 약체 사냥 방지)
+    // 고스트 리그 — 차트에서 분리. 내 승점과 가까운 저장 기록 3팀 순차 매칭.
     showBattleLobby(){ this.load();
       const g=this.repGroup(); if(!g){ try{toast('먼저 데뷔시킨 그룹을 ⭐대표로 지정해줘');}catch(e){} return; }
+      if(this.groupMembers(g).length<3){ try{toast('이전 체계 멤버를 새 RUN으로 재제작해야 리그에 출전할 수 있어');}catch(e){} return; }
       show('s-battle'); this._renderLobby(this._lobbyPool||null);
       try{ if(window.Tut) Tut.onBattleLobby(); }catch(e){}
       this.fetchGroupBoard().then(list=>{ if(list) this._lobbyPool=list; if(document.getElementById('s-battle').classList.contains('on')) this._renderLobby(this._lobbyPool||null); });
@@ -4956,7 +5023,8 @@ window.addEventListener("popstate", ()=>{
          <div class="lg-head"><div class="lg-tier-ic">${tier.ic}</div><div class="lg-tier-nm">${esc(tier.nm)}</div>
           <div class="lg-tier-sub">${this.logoHtml(g.logo,20)} ${esc(g.name)} · 승점 <b>${bs.pts}</b>P · ${bs.w||0}승 ${bs.l||0}패</div>
           <div class="lg-rank-badge">전투력 ${bp.power.toLocaleString()} · IDOL CARD +${bp.cardBonus||0} · 시너지 +${bp.syn}%${bp.fanBonus?` · 💗팬덤 +${bp.fanBonus}`:''}</div>
-          <div class="muted" style="font-size:11px;margin-top:6px">⚔️ 대결마다 🎤 필요 · 이기면 유지, 지면 1개 소모</div></div>`;
+          <div class="muted" style="font-size:11px;margin-top:6px">👻 저장된 상대 기록과 비동기 대결 · 승패는 이 기기에서 판정</div>
+          <div class="muted" style="font-size:11px;margin-top:3px">⚔️ 대결마다 🎤 필요 · 이기면 유지, 지면 1개 소모</div></div>`;
       const myAg=(this.agency()&&this.agency().name)||'';
       let pool=(Array.isArray(serverList)?serverList:[]).concat(this._leagueSeed())
         .filter(o=>!(o.server&&o.agency===myAg) && o.name!==g.name);
@@ -4967,7 +5035,7 @@ window.addEventListener("popstate", ()=>{
           <span class="who"><span class="lg-logo">${this.logoHtml(f.logo,24)}</span> ${esc(f.name)}<small>${f.n}/9 · ${f.pts}P</small>
             ${(()=>{ const r=bp.power/Math.max(1,f.score);   // 전력 비교 칩(우마무스메식 상대 전력 가늠)
               return r>=1.15?'<small style="color:#4fd6a0;font-weight:800">△ 우세</small>':r<=0.87?'<small style="color:#ff7d95;font-weight:800">▽ 강적</small>':'<small style="color:#ffd35c;font-weight:800">≈ 접전</small>'; })()}</span>
-          <button class="bt-go" onclick="DG.openFoe(${i})">⚔️ 대결</button></div>`).join('')
+          <button class="bt-go" onclick="DG.openFoe(${i})">👻 대결</button></div>`).join('')
         : `<div class="lb-row"><span class="who muted">상대를 찾는 중…</span></div>`;
       // ⑦ 티어가 뭔지 — 기준표 상시 노출 + 최근 전적 로그(최근 5전, 대표그룹별)
       const _gid=g.gid, _glog=(this.data.groupLog&&this.data.groupLog[_gid])||[];
@@ -5023,6 +5091,8 @@ window.addEventListener("popstate", ()=>{
       this.data.groupLog[gid].unshift({opp:oppName, win:res.win, delta:res.delta, my:res.my.final, op:res.opp.final});
       this.data.groupLog[gid]=this.data.groupLog[gid].slice(0,5);
       this.persist();
+      // 서버 순위 문서에도 최신 시즌 승점을 반영한다. 이전에는 데뷔 시점의 0P가 계속 노출됐다.
+      this.submitGroup(g);
       this._showBattle(g, {name:oppName, logo:oppLogo||'🎤'}, res, mem);
       setTimeout(()=>{ try{ this.checkAchv(); }catch(e){} }, 1300);   // 배틀 업적 즉시 토스트
       setTimeout(()=>{ try{ if(document.getElementById('s-battle').classList.contains('on')) this._renderLobby(this._lobbyPool||null);
@@ -5042,7 +5112,7 @@ window.addEventListener("popstate", ()=>{
       const weak=contribs[contribs.length-1], gap=Math.max(0,(res.opp.final||0)-(res.my.final||0));
       const anyCrit = res.my.crit || res.opp.crit;
       ov.innerHTML=`<div class="ev-card bt-card">
-        <div class="bt-title">⚔️ 무대 대결</div>
+        <div class="bt-title">👻 고스트 대결</div>
         <div class="bt-trend">${trend.ic} 트렌드 «${esc(trend.nm)}»</div>
         <div class="bt-lineup" id="btLineup"></div>
         <div class="bt-stagesum" id="btStageSum" style="opacity:0">🎤 무대 점수 <b id="btStageTot">0</b>${info.syn?` <span class="bt-syn">🔥 시너지 +${info.syn}%</span>`:''}</div>
@@ -5060,8 +5130,8 @@ window.addEventListener("popstate", ()=>{
         <div class="bt-critbadge" id="btCrit" style="opacity:0">⚡ CRITICAL!</div>
         <div class="bt-result ${res.win?'win':'lose'}" id="btResult" style="opacity:0">${res.win?'🏆 승리!':'😢 패배…'}</div>
         <div class="bt-pts" id="btPts" style="opacity:0">${res.tier?`<span class="${res.delta>=0?'up':'dn'}">${res.delta>=0?'+':''}${res.delta} 승점</span> · ${res.tier.ic} ${esc(res.tier.nm)} <b>${res.pts}</b>`:''}</div>
-        ${!res.win&&weak?`<div class="bt-coach" id="btCoach" style="opacity:0"><b>다음 승리 미션</b><span>${esc(weak.name)} ${POSTYPES[weak.pos]?POSTYPES[weak.pos].nm:'포지션'} 보강 · 점수 ${gap.toLocaleString()} 차이</span>
-          <button onclick="var o=document.getElementById('ov');o.className='ov';o.onclick=null;DG.retrain(${weak.rid})">${esc(weak.name)} 재육성 ›</button></div>`:''}
+        ${!res.win&&weak?`<div class="bt-coach" id="btCoach" style="opacity:0"><b>다음 승리 미션</b><span>${POSTYPES[weak.pos]?POSTYPES[weak.pos].nm:'빈 포지션'}용 RUN 카드 보강 · 팀 점수 ${gap.toLocaleString()} 차이</span>
+          <button onclick="var o=document.getElementById('ov');o.className='ov';o.onclick=null;DG.retrain(${weak.rid})">해당 RUN 카드 재제작 ›</button></div>`:''}
         <button class="btn" id="btClose" style="opacity:0;transition:opacity .4s" onclick="var o=document.getElementById('ov');o.className='ov';o.onclick=null">확인</button>
       </div>`;
       // ① 무대 라인업: 내가 키운 멤버 얼굴이 스포트라이트 받으며 순차 등장 + 기여 +N 플로팅 → 무대점수 누적
@@ -5069,7 +5139,7 @@ window.addEventListener("popstate", ()=>{
       contribs.forEach((c,i)=>{ setTimeout(()=>{ if(!document.getElementById('btLineup'))return;
         const cell=document.createElement('div'); cell.className='btl-mem';
         const av=c.img?`<span class="btl-av" style="background-image:url('${c.img}')"></span>`:`<span class="btl-av">${POSICO[c.pos]||'🎤'}</span>`;
-        cell.innerHTML=`<span class="btl-plus">+${c.val.toLocaleString()}</span>${av}<span class="btl-pos">${POSICO[c.pos]||''} ${POSTYPES[c.pos]?POSTYPES[c.pos].nm:''}</span>`;
+        cell.innerHTML=`<span class="btl-plus">역할 기여 +${c.val.toLocaleString()}</span>${av}<span class="btl-pos">${POSICO[c.pos]||''} ${POSTYPES[c.pos]?POSTYPES[c.pos].nm:''}</span>`;
         stage.appendChild(cell);
         requestAnimationFrame(()=>{ cell.classList.add('in','spot'); setTimeout(()=>cell.classList.remove('spot'), 520); });
         acc+=c.val; const tot=document.getElementById('btStageTot'); if(tot)tot.textContent=acc.toLocaleString();
@@ -5123,9 +5193,9 @@ window.addEventListener("popstate", ()=>{
         s.style.animationDelay=(Math.random()*0.5)+'s'; s.style.animationDuration=(1+Math.random()*0.8)+'s';
         ov.appendChild(s); setTimeout(()=>s.remove(), 2400); } },
     // ===== 데뷔조 프리셋(최대5) + 대표 그룹 =====
-    repGroupGid(){ const gs=this.data.groups||[]; if(!gs.length)return null; return gs.some(g=>g.gid===this.data.repGid)?this.data.repGid:gs[0].gid; },   // repGid 없거나 무효면 첫 그룹
+    repGroupGid(){ const gs=this.data.groups||[]; if(!gs.length)return null; return gs.some(g=>g.gid===this.data.repGid)?this.data.repGid:gs[0].gid; },   // 기존 대표 스냅샷은 보존, 출전 가능 여부는 리그 진입에서 별도 검사
     repGroup(){ const gid=this.repGroupGid(); return gid==null?null:(this.data.groups||[]).find(g=>g.gid===gid); },
-    setRep(gid){ this.load(); this.data.repGid=gid; this.persist(); const g=(this.data.groups||[]).find(x=>x.gid===gid); if(g)this.submitGroup(g); this.renderOffice(); try{toast('⭐ 대표 데뷔조 지정 · 순위전 출전');}catch(e){} },
+    setRep(gid){ this.load(); const g=(this.data.groups||[]).find(x=>x.gid===gid); if(!g||this.groupMembers(g).length<3){ try{toast('재제작이 필요한 멤버를 교체해야 출전할 수 있어');}catch(e){} return; } this.data.repGid=gid; this.persist(); this.submitGroup(g); this.renderOffice(); try{toast('⭐ 대표 데뷔조 지정 · 순위전 출전');}catch(e){} },
     disbandGroup(gid){ this.load(); const g=(this.data.groups||[]).find(x=>x.gid===gid); if(!g)return;
       const bs=this.battleSeasonOf(gid), hasRank=((bs.w||0)+(bs.l||0))>0 || (bs.pts||0)>0;
       const warn = hasRank
@@ -5141,14 +5211,14 @@ window.addEventListener("popstate", ()=>{
           if(this.data.repGid===gid) this.data.repGid=(this.data.groups[0]&&this.data.groups[0].gid)||null;
           this.persist(); this.renderOffice(); try{toast('그룹 해체됨 · 멤버 무소속 복귀');}catch(e){} }}); },
     assign(slotId, rid){ this.load(); const r=this.rosterById(rid); if(!r)return {err:'noidol'};
-      if(r.incomplete) return {err:'incomplete'};
+      if(!this.isEligibleRosterMember(r)) return {err:r.legacyRun?'legacy':'incomplete'};
       if(this.isCommitted(rid)) return {err:'committed'};
       if(this.idkeyInLineup(r.idkey, slotId)) return {err:'dup', name:r.name};
       this.data.lineup[slotId]=rid; this.persist(); return {ok:true}; },
     unassign(slotId){ this.load(); delete this.data.lineup[slotId]; this.persist(); },
     clearLineup(){ this.load(); this.data.lineup={}; this.persist(); this.renderOffice(); try{toast('편성을 비웠어');}catch(e){} },   // ⑤ 편성 전체 비우기(전속은 groups에 있어 무관)
     quickAssign(rid){ this.load(); const r=this.rosterById(rid); if(!r)return {err:'noidol'};
-      if(r.incomplete) return {err:'incomplete'};
+      if(!this.isEligibleRosterMember(r)) return {err:r.legacyRun?'legacy':'incomplete'};
       if(this.isCommitted(rid)) return {err:'committed'};
       if(this.idkeyInLineup(r.idkey,null)) return {err:'dup', name:r.name};
       let best=null, bv=-1; this.slots().forEach(s=>{ if(this.data.lineup[s.sid])return; const sc=this.posScore(r.stats,s.type); if(sc>bv){bv=sc;best=s.sid;} });
@@ -5165,7 +5235,7 @@ window.addEventListener("popstate", ()=>{
 
     // ===== 그룹 데뷔(저장) = 프리셋 스냅샷. 멤버는 전속 확정, 현 편성버퍼는 비워 새 데뷔조 시작 =====
     debutGroup(name, logo){ this.load(); const gi=this.groupInfo(); if(gi.n<3) return {err:'few'};
-      const lineup={}, slots=[]; this.slots().forEach(s=>{ if(this.data.lineup[s.sid]){ lineup[s.sid]=this.data.lineup[s.sid]; slots.push({sid:s.sid,type:s.type}); } });
+      const lineup={}, slots=[]; this.slots().forEach(s=>{ const r=this.rosterById(this.data.lineup[s.sid]); if(this.isEligibleRosterMember(r)){ lineup[s.sid]=r.rid; slots.push({sid:s.sid,type:s.type}); } });
       const g={gid:++this.data.groupSeq, name:(name||this.groupName()).slice(0,14), logo:logo||this.agency().logo,
                lineup, slots, grade:gi.grade, sum:gi.sum, n:gi.n, savedAt:Date.now()};
       this.data.groups.push(g); this.data.slots=this.defaultSlots(); this.data.slotSeq=3; this.data.lineup={}; this.persist();
@@ -5189,44 +5259,45 @@ window.addEventListener("popstate", ()=>{
         if(old){
           const oldScore=ORDER.reduce((a,k)=>a+((old.stats&&old.stats[k])||0),0);
           const newScore=ORDER.reduce((a,k)=>a+(stats[k]||0),0);
-          const adopt=!!old.incomplete||newScore>=oldScore;
+          const adopt=!!old.incomplete||!!old.legacyRun||newScore>=oldScore;
           newRid=old.rid;
           if(!this.data.memories)this.data.memories=[];
           const nextRun=(old.runs||1)+1;
           // 기존 최고와 이번 시도를 각각 복제해 남기고, 강해진 경우에만 대표 버전을 교체.
           if(!this.data.memories.some(m=>m.rid===old.rid&&m.run===(old.runs||1)))
-            this.data.memories.push({rid:old.rid,idkey:old.idkey,name:old.name,img:'',stats:Object.assign({},old.stats||{}),
+            this.data.memories.push({rid:old.rid,idkey:old.idkey,name:old.name,img:'',runDirection:old.runDirection||null,stats:Object.assign({},old.stats||{}),
               grade:old.grade,fans:old.fans||0,run:old.runs||1,adopted:true,savedAt:old.lastTrainedAt||old.joinedAt||Date.now()});
-          this.data.memories.push({rid:old.rid,idkey,name:st.idol.name,img:'',stats:Object.assign({},stats),
+          this.data.memories.push({rid:old.rid,idkey,name:st.idol.name,img:'',runDirection:st.runDirection,stats:Object.assign({},stats),
             grade:gr,fans:Math.round((st&&st.fans)||0),fanBond:Math.round((st&&st.fanBond)||0),run:nextRun,adopted:adopt,savedAt:Date.now()});
           if(adopt){
-            Object.assign(old,{name:st.idol.name,img:st.idol.img||old.img||'',spec:st.idol.spec,cat:st.idol.cat||old.cat||'F',
+            Object.assign(old,{name:st.idol.name,img:st.idol.img||old.img||'',runDirection:st.runDirection,cat:st.idol.cat||old.cat||'F',
               stats,grade:gr,titles,grp:st.idol.grp||old.grp||'',fans:Math.round((st&&st.fans)||0),fanBond:Math.max(old.fanBond||0,Math.round((st&&st.fanBond)||0)),incomplete:false});
+            delete old.legacyRun; delete old.legacySpec;
             old.progressRuns=(old.progressRuns||old.runs||1)+1;
           }
           old.incomplete=false;
           old.runs=nextRun; old.lastTrainedAt=Date.now();
-          joinMsg=`✨ <b>${esc(st.idol.name)} ${nextRun}회차 완료</b><br><span class="muted">${adopt?'최고 기록 갱신 · 대표 버전 교체':'이전 최고 기록 유지 · 이번 기록 보관'} · 종합 ${overallNow}</span>`;
+          joinMsg=`✨ <b>${esc(st.idol.name)} ${nextRun}회차 완료</b><br><span class="muted">${adopt?'BEST RUN 갱신 · 카드 전시 교체':'기존 BEST RUN 유지 · 이번 추억 보관'} · RUN 완성도 ${overallNow}</span>`;
         } else {
           newRid=++this.data.ridSeq;
-          this.data.roster.push({rid:newRid, idkey, name:st.idol.name, img:st.idol.img||'', spec:st.idol.spec, cat:st.idol.cat||'F', stats, grade:gr, titles, grp:st.idol.grp||'', fans:Math.round((st&&st.fans)||0), fanBond:Math.round((st&&st.fanBond)||0), runs:1, progressRuns:1, joinedAt:Date.now()});   // 팬덤 유대는 영구 카드에 남고 다음 회차 일부 계승
+          this.data.roster.push({rid:newRid, idkey, name:st.idol.name, img:st.idol.img||'', runDirection:st.runDirection, cat:st.idol.cat||'F', stats, grade:gr, titles, grp:st.idol.grp||'', fans:Math.round((st&&st.fans)||0), fanBond:Math.round((st&&st.fanBond)||0), runs:1, progressRuns:1, joinedAt:Date.now()});
           joinMsg=firstEver
-            ? `✨ <b>${esc(st.idol.name)}</b> 프롤로그 수료! 첫 아이돌 카드 등록<br><span class="muted">종합 ${overallNow} 등급 · 다음 육성부터 오디션 조건 적용</span>`
-            : `🎊 <b>${esc(st.idol.name)}</b> 오디션 통과! 아이돌 카드 등록<br><span class="muted">종합 ${overallNow} 등급 · 그룹 데뷔 후보 합류</span>`;
+            ? `✨ <b>${esc(st.idol.name)}</b> 프롤로그 수료! 첫 RUN 카드 등록<br><span class="muted">RUN 완성도 ${overallNow} · 다음 육성부터 오디션 조건 적용</span>`
+            : `🎊 <b>${esc(st.idol.name)}</b> 오디션 통과! RUN 카드 등록<br><span class="muted">RUN 완성도 ${overallNow} · 그룹 데뷔 후보 합류</span>`;
         }
       } else {
         const old=st&&st.retrainRid?this.rosterById(st.retrainRid):null;
         if(old){
           newRid=old.rid; old.runs=(old.runs||1)+1; old.lastTrainedAt=Date.now();
           if(!this.data.memories)this.data.memories=[];
-          this.data.memories.push({rid:old.rid,idkey,name:st.idol.name,img:'',stats:Object.assign({},stats),
+          this.data.memories.push({rid:old.rid,idkey,name:st.idol.name,img:'',runDirection:st.runDirection,stats:Object.assign({},stats),
             grade:gr,fans:Math.round((st&&st.fans)||0),fanBond:Math.round((st&&st.fanBond)||0),run:old.runs,adopted:false,failed:true,savedAt:Date.now()});
           joinMsg=old.incomplete
             ? `💤 <b>${esc(st.idol.name)}</b> 오디션 탈락 — 미완성 카드 유지<br><span class="muted">다시 육성해 부족한 기록을 넘으면 정식 등록</span>`
             : `📔 <b>${esc(st.idol.name)}</b> 오디션 탈락 — 기존 최고 카드 유지<br><span class="muted">이번 실패 기록은 버전 앨범에 보관</span>`;
         } else {
           newRid=++this.data.ridSeq;
-          this.data.roster.push({rid:newRid,idkey,name:st.idol.name,img:st.idol.img||'',spec:st.idol.spec,cat:st.idol.cat||'F',
+          this.data.roster.push({rid:newRid,idkey,name:st.idol.name,img:st.idol.img||'',runDirection:st.runDirection,cat:st.idol.cat||'F',
             stats,grade:gr,titles:[],grp:st.idol.grp||'',fans:Math.round((st&&st.fans)||0),fanBond:Math.round((st&&st.fanBond)||0),runs:1,progressRuns:1,incomplete:true,joinedAt:Date.now()});
           joinMsg=`💤 <b>${esc(st.idol.name)}</b> 오디션 탈락 — 미완성 카드 보관<br><span class="muted">다시 육성해 부족한 기록을 넘으면 정식 등록</span>`;
         }
@@ -5315,13 +5386,13 @@ window.addEventListener("popstate", ()=>{
         p.style.opacity=(.35+Math.random()*.5); box.appendChild(p); }
     }catch(e){} },
     // ===== 영구 수집물: 육성 결과로 완성되는 아이돌 카드 =====
-    // 지원카드(육성 장비)와 분리된 개념. 같은 rid의 최고 기록·회차·별 성장을 전 화면에서 공유한다.
+    // 지원카드(육성 장비)와 분리된 개념. 같은 rid의 BEST RUN·회차·별 성장을 전 화면에서 공유한다.
     idolCardMeta(r){
       const runs=Math.max(1,+((r&&r.runs)||1));
       const progressRuns=Math.max(1,+((r&&r.progressRuns)||runs));
       const stats=(r&&r.stats)||{};
       const best=Math.round(ORDER.reduce((a,k)=>a+(+stats[k]||0),0)/ORDER.length)||0;
-      // 별은 출석 보상이 아니다. 반복 회차와 최고 기록을 함께 충족해야 승급한다.
+      // 별은 출석 보상이 아니다. 반복 회차와 RUN 완성도를 함께 충족해야 승급한다.
       const scoreGate=[0,55,75,95,120];
       const runStar=Math.min(5,1+Math.floor(progressRuns/2));
       let scoreStar=1; for(let s=2;s<=5;s++) if(best>=scoreGate[s-1]) scoreStar=s;
@@ -5331,34 +5402,42 @@ window.addEventListener("popstate", ()=>{
       const top=this.idolTop(stats);
       return {runs,progressRuns,star,need,nextScore,best,top,tier:this.gradeTier((r&&r.grade)||'F')};
     },
+    idolNextGoal(m){
+      if(!m||m.star>=5) return 'MAX';
+      const parts=[];
+      if(m.need>0) parts.push(`육성 ${m.need}회 더`);
+      if(m.best<m.nextScore) parts.push('RUN 완성도 갱신');
+      return parts.join(' + ')||'RUN 완성도 갱신';
+    },
     idolCardHTML(r,opt){
       opt=opt||{}; const m=this.idolCardMeta(r||{});
       const img=(r&&r.img)||opt.img||'', name=(r&&r.name)||opt.name||'새 아이돌';
-      const grade=(r&&r.grade)||opt.grade||'?';
+      const isLegacy=!!(r&&r.legacyRun), runGrade=isLegacy?'ARCHIVE':((r&&r.grade)||opt.grade||'?');
       const stars='★'.repeat(m.star)+'☆'.repeat(Math.max(0,5-m.star));
       const topK=(m.top&&m.top.k)||this.topStat((r&&r.stats)||{});
-      const statNm=STATNM[topK]||'대표 능력', statV=Math.round(((r&&r.stats)||{})[topK]||0);
-      const action=opt.onclick?` onclick="${opt.onclick}"`:'';
+      const directionKey=(r&&r.runDirection)||'', directionNm=STATNM[directionKey]||'이전 버전';
+      const interactive=!!opt.onclick, tag=interactive?'button':'div';
+      const action=interactive?` type="button" aria-label="${esc(name)} 아이돌 카드 상세" onclick="${opt.onclick}"`:'';
       const state=opt.state||(r&&r.incomplete?'incomplete':'complete');
       const fd=fandomOf(r||{}), fb=Math.round((r&&r.fanBond)||opt.fanBond||0), fbl=bondLevel(fb);
       const stateLabel=state==='training'?'CARD IN PROGRESS':state==='new'?'NEW IDOL CARD':state==='incomplete'?'INCOMPLETE CARD':'IDOL CARD';
-      const scoreLabel=state==='training'?'현재 기록':state==='incomplete'?'도전 기록':'최고 기록';
-      return `<div class="rcard idol-card t${m.tier} ${opt.cls||''}"${action}>
+      const scoreLabel=isLegacy?'재제작 필요':state==='training'?'현재 RUN':state==='incomplete'?'도전 RUN':'BEST RUN';
+      return `<${tag} class="rcard idol-card t${m.tier} ${opt.cls||''}"${action}>
         ${img?`<div class="rph" style="background-image:url('${img}')"></div>`:`<div class="rph noimg"><img src="assets/idol-card-back-v1.png" alt="DREAM IDOL CARD"></div>`}
         <div class="rgd"></div><div class="rholo"></div><div class="rfr"></div>
         <div class="ic-kicker">${stateLabel}</div>
-        <div class="rbadge">${esc(grade)}</div>
+        <div class="rbadge">${isLegacy?'이전 체계 카드':'RUN 완성도 '+esc(runGrade)}</div>
         <div class="ic-run">${state==='training'?'육성 중':`RUN ${String(m.runs).padStart(2,'0')}`}</div>
         ${opt.tag?`<div class="rtag">${esc(opt.tag)}</div>`:''}
         ${opt.favorite?'<span class="rfav">♥</span>':''}
         ${opt.progress!=null?`<div class="ic-progress"><i style="width:${Math.max(5,Math.min(100,opt.progress))}%"></i></div>`:''}
         <div class="rinfo">
-          <div class="rstar">${stars}</div><div class="rnm">${esc(name)}</div>
-          <div class="rsub">${esc(statNm)} ${statV||'—'} · ${scoreLabel} ${m.best||'—'}</div>
+          <div class="rstar">${stars}</div><div class="rnm">${esc(name)} ${isLegacy?'':`<span style="font-size:.72em;color:var(--gold)">${esc(runGrade)}</span>`}</div>
+          <div class="rsub">${isLegacy?'새 RUN 방향을 골라 다시 제작':esc(directionNm)+' 방향 · '+scoreLabel+` 평균 ${m.best}`}</div>
           <div class="ic-bond">💞 ${esc(fd.name)} · ${fb?`${fbl.n} ${fb}`:'첫 약속 대기'}</div>
-          <div class="ic-next">${state==='training'?'완주 시 카드 저장':state==='incomplete'?'오디션 재도전':(m.star>=5?'MAX CARD':`다음 ★ · ${m.need?'신기록 '+m.need+'회 + ':''}최고 ${m.nextScore}`)}</div>
+          <div class="ic-next">${state==='training'?'완주 시 카드 저장':state==='incomplete'?'오디션 재도전':(m.star>=5?'MAX CARD':`다음 ★ · ${this.idolNextGoal(m)}`)}</div>
         </div>
-      </div>`;
+      </${tag}>`;
     },
     // 홈 히어로 = 고정된 기획사 공간 안에서 캐릭터와 장소를 직접 누르는 로비.
     _stageHero(o){
@@ -5436,7 +5515,7 @@ window.addEventListener("popstate", ()=>{
           next:'완주 보상 · 아이돌 카드 영구 저장 + 지원 카드 1장',
           goal:`${esc(_resume.name)} 카드 완주 · ${_resume.total-_resume.week+1}턴 남음`,
           cta:{on:'Game.continueGame()', label:`▶️ ${esc(_resume.name)} ${_resume.week}/${_resume.total}턴 이어하기`},
-          extra: rep?`<button class="btn ghost" style="margin-top:8px" onclick="DG.showBattleLobby()">⚔️ ${esc(rep.name)} 대결</button>`:'' });
+          extra: rep?`<button class="btn ghost" style="margin-top:8px" onclick="DG.showBattleLobby()">👻 ${esc(rep.name)} 고스트 리그</button>`:'' });
       } else if(roster.length===0 && groups.length===0){
         hero=this._stageHero({ members:[], sg:_sgTrend,
           greet:'여기서 첫 최애를 만나고, 데뷔 무대까지 함께 가요.',
@@ -5445,24 +5524,30 @@ window.addEventListener("popstate", ()=>{
           cta:{on:'Game.goSelect()', label:'✨ 첫 최애 선택하기'} });
       } else if(rep){
         const tier=this.battleTier(this.battleSeason().pts);
-        const _rmem=this.groupMembers(rep).filter(m=>m.r);
+        const _eligibleMem=this.groupMembers(rep).filter(m=>m.r), _archived=_eligibleMem.length<3;
+        const _rmem=_archived?this.groupRosterMembers(rep):_eligibleMem;
         const _lead=_rmem.find(m=>m.type==='leader')||_rmem[0];
+        const _rebuildRid=_archived?RunMigration.nextLegacyRid(this.data,rep):null;
+        const _rebuildTarget=_rebuildRid!=null?this.rosterById(_rebuildRid):null;
         const _rest=_rmem.filter(m=>m!==_lead).slice(0,2);
         const _cards=[_lead,..._rest].filter(Boolean).map(m=>({img:m.r.img}));
         const _bpts=this.battleSeason().pts||0, _tidx=BATTLE_TIERS.filter(x=>_bpts>=x.min).length-1;
         let _greet;
-        if(_tdays<=2) _greet='이번 시즌 곧 끝나요 — 마지막 무대! ⏳';
+        if(_archived) _greet='그룹 기록은 그대로 보관했어요. 새 RUN으로 다시 무대를 준비해요.';
+        else if(_tdays<=2) _greet='이번 시즌 곧 끝나요 — 마지막 무대! ⏳';
         else if(_bpts===0) _greet='첫 무대, 같이 올라가요! ✨';
         else if(_tidx>=3) _greet='정상이 코앞이에요! 🔥';
         else _greet=['무대에서 만나요! ✨','오늘도 준비 완료!','우리 무대 보러 오셨죠? 💪'][this.seasonNo()%3];
         hero=this._stageHero({ members:_cards, idol:_lead&&_lead.r, sg:STAGE_HUE[_trend.pos]||STAGE_HUE.center,
-          greet:'🐰 '+_greet, badge:'🏆 우리 대표 그룹', nm:esc(rep.name),
-          sub:`${tier.ic} ${esc(tier.nm)} · ${_bpts}P`,
-          goal:`${esc(rep.name)} 시즌 무대 · 다음 승리 도전`,
-          goalOn:'DG.showBattleLobby()',
-          cta:{on:'DG.showBattleLobby()', label:'⚔️ 대결하러 가기'},
+          greet:'🐰 '+_greet, badge:_archived?'📦 이전 체계 그룹 보존':'🏆 우리 대표 그룹', nm:esc(rep.name),
+          sub:_archived?`${rep.n||_rmem.length}명 기록 보존 · 리그 출전 대기`:`${tier.ic} ${esc(tier.nm)} · ${_bpts}P`,
+          goal:_archived?`${esc(rep.name)} 멤버를 새 RUN 카드로 재제작`:`${esc(rep.name)} 시즌 무대 · 다음 승리 도전`,
+          goalOn:_archived?(_rebuildTarget?`DG.retrain(${_rebuildTarget.rid})`:'DG.goRoster()'):'DG.showBattleLobby()',
+          cta:_archived
+            ? {on:_rebuildTarget?`DG.retrain(${_rebuildTarget.rid})`:'DG.goRoster()',label:_rebuildTarget?`🔥 ${esc(_rebuildTarget.name)} 재제작`:'📋 그룹 기록 보기'}
+            : {on:'DG.showBattleLobby()', label:'👻 고스트 리그'},
           extra:`<div class="hero-btns" style="margin-top:9px">
-             <button class="btn ghost" style="flex:1" onclick="${_lead?`DG.retrain(${_lead.r.rid})`:'Game.goSelect()'}">${_lead?`🔥 ${esc(_lead.r.name)} 재육성`:'✨ 육성'}</button>
+             <button class="btn ghost" style="flex:1" onclick="${_archived&&_rebuildTarget?`DG.retrain(${_rebuildTarget.rid})`:_lead?`DG.retrain(${_lead.r.rid})`:'Game.goSelect()'}">${_archived&&_rebuildTarget?`🔥 ${esc(_rebuildTarget.name)} 재제작`:_lead?`🔥 ${esc(_lead.r.name)} 재육성`:'✨ 육성'}</button>
              <button class="btn ghost" style="flex:1" onclick="DG.goRoster()">📋 편성</button></div>` });
       } else if(gi.n>=3){
         hero=this._stageHero({ members:_lineMem.map(r=>({img:r.img})), idol:_lineMem[0], sg:_sgTrend,
@@ -5481,7 +5566,9 @@ window.addEventListener("popstate", ()=>{
           _heroMembers=_heroMembers.concat(_scout.map(i=>({img:i.img,name:i.name,locked:true})));
         }
         // 첫 그룹 3명 확보 전에는 동일 아이돌 반복보다 다음 멤버 영입을 우선한다.
-        const _repeat=!!(_focus && !_lineMem.length && readyCount>=3);
+        // 첫 3명이 모인 순간의 최우선 행동은 재육성이 아니라 첫 데뷔조 편성이다.
+        // 이미 데뷔 그룹이 있는 이후에만 반복 육성을 주 CTA로 승격한다.
+        const _repeat=!!(_focus && !_lineMem.length && readyCount>=3 && groups.length>0);
         const _focusMeta=_focus?this.idolCardMeta(_focus):null;
         hero=this._stageHero({ members:_heroMembers, idol:_focus, sg:_sgTrend, collection:true,
           greet: _lineMem.length?'조금만 더 모으면 데뷔예요!':(_focus?`첫 그룹을 만들어봐요, ${esc(_focus.name)} ✨`:'연습생을 포지션에 배치해요'),
@@ -5494,9 +5581,10 @@ window.addEventListener("popstate", ()=>{
             ? {on:'Game.goSelect()', label:`✨ 새 연습생 스카우트 · ${readyCount}/3`}
             : (gi.n<3 ? {on:'DG.editLineup()', label:'📋 포지션 직접 고르기'}
               : {on:'DG.doDebut()', label:'🎬 이 조합으로 데뷔 준비'}),
-          next:_repeat&&_focusMeta?`영구 계승 +${4+_focusMeta.star*3} · 다음 ★ 조건 ${_focusMeta.need?'신기록 '+_focusMeta.need+'회 + ':''}최고 ${_focusMeta.nextScore}`:'',
+          next:_repeat&&_focusMeta?`영구 계승 +${4+_focusMeta.star*3} · 다음 ★ 조건 ${this.idolNextGoal(_focusMeta)}`:'',
           goal:_focus&&_focus.incomplete?`${esc(_focus.name)} 미완성 카드 · 정식 등록 도전`
-            :(_repeat&&_focusMeta?`${esc(_focus.name)} 다음 ★ · 최고 ${_focusMeta.nextScore}`:`데뷔조 후보 ${readyCount}/3 · 다음 멤버 확보`),
+            :(_repeat&&_focusMeta?`${esc(_focus.name)} 다음 ★ · ${this.idolNextGoal(_focusMeta)}`
+              :(readyCount>=3?`데뷔조 후보 ${readyCount}/3 · 지금 첫 편성`:`데뷔조 후보 ${readyCount}/3 · 다음 멤버 확보`)),
           extra:_repeat?`<div class="hero-btns"><button class="btn ghost" onclick="Game.goSelect()">＋ 새 연습생 스카우트</button>
             <button class="btn ghost" onclick="DG.goRoster()">📋 숙소 보기</button></div>`
             :(_focus?`<div class="hero-btns"><button class="btn ghost" onclick="DG.retrain(${_focus.rid})">🔥 ${esc(_focus.name)} 재육성</button>
@@ -5636,9 +5724,9 @@ window.addEventListener("popstate", ()=>{
            `<div style="display:flex;align-items:center;gap:11px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 13px">
               <span style="flex:0 0 auto;cursor:pointer" onclick="DG.shareSavedGroup(${g.gid})">${this.logoHtml(g.logo,32)}</span>
               <div style="flex:1;min-width:0;cursor:pointer" onclick="DG.shareSavedGroup(${g.gid})"><div style="font-weight:bold">${esc(g.name)}</div>
-                <div class="muted" style="font-size:12px">${g.grade} · 합산 ${g.sum} · ${g.n}/9명</div></div>
+                <div class="muted" style="font-size:12px">${g.legacyArchive?`이전 체계 그룹 보존 · ${g.n}/9명 · 멤버 재제작 필요`:`그룹 완성도 ${g.grade} · 무대 전투력 ${g.sum} · ${g.n}/9명`}</div></div>
               <div style="display:flex;flex-direction:column;gap:4px;flex:0 0 auto">
-                <button class="cr-btn" style="padding:5px 9px;font-size:11px" onclick="DG.setRep(${g.gid})">⭐대표</button>
+                <button class="cr-btn${g.needsRebuild?' off':''}" style="padding:5px 9px;font-size:11px" onclick="${g.needsRebuild?`DG.shareSavedGroup(${g.gid})`:`DG.setRep(${g.gid})`}">${g.needsRebuild?'📦보존':'⭐대표'}</button>
                 <button class="cr-btn off" style="padding:5px 9px;font-size:11px;background:rgba(255,92,107,.16);color:#ff8a95;border:1px solid rgba(255,92,107,.4)" onclick="DG.disbandGroup(${g.gid})">해체</button>
               </div>
             </div>`).join('')}</div>` : '';
@@ -5650,7 +5738,7 @@ window.addEventListener("popstate", ()=>{
       const cur=this.rosterById(this.data.lineup[slot.sid]);
       const snm=this.slotNm(slot);
       const t=document.getElementById('assignTitle'); if(t) t.innerHTML=`${this.slotIco(slot)} ${snm} 배치`;
-      const list=(this.data.roster||[]).slice().filter(r=>!r.incomplete&&!this.isCommitted(r.rid)).sort((a,b)=>this.posScore(b.stats,slot.type)-this.posScore(a.stats,slot.type));
+      const list=(this.data.roster||[]).slice().filter(r=>!r.incomplete&&!r.legacyRun&&!this.isCommitted(r.rid)).sort((a,b)=>this.posScore(b.stats,slot.type)-this.posScore(a.stats,slot.type));
       let html='';
       if(cur) html+=`<button class="btn ghost" onclick="DG.unassign('${slot.sid}');DG.renderAssign()" style="margin-bottom:9px">✕ 이 자리 비우기 (현재 ${esc(cur.name)})</button>`;
       if(!list.length) html+='<p class="muted" style="text-align:center;padding:20px">편성할 무소속 연습생이 없어.<br>새로 육성하거나, 전속은 이미 데뷔한 그룹 소속이야.</p>';
@@ -5661,8 +5749,8 @@ window.addEventListener("popstate", ()=>{
         const label = isCur?'배치됨' : (dup? `${esc(otherPos)}→이동` : '배치');
         // #22 아바타/이름 탭 → 카드 정보 팝업(스탯·육각) 확인 후 배치
         return `<div class="ros-row${isCur?' cur':''}"><span class="ros-av" ${av} onclick="event.stopPropagation();DG.assignInfo(${r.rid})" style="cursor:pointer">${r.img?'':'🎤'}</span>
-          <div class="ros-m" onclick="DG.assignInfo(${r.rid})" style="cursor:pointer"><div class="ros-nm">${esc(r.name)} <span class="muted" style="font-size:12px">${r.grade}</span> <span style="font-size:11px;opacity:.6">ⓘ</span>${dup&&!isCur?` <span style="color:#18b06e;font-size:11px">● ${esc(otherPos)}</span>`:''}</div>
-            <div class="muted" style="font-size:12px">${snm} ${this.fitLabel(val)}</div></div>
+          <div class="ros-m" onclick="DG.assignInfo(${r.rid})" style="cursor:pointer"><div class="ros-nm">${esc(r.name)} <span style="font-size:11px;opacity:.6">ⓘ</span>${dup&&!isCur?` <span style="color:#18b06e;font-size:11px">● ${esc(otherPos)}</span>`:''}</div>
+            <div class="muted" style="font-size:12px">RUN 카드 × ${snm} 조합 · ${this.fitLabel(val)}</div></div>
           <button class="cr-btn" onclick="DG.pickForSlot(${r.rid})">${label}</button></div>`;}).join('');
       document.getElementById('assignList').innerHTML=html;
     },
@@ -5831,22 +5919,21 @@ window.addEventListener("popstate", ()=>{
       </div>`;
       if(onOpen) try{ onOpen(ov); }catch(e){}
     },
-    // 애정⑤ 캐릭터 반응 대사 — 등급·포지션·칭호·상태 기반 풀에서 픽(볼 때마다 다른 한마디)
+    // 애정⑤ 캐릭터 반응 대사 — 실력평가가 아니라 함께 만든 RUN·팬덤·관계 기반
     sayLineOf(r){
       const pool=[];
-      const top=this.idolTop(r.stats), rk=grank(r.grade);
+      const rk=grank(r.grade);
       // 최애 지정
       if(this.data.favRid===r.rid) pool.push('프로듀서님이 제일 좋아요 💖','오늘도 저만 봐줘요!','최애라니… 책임져요?',
         '프로듀서님 오늘 좀 멋있는데요?','저만 특별한 거 맞죠? 헤헤','최애 자리, 아무한테도 안 뺏겨요');
       // 잠금(방출 방지)
       if(r.locked) pool.push('절대 어디 안 갈 거예요 🔒','우린 끝까지 함께죠?','저 붙잡아줘서 고마워요','여기가 제 자리인걸요');
       // 칭호
-      if((r.titles||[]).includes('legend')) pool.push('전설은 하루아침에 안 나와요','정상의 공기는 달라요','여기까지 오는 길, 후회 없어요','제 이름이 곧 기록이죠');
-      else if((r.titles||[]).includes('star')) pool.push('스타성? 타고났죠 ⭐','무대 위에서 제일 빛나요','카메라는 절 사랑해요 📸','오늘도 눈부실 준비 완료!');
-      // 등급(성장 정도)
-      if(rk>=6) pool.push('연습 벌레라고 불러줘요','다음 무대가 벌써 기대돼요!','이 정도면 어디 내놔도 안 꿀려요','실력은 배신 안 하더라고요');
-      else if(rk>=4) pool.push('어제보다 나은 오늘!','조금만 더 하면 될 것 같아요','감 잡았어요, 이제부터 시작!','거울 속 제가 좀 달라졌어요');
-      else pool.push('아직 서툴러도… 열심히 할게요!','다음엔 꼭 잘 해낼게요','연습실이 제 집이에요','넘어져도 다시 일어날 거예요','서툰 만큼 성장할 곳도 많죠!');
+      if((r.titles||[]).includes('legend')) pool.push('우리 무대가 오래 기억됐으면 좋겠어요','여기까지 함께 온 시간이 자랑스러워요','다음 장면도 같이 만들어요');
+      else if((r.titles||[]).includes('star')) pool.push('이번 콘셉트, 팬분들이 좋아해 주겠죠? ⭐','카메라 동선까지 딱 맞았어요 📸','오늘 무대도 함께 완성해요!');
+      if(rk>=6) pool.push('이번 RUN은 우리 둘의 대표작 같아요','다음 무대가 벌써 기대돼요!','팬분들께 제대로 보여드릴 준비 끝!');
+      else if(rk>=4) pool.push('지난 RUN보다 호흡이 더 잘 맞아요','다음 회의에서 한 번 더 다듬어요','우리 콘셉트, 이제 감 잡았어요');
+      else pool.push('첫 초안도 우리만의 추억이죠','다음 RUN에서는 다른 방향도 해봐요','한 장면씩 같이 맞춰가요');
       // 팬덤 규모
       const fans=r.fans||0;
       if(fans>=50000) pool.push('팬분들 함성 들으면 힘이 솟아요 📣','이 사랑, 무대로 갚을게요');
@@ -5855,15 +5942,10 @@ window.addEventListener("popstate", ()=>{
       // 함께한 시간
       const days=Math.floor((Date.now()-(r.joinedAt||Date.now()))/86400000);
       if(days>=14) pool.push('벌써 이만큼 함께했네요, 든든해요','프로듀서님이랑 손발 척척이죠');
-      // 특기(주력 스탯)
-      const specSay={vocal:'제 고음, 오늘 컨디션 최고예요 🎵', acting:'가사 쓰면서 밤새운 거 티 나요? 🎤',
-        dance:'체력 하나는 자신 있어요, 무대 끝까지 뛰어요 💪', visual:'오늘 셀카 좀 잘 나왔는데 볼래요? 🤳',
-        charm:'제 텐션이면 분위기 책임지죠 🎙️', creative:'머릿속에 아이디어가 넘쳐요 🎛️'};
-      if(specSay[r.spec]) pool.push(specSay[r.spec]);
-      // 포지션 적합
-      const posSay={leader:'팀은 제가 챙길게요 🎖️', center:'센터 자리, 놓칠 수 없죠 🌟', vocal:'고음 듣고 갈래요? 🎵',
-        rapper:'제 플로우 못 따라와요 🎤', dancer:'춤출 때가 제일 행복해요 💪', producer:'좋은 곡 하나 만들었는데 들어볼래요? 🎛️'};
-      if(posSay[top.type]) pool.push(posSay[top.type]);
+      const directionSay={vocal:'이번엔 보컬 파트 배치를 더 과감하게 해봐요 🎵',acting:'랩 파트 동선까지 같이 맞춰봐요 🎤',
+        dance:'퍼포먼스 동선, 마지막 장면이 포인트예요 💪',visual:'이번 스타일링 무드보드 마음에 들어요 🤳',
+        charm:'팬분들과 지킬 다음 약속도 정해요 💬',creative:'다음 무대 콘셉트도 같이 짜봐요 🎛️'};
+      if(directionSay[r.runDirection]) pool.push(directionSay[r.runDirection]);
       // 공용 감성(항상 후보)
       pool.push('오늘도 잘 부탁해요, 프로듀서님!','저 믿고 있죠? 저도 절 믿어요','무대에서 만나요 ✨','열심히 한 만큼 보여줄게요');
       return pool[Math.floor(Math.random()*pool.length)];
@@ -5876,7 +5958,7 @@ window.addEventListener("popstate", ()=>{
     showRosterDetail(rid){ this.load(); const r=this.rosterById(rid); if(!r||!r.stats) return;
       const ts=this.topStat(r.stats), top=this.idolTop(r.stats), tier=this.gradeTier(r.grade);
       const sv=STATS.map(st=>({n:t(st.k==='creative'?'st_creative_short':'st_'+st.k),k:st.k,c:st.c,v:Math.round(r.stats[st.k]||0),g:grade(Math.round(r.stats[st.k]||0))}));
-      const rows=STATS.map(st=>{ const v=Math.round(r.stats[st.k]||0); return `<div style="display:flex;justify-content:space-between;padding:1px 0"><span>${st.ico} ${t('st_'+st.k)}</span><b style="color:${GRADE_COLOR[grade(v)]}">${grade(v)} · ${v}</b></div>`; }).join('');
+      const rows=STATS.map(st=>{ const v=Math.round(r.stats[st.k]||0), label=r.legacyRun?'재제작 필요':v>=500?'무대 준비 완료':v>=250?'집중 제작':v>=100?'다듬는 중':'첫 초안'; return `<div style="display:flex;justify-content:space-between;padding:1px 0"><span>${st.ico} ${t('st_'+st.k)}</span><b>${label}</b></div>`; }).join('');
       const commit=this.committedRids().has(rid), cg=commit?this.groupOfRid(rid):null;
       const tag = commit? `🏆 ${esc(cg?cg.name:'전속')}` : (this.lineupRids().indexOf(rid)>=0?'편성됨':'');
       const isFav=this.data.favRid===rid;
@@ -5885,18 +5967,18 @@ window.addEventListener("popstate", ()=>{
       const versions=[{run:r.runs||1,grade:r.grade,stats:r.stats,fans:r.fans||0,adopted:true,current:true,incomplete:r.incomplete},...memories.filter(m=>m.run!==(r.runs||1))];
       const album=versions.length?`<div class="version-album"><div class="va-head">VERSION ALBUM <span>${versions.length} RUNS</span></div>
         ${versions.slice(0,6).map(v=>{const vm=this.idolCardMeta({runs:v.run,stats:v.stats,grade:v.grade});
-          return `<div class="va-run ${v.current?'current':''} ${v.failed?'failed':''}"><b>RUN ${String(v.run||1).padStart(2,'0')}</b><span>${v.incomplete||v.failed?'미완성':(v.current?'대표 버전':(v.adopted?'신기록':'기억'))}</span><em>${esc(v.grade||'F')} · 최고 ${vm.best} · 팬 ${fmt(v.fans||0)}</em></div>`;}).join('')}</div>`:'';
+          return `<div class="va-run ${v.current?'current':''} ${v.failed?'failed':''}"><b>RUN ${String(v.run||1).padStart(2,'0')}</b><span>${r.legacyRun&&v.current?'이전 체계':v.incomplete||v.failed?'미완성':(v.current?'전시 RUN':(v.adopted?'BEST RUN':'추억'))}</span><em>${r.legacyRun&&v.current?'새 방향으로 재제작 필요':`RUN 완성도 ${esc(v.grade||'F')} · 팬 ${fmt(v.fans||0)}`}</em></div>`;}).join('')}</div>`:'';
       // 애정⑥ 함께한 기록
       const days=Math.max(1, Math.floor((Date.now()-(r.joinedAt||Date.now()))/86400000)+1);
       const back=`<div class="fb-name">${isFav?'💖 ':''}${esc(r.name)}</div>
         <div class="fb-sub">IDOL CARD · RUN ${(r.runs||1)} · ★${this.idolCardMeta(r).star}${commit?` · ${esc(cg?cg.name:'전속')}`:''}</div>
         <canvas id="rosRadar" width="340" height="340" style="width:150px;height:150px;margin:0 auto"></canvas>
-        <div class="fb-rows" style="margin-top:4px">${rows}</div>
+        <div class="fb-sub" style="margin-top:5px">이번 RUN 제작 로그</div><div class="fb-rows" style="margin-top:4px">${rows}</div>
         ${album}
         <div class="fb-sub" style="margin-top:7px">📔 함께한 지 <b style="color:#ffd35c">D+${days}</b> · 💗 팬 ${fmt(r.fans||0)}${(r.titles&&r.titles.length)?` · 🏅 칭호 ${r.titles.length}개`:''}</div>
         ${(r.titles&&r.titles.length)?`<div style="margin-top:5px"><div class="dg-titles">${r.titles.map(id=>this.titleChip(id)).join('')}</div></div>`:''}`;
       const actions = `
-          ${r.incomplete?`<button class="btn" style="flex:2;padding:13px 6px;min-width:0;white-space:nowrap" onclick="var o=document.getElementById('ov');o.className='ov';o.onclick=null;DG.retrain(${rid})">오디션 재도전</button>`
+          ${r.incomplete||r.legacyRun?`<button class="btn" style="flex:2;padding:13px 6px;min-width:0;white-space:nowrap" onclick="var o=document.getElementById('ov');o.className='ov';o.onclick=null;DG.retrain(${rid})">${r.legacyRun?'새 RUN으로 재제작':'오디션 재도전'}</button>`
             :(!commit&&this.lineupRids().indexOf(rid)<0?`<button class="btn" style="flex:2;padding:13px 6px;min-width:0;white-space:nowrap" onclick="var o=document.getElementById('ov');o.className='ov';o.onclick=null;DG.doQuick(${rid})">＋ 편성</button>`:'')}
           <button class="btn ghost" style="flex:0 0 54px;padding:13px 0" onclick="DG.toggleFav(${rid})" title="최애 지정">${isFav?'💖':'🤍'}</button>
           ${!commit?`<button class="btn ghost" style="flex:0 0 54px;padding:13px 0" onclick="DG.toggleLock(${rid})" title="잠금(방출 방지)">${r.locked?'🔒':'🔓'}</button>`:''}
@@ -5940,7 +6022,7 @@ window.addEventListener("popstate", ()=>{
       // 재율애비: '이미 배치된 칸도 수정' = 전속(commit) 자리만 두고 나머지 전역 재배치
       const newLineup={}, usedRid=new Set(), usedKey=new Set();
       slotList.forEach(s=>{ const rid=this.data.lineup[s.sid]; if(rid && this.isCommitted(rid)){ newLineup[s.sid]=rid; usedRid.add(rid); const r=this.rosterById(rid); if(r)usedKey.add(r.idkey); } });
-      const pool=(this.data.roster||[]).filter(r=>!r.incomplete&&!this.isCommitted(r.rid) && !usedRid.has(r.rid));
+      const pool=(this.data.roster||[]).filter(r=>this.isEligibleRosterMember(r)&&!this.isCommitted(r.rid) && !usedRid.has(r.rid));
       // (열린 빈슬롯 × 가용 연습생) 모든 쌍을 점수순 그리디 배정 → 포지션순 그리디보다 전역 최적에 근접
       const pairs=[];
       slotList.forEach(s=>{ if(newLineup[s.sid])return; pool.forEach(r=>pairs.push({sid:s.sid, rid:r.rid, idkey:r.idkey, sc:this.posScore(r.stats,s.type)})); });
@@ -6034,7 +6116,7 @@ window.addEventListener("popstate", ()=>{
       this._debutLogo=this.agency().logo||'🏢';
       // 편성 멤버 미리보기 (포지션 순)
       const mem=this.slots().map(s=>{ const rid=this.data.lineup[s.sid]; if(!rid) return null;
-        const r=this.rosterById(rid); if(!r) return null;
+        const r=this.rosterById(rid); if(!this.isEligibleRosterMember(r)) return null;
         const av=r.img?`style="background-image:url('${r.img}')"`:'';
         return `<div style="width:84px;text-align:center"><span class="dg-av" ${av} style="margin:0 auto">${r.img?'':'🎤'}</span>
           <div class="dg-nm" style="margin-top:3px">${esc(r.name)}</div><div class="muted" style="font-size:11px">${this.slotIco(s)} ${this.slotNm(s)}</div></div>`;
@@ -6130,10 +6212,11 @@ window.addEventListener("popstate", ()=>{
       const readyCount=(this.data.roster||[]).filter(r=>!r.incomplete).length;
       const keptAfterFail=!!(idolR&&!res.debuted&&!idolR.incomplete);
       const needScout=!!(idolR&&res.debuted&&!idolR.incomplete&&readyCount<3);
+      const readyForLineup=!!(idolR&&res.debuted&&!idolR.incomplete&&!idolGroup&&readyCount>=3);
       const idolReveal=idolR?`<div class="res-idol-reveal">
         <div class="res-card-kicker">${idolR.incomplete?'TRY AGAIN CARD':keptAfterFail?'RUN RECORDED':((idolR.runs||1)>1?'BEST VERSION UPDATED':'NEW IDOL CARD')}</div>
         ${this.idolCardHTML(idolR,{cls:'result-idol-card',state:idolR.incomplete?'incomplete':(keptAfterFail?'complete':'new'),onclick:`DG.showRosterDetail(${idolR.rid})`})}
-        <div class="res-card-copy"><b>${esc(idolR.name)} ${idolR.incomplete?'미완성 카드가 남았어':keptAfterFail?'기존 최고 카드를 유지했어':'카드가 영구 보관됐어'}</b><span>${idolR.incomplete?'이 아이로 다시 도전하면 정식 카드 완성':keptAfterFail?'이번 실패 기록은 버전 앨범에 보관됨':(this.idolCardMeta(idolR).star>=5?'최고 단계 완성':`다음 ★ 조건 · ${this.idolCardMeta(idolR).need?this.idolCardMeta(idolR).need+'회 + ':''}최고 ${this.idolCardMeta(idolR).nextScore}`)}</span></div>
+        <div class="res-card-copy"><b>${esc(idolR.name)} ${idolR.incomplete?'미완성 카드가 남았어':keptAfterFail?'기존 최고 카드를 유지했어':'카드가 영구 보관됐어'}</b><span>${idolR.incomplete?'이 아이로 다시 도전하면 정식 카드 완성':keptAfterFail?'이번 실패 기록은 버전 앨범에 보관됨':(this.idolCardMeta(idolR).star>=5?'최고 단계 완성':`다음 ★ 조건 · ${this.idolNextGoal(this.idolCardMeta(idolR))}`)}</span></div>
       </div>`:'';
       box.innerHTML=`<div class="dg-res">${rec}<div class="dg-res-slot">${res.joinMsg}</div>${thanks}${bondResult}
         ${idolReveal}
@@ -6141,15 +6224,19 @@ window.addEventListener("popstate", ()=>{
         <div class="dg-res-cards"><b>SUPPORT CARD · 다음 육성 장비</b><div class="dg-chips" style="margin-top:6px">${chips}</div></div>
         ${goalPull}
         ${needScout?`<button class="btn" onclick="Game.goSelect()" style="margin-top:10px">새 아이돌 육성 · ${readyCount}/3</button>`:''}
-        ${idolR?`<button class="btn ${needScout?'ghost':''}" onclick="DG.retrain(${idolR.rid})" style="margin-top:${needScout?'9':'10'}px">${esc(idolR.name)} ${idolR.incomplete||keptAfterFail?'다시 도전':'재육성 · 다음 ★ 도전'}</button>`:''}
+        ${readyForLineup?`<button class="btn" onclick="DG.go();DG.editLineup()" style="margin-top:10px">📋 데뷔조 편성 · ${readyCount}/3 준비 완료</button>`:''}
+        ${idolR?`<button class="btn ${(needScout||readyForLineup)?'ghost':''}" onclick="DG.retrain(${idolR.rid})" style="margin-top:${(needScout||readyForLineup)?'9':'10'}px">${esc(idolR.name)} ${idolR.incomplete||keptAfterFail?'다시 도전':'재육성 · 다음 ★ 도전'}</button>`:''}
         ${res.debuted?`<button class="btn ghost" onclick="${idolGroup?'DG.showBattleLobby()':'DG.goRoster()'}" style="margin-top:9px">${idolGroup?`${esc(idolGroup.name)}에서 강화 확인`:'아이돌 카드 보관함 보기'}</button>`:''}
-        <button class="btn ghost" onclick="Game.goSelect()" style="margin-top:9px">＋ 새 아이돌 육성</button></div>`;
+        ${(!needScout&&!readyForLineup)?`<button class="btn ghost" onclick="Game.goSelect()" style="margin-top:9px">＋ 새 아이돌 육성</button>`:''}</div>`;
       if(res.debuted) setTimeout(()=>{ try{toast('연습생 숙소 합류! 📋');}catch(e){} }, 450);
       setTimeout(()=>{ try{ this.checkAchv(); }catch(e){} }, 1400);   // #7 완주 직후 업적 토스트
     },
     // 캐릭터 선택 → 육성카드 선택 단계로 (없으면 바로 시작)
     toCardPick(){
       this.load(); this.equipped=[];
+      // 실아이돌 DB의 고정 spec은 사용하지 않는다. 커스텀의 첫 선택만 초깃값으로 넘긴다.
+      if(!Game._retrainRid && Game.curMode==='custom' && Game.customSpec) Game.runDirection=Game.customSpec;
+      else Game.runDirection=null;
       this.renderCardPick(); show('s-cardpick');
     },
     retrain(rid){
@@ -6163,7 +6250,7 @@ window.addEventListener("popstate", ()=>{
       if(!idol){
         const isCustom=(r.idkey||'').startsWith('c:');
         idol={id:isCustom?'custom':((r.idkey||'').startsWith('i:')?(r.idkey||'').slice(2):r.idkey),
-          name:r.name,grp:r.grp||'',spec:r.spec,img:r.img||'',cat:r.cat||'F'};
+          name:r.name,grp:r.grp||'',img:r.img||'',cat:r.cat||'F'};
       }
       Game.curMode='search'; Game.selIdol=idol; Game.trainMode='quick';
       Game._retrainRid=rid;
@@ -6171,7 +6258,7 @@ window.addEventListener("popstate", ()=>{
       this.toCardPick();
     },
     renderCardPick(){
-      const box=document.getElementById('cardPickList'), hero=document.getElementById('cardPickHero'); if(!box) return;
+      const box=document.getElementById('cardPickList'), hero=document.getElementById('cardPickHero'), directionBox=document.getElementById('runDirectionPick'); if(!box) return;
       const types=this.ownedTypes();
       const idol=Game.selIdol||{}, rr=Game._retrainRid?this.rosterById(Game._retrainRid):null;
       const runs=Math.max(1,(rr&&rr.runs)||1);
@@ -6180,12 +6267,15 @@ window.addEventListener("popstate", ()=>{
         const draft=rr||{name:idol.name,img:idol.img,grade:'?',runs:1,stats:{}};
         const im=rr?this.idolCardMeta(rr):null;
         const photo=this.idolCardHTML(draft,{cls:'cph-idol-card',state:'training'});
+        const trendKey=TREND_STAT[(this.currentTrend()||{}).pos]||'vocal';
+        const directionPick=`<div class="run-direction"><div class="run-direction-head"><b>이번 RUN 핵심 무대</b><span>아이돌의 능력이 아니라<br>프로듀서의 제작 방향</span></div><div class="specpick">${STATS.map(s=>`<button type="button" class="sp ${Game.runDirection===s.k?'on':''}" onclick="DG.setRunDirection('${s.k}')"><span class="spico">${s.ico}</span>${esc(s.n)}${s.k===trendKey?'<small>시즌 추천</small>':'<small>&nbsp;</small>'}</button>`).join('')}</div>${Game.runDirection?`<div class="run-direction-effect"><b>${esc(STATNM[Game.runDirection])} 집중 제작</b> · 시작 준비 +18 · 해당 카드 성장 ×1.22 · 제작 시너지 18%${Game.runDirection===trendKey?' · 시즌 보정 ×1.25':''}</div>`:''}</div>`;
         hero.innerHTML=`${photo}<div class="cph-copy"><div class="cph-kicker">${Game._retrainRid?'IDOL CARD UPGRADE':'NEW IDOL CARD'}</div>
           <div class="cph-name">${esc(idol.name||'연습생')}</div>
-          <div class="cph-run">${Game._retrainRid?`${runs+1}회차 · 전 능력 계승 +${4+(im?im.star:1)*3} · ${im&&im.star>=5?'MAX 기록 갱신':`다음 ★ ${im&&im.need?im.need+'회 + ':''}최고 ${im?im.nextScore:55}`}`:'첫 육성 완료 시 영구 카드 생성'}</div>
-          <div class="cph-goal">목표 · ${rr?'최고 기록 갱신':'첫 기록 만들기'} <span>+ 지원 카드 1장 확정</span></div></div>`;
+          <div class="cph-run">${Game._retrainRid?`${runs+1}회차 · 제작 경험 계승 +${4+(im?im.star:1)*3} · ${im&&im.star>=5?'MAX RUN 갱신':`다음 ★ ${this.idolNextGoal(im)}`}`:'첫 육성 완료 시 영구 카드 생성'}</div>
+          <div class="cph-goal">목표 · ${rr?'BEST RUN 갱신':'첫 RUN 만들기'} <span>+ 지원 카드 1장 확정</span></div></div>`;
+        if(directionBox) directionBox.innerHTML=directionPick;
       }
-      const start=document.getElementById('cardPickStart'); if(start) start.textContent=`${idol.name||'연습생'} ${total}턴 육성 시작`;
+      const start=document.getElementById('cardPickStart'); if(start){ start.disabled=!Game.runDirection; start.textContent=Game.runDirection?`${idol.name||'연습생'} ${total}턴 제작 시작`:'이번 RUN 핵심 무대를 골라줘'; }
       // 지원카드는 아이돌 카드 성장을 돕는 장비. 탭=장착 토글(최대 2).
       box.innerHTML=`${types.length>1?`<button class="btn ghost pick-reco" onclick="DG.pickBest()">✨ 추천 덱 자동 장착</button>`:''}
       ${types.length?'':`<div class="empty-support-promise"><b>첫 육성 보상</b><span>${total}턴 완주 → ${esc(idol.name||'선택 아이돌')} ★1 영구 카드 + 첫 지원 카드 1장</span><small>첫 아이돌 카드는 성적과 관계없이 확정 등록돼</small></div>`}
@@ -6195,10 +6285,16 @@ window.addEventListener("popstate", ()=>{
           foot:`<div class="tc-meta" style="margin-top:2px">🔋 내구도 ${dur}/${this.DUR_MAX}</div>`});
       }).join('')}</div>`;
     },
-    // 추천 장착 = 레어도 → 강화 별 순 상위 2장 (⚠️단순 휴리스틱, 특기 시너지 계산은 후속)
+    setRunDirection(k){
+      if(!STATS.some(s=>s.k===k)) return;
+      Game.runDirection=k; this.renderCardPick();
+      try{sfx('click');}catch(e){}
+    },
+    // 추천 장착 = 레어도 → 강화 별 순 상위 2장 + 선택한 RUN 방향 보정
     pickBest(){ this.load();
-      const spec=(Game.selIdol&&Game.selIdol.spec)||'';
-      // 추천은 희귀도만 보지 않고 이번 아이돌의 특기 성장에 직접 맞는 장비를 우선한다.
+      const spec=Game.runDirection||'';
+      if(!spec){ try{toast('이번 RUN 핵심 무대를 먼저 골라줘');}catch(e){} return; }
+      // 추천은 희귀도만 보지 않고 이번 RUN 제작 방향에 맞는 장비를 우선한다.
       const rank=id=>this.rrOf(id)*10+this.bestStar(id)+((CARDS[id].eff.stat&&CARDS[id].eff.stat[spec])?100:0);
       this.equipped=this.ownedTypes().sort((a,b)=>rank(b)-rank(a)).slice(0,2);
       this.renderCardPick(); try{sfx('sparkle');}catch(e){}
@@ -6325,14 +6421,17 @@ window.addEventListener("popstate", ()=>{
       const art=artKey?`assets/emo/act-${artKey}.png`:'assets/mascot.png';
       const spk=(c.rr>=3&&!locked)?`<span class="spk" style="top:14px;left:10px">✦</span><span class="spk" style="top:46%;right:12px;animation-delay:.8s">✦</span><span class="spk" style="bottom:38px;left:16px;animation-delay:1.5s">✧</span>`:'';
       const isNew=!locked && !o.noNew && this.data.newCards && this.data.newCards[id];   // NEW 뱃지(상세 확인 전까지)
-      return `<div class="tcard ${cls}${locked?' locked':''}${o.cls?' '+o.cls:''}" ${o.attr||''}>
+      const interactive=!!(o.attr&&/onclick\s*=/.test(o.attr));
+      const tag=interactive?'button':'div';
+      const attrs=interactive?`type="button" aria-label="${esc(locked?'잠긴 지원 카드':c.nm+' 지원 카드')}" ${o.attr||''}`:(o.attr||'');
+      return `<${tag} class="tcard ${cls}${locked?' locked':''}${o.cls?' '+o.cls:''}" ${attrs}>
         <div class="tc-sheen"></div>${spk}${isNew?'<span class="tc-new">NEW</span>':''}
         <div class="tc-top"><span>${o.tag!=null?o.tag:esc(this.tcardCat(id))}</span><span class="tc-badge">${RARITY[c.rr]}</span></div>
         <div class="tc-art">${locked?'':`<img class="tc-art-img" src="${art}" alt="">`}<span class="tc-em">${locked?'❔':c.em}</span></div>
         <div class="tc-foot"><div class="tc-nm">${locked?'???':esc(c.nm)}</div>
           <div class="tc-meta">${o.meta!=null?o.meta:(locked?'':esc(this.cardDesc(id,star)))}</div>
           ${(!locked&&!o.noStars&&star>0)?`<div class="tc-stars">${'★'.repeat(Math.min(5,star))}</div>`:''}
-          ${o.foot||''}</div></div>`;
+          ${o.foot||''}</div></${tag}>`;
     },
     goForge(){ this.load(); this.forge=[null,null]; show('s-forge'); this.renderForge(); try{ if(window.Tut) Tut.onForge(); }catch(e){} },
     pickForge(slot){ this.load();
@@ -6602,13 +6701,20 @@ window.addEventListener("popstate", ()=>{
     renderLeagueBattle(){
       const el=document.getElementById('leagueBattle'); if(!el) return;
       const rep=this.repGroup();
-      if(!rep){ el.innerHTML=`<div class="lg-battle none">먼저 <b>사무실</b>에서 데뷔조를 ⭐대표로 지정하면 여기서 대결할 수 있어요</div>`; return; }
-      const bs=this.battleSeason(), tier=this.battleTier(bs.pts), mem=this.groupMembers(rep), bp=this.battlePower(mem);
+      if(!rep){ el.innerHTML=`<div class="lg-battle none">먼저 <b>사무실</b>에서 데뷔조를 ⭐대표로 지정하면 고스트 리그에 참가할 수 있어요</div>`; return; }
+      const mem=this.groupMembers(rep);
+      if(mem.length<3){
+        const rebuildRid=RunMigration.nextLegacyRid(this.data,rep), rebuild=rebuildRid!=null?this.rosterById(rebuildRid):null;
+        el.innerHTML=`<div class="lg-battle none"><b>📦 ${esc(rep.name)} 기록 보존 중</b><br><span class="muted">이전 체계 멤버를 새 RUN 카드로 재제작하면 고스트 리그에 다시 출전할 수 있어요.</span>
+          <button class="btn" style="width:100%;margin-top:10px" onclick="${rebuild?`DG.retrain(${rebuild.rid})`:'DG.goRoster()'}">${rebuild?`🔥 ${esc(rebuild.name)} 재제작`:'📋 그룹 기록 보기'}</button></div>`;
+        return;
+      }
+      const bs=this.battleSeason(), tier=this.battleTier(bs.pts), bp=this.battlePower(mem);
       el.innerHTML=`<div class="lg-battle">
         <div class="lgb-info"><span class="lgb-ic">${tier.ic}</span>
           <div style="min-width:0"><div class="lgb-nm">${this.logoHtml(rep.logo,18)} ${esc(rep.name)} · ${esc(tier.nm)}</div>
           <div class="lgb-sub">승점 <b>${bs.pts}</b>P · 전투력 ${bp.power.toLocaleString()} · ${bs.w||0}승 ${bs.l||0}패</div></div></div>
-        <button class="btn" style="width:100%;margin-top:10px" onclick="DG.showBattleLobby()">⚔️ 대결하러 가기</button></div>`;
+        <button class="btn" style="width:100%;margin-top:10px" onclick="DG.showBattleLobby()">👻 고스트 리그 입장</button></div>`;
     },
     setRankTab(tab){ this._rankTab=tab;
       const g=document.getElementById('rseg-group'), tr=document.getElementById('rseg-trainee');
@@ -6689,7 +6795,7 @@ window.addEventListener("popstate", ()=>{
             <div style="display:flex;align-items:center;gap:11px;justify-content:center">
               <span style="width:52px;height:52px;border-radius:50%;background:#3a3350 center/cover;${best.img?`background-image:url('${best.img}')`:''};border:2px solid var(--gold);flex:none"></span>
               <div style="text-align:left;min-width:0">
-                <div class="lg-tier-nm" style="font-size:17px">${esc(best.name)} <small style="font-size:12px;color:var(--sub)">${best.grade}등급</small></div>
+                <div class="lg-tier-nm" style="font-size:17px">${esc(best.name)} <small style="font-size:12px;color:var(--sub)">RUN 완성도 ${best.grade}</small></div>
                 <div class="lg-tier-sub">💗 팬 <b style="color:var(--accent)">${fmt(best.fans||0)}</b>${(best.titles&&best.titles.length)?` · 🏅 칭호 ${best.titles.length}개`:''}</div>
               </div></div></div>`;
         } else {
@@ -6751,21 +6857,22 @@ window.addEventListener("popstate", ()=>{
     groupFlipCard(g, opt){ opt=opt||{}; this.load();
       const lineup=opt.lineup||g.lineup, slots=opt.slots||g.slots||this.slots();
       const mem=slots.map(s=>{ const r=this.rosterById(lineup[s.sid]); return r?{type:s.type,r}:null;}).filter(Boolean);
-      const syn=this.groupSynergy(mem), bp=this.battlePower(mem);
+      const archived=mem.some(m=>m.r.legacyRun), syn=archived?{pct:0,list:[]}:this.groupSynergy(mem);
+      const bp=archived?{power:0,syn:0}:this.battlePower(mem);
       const isRep=g.gid!=null && g.gid===this.repGroupGid();
       const bs=isRep?this.battleSeason():null, tier=bs?this.battleTier(bs.pts):null;
       const lead=mem.find(m=>m.r.img)||mem[0];
       // C. 앞면 3인 사선 = 리더(고정) + 리더 제외 posScore 상위 2인 (센터 없는 덱도 성립)
       const leaderM=mem.find(m=>m.type==='leader')||mem[0];
-      const rest=mem.filter(m=>m!==leaderM).slice().sort((a,b)=>this.posScore(b.r.stats,b.type)-this.posScore(a.r.stats,a.type));
+      const rest=archived?mem.filter(m=>m!==leaderM):mem.filter(m=>m!==leaderM).slice().sort((a,b)=>this.posScore(b.r.stats,b.type)-this.posScore(a.r.stats,a.type));
       const rep3=[leaderM,...rest].filter(Boolean).slice(0,3);
       const members=rep3.map(m=>({img:m.r.img, em:'🎤'}));
       const gtier=this.gradeTier(g.grade!=null?g.grade:(bp?grade(Math.round(bp.base/Math.max(1,mem.length))):'C'));
       const front=this.ucardHTML({members, img:lead&&lead.r.img, em:(g.logo&&String(g.logo).length<4)?g.logo:'🎤', name:g.name||'데뷔조', tier:gtier,
-        badge:g.grade||'', tag:tier?`${tier.ic}${tier.nm}`:'', stars:'★'.repeat(gtier+1),
-        sub: bs?`승점 ${bs.pts||0}P · ${bs.w||0}승 ${bs.l||0}패`:`⚔️ 전투력 ${fmt(bp.power)}`, pos:`👥 ${mem.length}인`});
+        badge:archived?'ARCHIVE':(g.grade||''), tag:archived?'재제작 필요':(tier?`${tier.ic}${tier.nm}`:''), stars:'★'.repeat(gtier+1),
+        sub:archived?'이전 체계 그룹 기록 보존':(bs?`승점 ${bs.pts||0}P · ${bs.w||0}승 ${bs.l||0}패`:`⚔️ 전투력 ${fmt(bp.power)}`), pos:`👥 ${mem.length}인`});
       const back=`<div class="fb-name">${this.logoHtml(g.logo,20)} ${esc(g.name||'데뷔조')}</div>
-        <div class="fb-sub">${g.grade?g.grade+'등급 · ':''}⚔️ 전투력 ${fmt(bp.power)} · 시너지 +${bp.syn}%</div>
+        <div class="fb-sub">${archived?'이전 체계 그룹 · 기록은 보존됨 · 새 RUN 카드로 재제작 필요':`${g.grade?'그룹 완성도 '+g.grade+' · ':''}⚔️ 무대 전투력 ${fmt(bp.power)} · 시너지 +${bp.syn}%`}</div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:9px">${mem.map(m=>`<div style="text-align:center;min-width:0">
           ${m.r.img?`<span style="display:block;width:54px;height:54px;border-radius:50%;background:url('${m.r.img}') center/cover;margin:0 auto;border:2px solid rgba(255,255,255,.5)"></span>`:'<span style="display:flex;width:54px;height:54px;border-radius:50%;background:#3a3350;align-items:center;justify-content:center;margin:0 auto;font-size:26px">🎤</span>'}
           <div style="font-size:11.5px;font-weight:600;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(m.r.name)}</div>
@@ -6776,13 +6883,13 @@ window.addEventListener("popstate", ()=>{
       const shareArgs=[JSON.stringify(g.name||'데뷔조'),JSON.stringify(g.grade||''),bp.power,bp.syn].join(',');
       // 카드 밑 액션: 공유 + (저장된 내 그룹이면) 해체. 해체는 disbandGroup에서 랭킹 기록 소실 경고+확인.
       const disbandBtn = (g.gid!=null) ? `<button class="btn ghost" style="flex:0 0 auto;color:#ff7d95" onclick="var o=document.getElementById('ov');o.className='ov';o.onclick=null;DG.disbandGroup(${g.gid})">🗑️ 해체</button>` : '';
-      const actions=`<button class="btn ghost" style="flex:1" onclick='DG.shareGroupText(${shareArgs})'>🔗 공유하기</button>${disbandBtn}`;
+      const actions=`${archived?'<button class="btn ghost" style="flex:1" onclick="var o=document.getElementById(\'ov\');o.className=\'ov\';o.onclick=null;DG.goRoster()">🔥 멤버 재제작하기</button>':`<button class="btn ghost" style="flex:1" onclick='DG.shareGroupText(${shareArgs})'>🔗 공유하기</button>`}${disbandBtn}`;
       this.showFlipCard(front, back, actions, null);
     },
     // 그룹 공유 = 텍스트 요약 + 게임 링크(이미지 생성 안 함)
     shareGroupText(name, grade, power, syn){
       const url=location.origin+location.pathname;
-      const text=`🎬 우리 데뷔조 「${name}」${grade?' · '+grade+'등급':''} · ⚔️전투력 ${fmt(power)} · 시너지 +${syn}%\n프로젝트 최애돌에서 나도 신인 그룹 키우기!`;
+      const text=`🎬 우리 데뷔조 「${name}」${grade?' · 그룹 완성도 '+grade:''} · ⚔️무대 전투력 ${fmt(power)} · 시너지 +${syn}%\n프로젝트 최애돌에서 나도 신인 그룹 키우기!`;
       try{ if(navigator.share){ navigator.share({title:'프로젝트 최애돌', text, url}).catch(e=>{ if(e.name!=='AbortError') Game.copyLink(url); }); return; } }catch(e){}
       Game.copyLink(url);
     },
@@ -6802,13 +6909,14 @@ window.addEventListener("popstate", ()=>{
           <div style="display:flex;justify-content:space-between;padding:2px 0"><span>🏆 승점</span><b>${(r.pts||0).toLocaleString()}P</b></div>
           <div style="display:flex;justify-content:space-between;padding:2px 0"><span>👥 멤버</span><b>${r.n||0}/9</b></div>
         </div>
-        <p class="fb-sub" style="margin-top:auto;padding-top:8px">대결은 홈 대표그룹 ⚔️ 로비에서!</p>`;
+        <p class="fb-sub" style="margin-top:auto;padding-top:8px">고스트 대결은 홈 대표그룹 👻 리그에서!</p>`;
       this.showFlipCard(front, back, '');
     },
     renderLeague(serverList){
       this.load();
       const _rg=this.repGroup();   // 순위전엔 대표 데뷔조 1팀만 출전
-      const mine=_rg? [{name:_rg.name, logo:_rg.logo||'🎤', score:this.groupScore(_rg), pts:this.battleSeason().pts, n:_rg.n||0, me:true}] : [];
+      const _canCompete=_rg&&this.groupMembers(_rg).length>=3;
+      const mine=_canCompete? [{name:_rg.name, logo:_rg.logo||'🎤', score:this.groupScore(_rg), pts:this.battleSeason().pts, n:_rg.n||0, me:true}] : [];
       let others=(Array.isArray(serverList)&&serverList.length)? serverList.concat(this._leagueSeed()).slice(0,14) : this._leagueSeed();   // 서버 그룹 + 더미(시드) 보충
       if(_rg) others=others.filter(o=>o.name!==_rg.name);   // 서버에 올라간 내 대표그룹이 fetch로 되돌아온 중복 제거(내 그룹은 mine으로 따로 표시)
       const _myAg=(this.agency()&&this.agency().name)||'';
@@ -6824,7 +6932,7 @@ window.addEventListener("popstate", ()=>{
             <div class="lg-tier-ic">${tier.ic}</div><div class="lg-tier-nm">${esc(tier.nm)}</div>
             <div class="lg-tier-sub">${this.logoHtml(myBest.logo,20)} ${esc(myBest.name)} · 승점 <b>${bs.pts}</b> · ${bs.w||0}승 ${bs.l||0}패</div>
             <div class="lg-rank-badge">시즌 ${this.seasonNo()} · D-${this.seasonEndsInDays()} · ${t("lg_rank",{r:rank})}</div>
-            <button class="btn" style="margin-top:10px;width:100%" onclick="DG.showBattleLobby()">⚔️ 배틀 로비 — 대결하러 가기</button></div>`;
+            <button class="btn" style="margin-top:10px;width:100%" onclick="DG.showBattleLobby()">👻 고스트 리그 입장</button></div>`;
         } else {
           head.innerHTML=`<div class="lg-head"><div class="lg-tier-ic">🎬</div>
             <div class="lg-tier-nm">${t("lg_none_t")}</div>
@@ -6848,8 +6956,8 @@ window.addEventListener("popstate", ()=>{
       }
       const note=document.getElementById('leagueNote');
       if(note) note.textContent = this._leagueServer
-        ? 'P = 시즌 승점(대결 승리로 획득) · 글로벌 기록 연결됨'
-        : 'AI 라이벌 리그 · 서버 연결 전에는 이 기기 안에서만 진행';   // 서버 실패를 글로벌 경쟁처럼 위장하지 않음
+        ? '저장된 글로벌 그룹 기록과 비동기 대결 · 승패는 이 기기에서 판정'
+        : 'AI 고스트 리그 · 서버 연결 전에는 이 기기 안에서만 진행';
     },
     editAgency(){ this.renderAgency(); show('s-agency'); },
     exitAgency(){ this.load(); if(this.data.agency) this.go(); else Game.reset(); },   // 첫 설정 중이면 타이틀로
@@ -6867,8 +6975,7 @@ window.addEventListener("popstate", ()=>{
         <p class="muted" style="text-align:center;font-size:12px;margin:4px 0 12px">이번 시즌 트렌드 «${trend.ic} ${esc(trend.nm)}» — 맞는 포지션 몰이는 <b>×1.5</b> 🔥</p>
         ${rows}
         <div style="background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:12.5px;line-height:1.6;margin-top:6px">
-          <b>시너지 상한 +40%</b><br><span class="muted">육성이 메인이라, 조합빨이 육성빨을 못 이기게 상한을 뒀어. 깡스탯이 강하면 트렌드 무시하고 이길 수 있어.</span>
-          ${syn.capped?`<br><b style="color:#f0a01e">지금 상한 도달!</b> <span class="muted">(원래 +${syn.raw}% → +40%로 제한)</span>`:''}
+          <b>시너지는 조합한 만큼 누적</b><br><span class="muted">상한은 없지만 각 보너스는 작아. 기본 무대 전투력이 중심이고, 여러 조합을 맞추면 추가 이점을 얻어.</span>
         </div>
         <button class="btn" style="margin-top:12px" onclick="var o=document.getElementById('ov');o.className='ov';o.onclick=null">확인</button></div>`;
     },
@@ -6880,7 +6987,7 @@ window.addEventListener("popstate", ()=>{
           this.confirmModal({title:'마지막 확인', danger:true, ok:'초기화 실행', cancel:'역시 그만',
             body:`이 기기의 진행이 <b style="color:#e5555f">영구 삭제</b>돼.<br>계속할까?`,
             onOk:()=>{
-              try{ localStorage.removeItem(KEY()); localStorage.removeItem('idol_save');
+              try{ StorageJournal.clear(localStorage,KEY(),KEY()+'_backup_v1'); StorageJournal.clear(localStorage,RUN_SAVE_KEY,RUN_BACKUP_KEY);
                 localStorage.removeItem('dg_fav_greet'); localStorage.removeItem('dg_best_fans');
                 localStorage.removeItem('idol_seen_intro'); localStorage.removeItem('dg_tut_v2'); }catch(e){}
               try{ Game.st=null; Game._finished=false; }catch(e){}
@@ -6966,12 +7073,13 @@ window.addEventListener("popstate", ()=>{
           else { x.fillStyle='#322748'; x.beginPath(); x.arc(cx,cy,R,0,7); x.fill(); x.font="52px 'Apple Color Emoji','Noto Color Emoji',sans-serif"; x.fillText('🎤',cx,cy+18); }
           x.beginPath(); x.arc(cx,cy,R,0,7); x.lineWidth=4.5; x.strokeStyle='#ff5fa2'; x.stroke();
           x.fillStyle='#ffffff'; fit(m.r.name,R*2+34,'800',28); x.fillText(m.r.name, cx, cy+R+38);
-          x.fillStyle=gcolor(grade(m.val)); x.font=`900 26px ${FF}`; x.fillText(`${grade(m.val)}·${m.val}`, cx, cy+R+70);
+          const contrib=m.val>=500?'핵심 기여':m.val>=300?'안정 기여':'성장 기여';
+          x.fillStyle='#ffd35c'; x.font=`800 24px ${FF}`; x.fillText(contrib, cx, cy+R+70);
         }
       }
       x.fillStyle='#241c3e'; x.strokeStyle='rgba(255,255,255,.18)'; x.lineWidth=2.5; rr(80,1188,W-160,116,24); x.fill(); x.stroke();
       const gAll = filled? grade(Math.round(sum/filled)) : '–';
-      x.textAlign='left'; x.fillStyle='#c3b6dd'; x.font=`600 26px ${FF}`; x.fillText('데뷔조 종합', 128, 1236);
+      x.textAlign='left'; x.fillStyle='#c3b6dd'; x.font=`600 26px ${FF}`; x.fillText('그룹 완성도', 128, 1236);
       x.fillStyle='#ff5fa2'; x.font=`900 48px ${FF}`; x.fillText(gAll, 128, 1288);
       x.textAlign='right'; x.fillStyle='#c3b6dd'; x.font=`600 26px ${FF}`; x.fillText('멤버', W-128, 1236);
       x.fillStyle='#f0a01e'; x.font=`900 42px ${FF}`; x.fillText(`${filled}/9`, W-128, 1288);
@@ -7121,12 +7229,19 @@ window.addEventListener("popstate", ()=>{
           body:`먼저 <b>첫 연습생</b>부터 발굴해야 해요! 아래 <b>첫 최애 선택하기</b> 버튼을 눌러봐요.`,
           tap:'첫 최애 선택하기', step:'1/5' });
       }
-      // 스텝3: 완주 연습생 있고 아직 데뷔 그룹 없음 → 편성 안내(정보형)
-      if(roster.length>0 && groups.length===0 && gi.n<3 && !this.did('s3_lineup')){
+      // 아직 3명이 안 모였으면 현재 홈에 없는 포지션 칸 대신 다음 스카우트를 안내한다.
+      if(roster.length>0 && roster.filter(r=>!r.incomplete).length<3 && groups.length===0 && gi.n<3 && !this.did('s3_lineup')){
         return this.spot({ id:'s3_lineup', mascot:'🐤', place:'above',
-          get:()=>document.querySelector('#dgGroup .dg-slot')||document.querySelector('#homeCta .hw-wide'),
-          body:`연습생이 <b>숙소</b>에 모였어요! 포지션 칸을 눌러 <b>3명 이상</b> 배치하면 데뷔조가 완성돼요. (한 명씩 육성해서 모으는 거예요)`,
+          get:()=>document.querySelector('#s-office.on .hs3-primary')||document.querySelector('#homeCta .btn'),
+          body:`첫 연습생이 <b>숙소</b>에 합류했어요! 이제 다른 최애도 한 명씩 육성해 <b>3명</b>을 모으면 첫 데뷔조를 만들 수 있어요.`,
           cta:'알겠어요!', step:'3/5' });
+      }
+      // 3명이 모였지만 아직 미편성이면 첫 데뷔조 만들기를 다음 한 행동으로 고정한다.
+      if(roster.filter(r=>!r.incomplete).length>=3 && groups.length===0 && gi.n<3 && !this.did('s3_form')){
+        return this.spot({ id:'s3_form', mascot:'🐤', place:'above',
+          get:()=>document.querySelector('#s-office.on .hs3-primary'),
+          body:`데뷔 후보 <b>3명</b>이 모두 모였어요! 이제 <b>포지션 직접 고르기</b>에서 리더·센터·댄서를 정하면 첫 그룹을 데뷔시킬 수 있어요.`,
+          tap:'첫 데뷔조 편성', step:'3/5' });
       }
       // 스텝4a: 데뷔 준비(3인+) → 데뷔 버튼
       if(groups.length===0 && gi.n>=3 && !this.did('s4_debut')){
@@ -7135,63 +7250,63 @@ window.addEventListener("popstate", ()=>{
           body:`데뷔조 3명 완성! 🎉 이제 <b>🎬 데뷔시키기</b>로 그룹을 세상에 내보내요.`,
           tap:'데뷔시키기 누르기', step:'4/5' });
       }
-      // 스텝4b: 대표 그룹 생김 → 경쟁전(대결) 안내
+      // 스텝4b: 대표 그룹 생김 → 고스트 리그 안내
       if(groups.length>0 && !this.did('s4_battle')){
         return this.spot({ id:'s4_battle', mascot:'🐤', place:'above',
           get:()=>[...document.querySelectorAll('.hero-stage3 .btn')].find(b=>/대결/.test(b.textContent||'')),
-          body:`그룹 데뷔 축하해요! 🏆 이제 <b>⚔️ 대결하러 가기</b>로 다른 그룹과 겨뤄 시즌 승점을 올려봐요. 이게 <b>경쟁전</b>이에요.`,
-          tap:'대결하러 가기', step:'4/5' });
+          body:`그룹 데뷔 축하해요! 🏆 이제 <b>👻 고스트 리그</b>에서 저장된 다른 그룹 기록과 겨뤄 시즌 승점을 올려봐요.`,
+          tap:'고스트 리그 입장', step:'4/5' });
       }
     },
     onSelect(){
       if(!this.on() || !this.did('s2_cta') || this.did('s2_pick')) return;
       this.spot({ id:'s2_pick', mascot:'🐤', place:'below',
-        get:()=>document.querySelector('#idolGrid .card'),
-        body:`맘에 드는 <b>원석</b>을 골라요! (여기선 갓 발굴된 신인이에요) 아무나 눌러 선택해봐요.`,
-        tap:'연습생 한 명 선택', step:'2/5' });
+        get:()=>document.getElementById('idolSearch'),
+        body:`이름이나 그룹을 검색하거나 목록을 둘러보고, <b>내가 정말 키우고 싶은 최애</b>를 직접 골라요. 선택은 프로듀서님 몫이에요.`,
+        cta:'직접 고를게요', step:'2/5' });
     },
     onSelectReady(){
       if(!this.on() || !this.did('s2_pick') || this.did('s2_start')) return;
       if(!document.querySelector('#s-select.on')) return;
       this.spot({ id:'s2_start', mascot:'🐤', place:'above',
         get:()=>document.getElementById('startBtn'),
-        body:`좋아요! 이제 <b>육성 시작</b>을 눌러 ${Game.trainMode==='quick'?12:24}턴 트레이닝을 시작해요.`,
-        tap:'육성 시작 누르기', step:'2/5' });
+        body:`좋아요! 이제 <b>육성 시작</b>을 눌러 이번 RUN의 무대 방향과 지원 덱을 정해요.`,
+        tap:'제작 준비로 이동', step:'2/5' });
     },
     onPlay(w){
       if(!this.on() || !this.did('s2_start')) return;
       if(w===1 && !this.did('s2_train1')){
         return this.spot({ id:'s2_train1', mascot:'🐰', place:'above',
           get:()=>document.querySelector('#actionBox .act.spec')||document.querySelector('#actionBox .act'),
-          body:`트레이닝 시작! 매주 <b>카드 3장</b> 중 하나를 골라요. <b>⭐특기</b> 카드는 특히 잘 커요. 눌러서 첫 훈련!`,
-          tap:'카드 눌러 훈련', step:'2/5' });
+          body:`무대 제작 시작! 매 턴 <b>카드 3장</b> 중 하나를 골라요. <b>⭐핵심 무대</b> 카드는 이번 RUN 방향과 맞아 시너지가 커요.`,
+          tap:'첫 제작 카드 선택', step:'2/5' });
       }
       if(w===2 && !this.did('s2_train2')){
         return this.spot({ id:'s2_train2', mascot:'🐰', place:'above',
           get:()=>document.querySelector('#actionBox .act.spec')||document.querySelector('#actionBox .act'),
-          body:`이렇게 매주 훈련해 스탯을 키워요. 중간에 <b>데뷔심사·음방·대상</b> 같은 관문도 만나고, 컨디션이 낮으면 <b>휴식</b>도 잊지 말아요. 이제 혼자서도 잘할 수 있어요 💪`,
-          tap:'한 번 더 훈련!', step:'2/5' });
+          body:`이렇게 매 턴 준비도를 쌓아요. 중간에 <b>오디션·서바이벌·파이널</b> 관문도 만나고, 일정이 빡빡하면 <b>휴식</b>도 잊지 말아요.`,
+          tap:'한 번 더 제작!', step:'2/5' });
       }
     },
     onResult(){
       if(!this.on() || !this.did('s2_start') || this.did('s3_result')) return;
       this.spot({ id:'s3_result', mascot:'🐤', place:'above',
-        get:()=>[...document.querySelectorAll('#s-end .btn')].find(b=>/숙소|편성/.test(b.textContent||''))||document.getElementById('againBtn'),
+        get:()=>[...document.querySelectorAll('#s-end .btn')].find(b=>/새 아이돌 육성|데뷔조 편성|숙소/.test(b.textContent||''))||document.getElementById('againBtn'),
         body:`첫 육성 완주 축하해요! 🎉 완주한 연습생은 <b>숙소</b>에 모여요. 데뷔조(3명)를 만들려면 이렇게 몇 명 더 키우면 돼요.`,
         cta:'좋아요!', step:'3/5' });
     },
     onTab(tab){
       if(!this.on()) return;
       const M={ roster:{m:'🐤', b:`📋 <b>숙소</b>예요. 완주한 연습생이 모이는 곳! 여기서 포지션에 배치해 데뷔조를 짜요.`},
-        cards:{m:'🐰', b:`🎴 <b>카드</b>예요. 육성 중 얻은 카드를 <b>합쳐(머지)</b> 강하게 만들고, 다음 육성에 <b>장착</b>해 더 세게 키워요.`},
-        ranking:{m:'🐤', b:`🏆 <b>차트</b>예요. 내 그룹이 시즌 승점으로 다른 그룹들과 겨뤄요. 여기서 대결(경쟁전)도 들어가요.`},
+        cards:{m:'🐰', b:`🎴 <b>지원 카드</b>예요. 다음 RUN 덱에 최대 2장을 <b>장착</b>해 시작 준비도를 높여요. 같은 카드가 더 모이면 조합소에서 강화할 수 있어요.`},
+        ranking:{m:'🐤', b:`🏆 <b>차트</b>예요. 내 그룹의 시즌 승점과 다른 그룹 기록을 봐요. 대결은 <b>고스트 리그</b>에서 진행해요.`},
         menu:{m:'🐰', b:`☰ <b>메뉴</b>예요. 업적·도감·설정이 여기 있어요. 튜토리얼도 여기서 다시 볼 수 있어요.`} };
       const info=M[tab]; if(!info) return; const id='tab_'+tab; if(this.did(id)) return;
       setTimeout(()=>this.spot({ id, mascot:info.m, place:'above',
         get:()=>document.querySelector(`#tabbar .tab[data-tab="${tab}"]`),
         body:info.b, cta:'확인', step:'5/5' }), 280);
     },
-    // 상세화: 조합소·경쟁전 로비 첫 진입 설명(모든 요소 숙지)
+    // 상세화: 조합소·고스트 리그 첫 진입 설명
     onForge(){
       if(!this.on() || this.did('tut_forge')) return;
       setTimeout(()=>this.spot({ id:'tut_forge', mascot:'🐰', place:'below',
@@ -7203,7 +7318,7 @@ window.addEventListener("popstate", ()=>{
       if(!this.on() || this.did('tut_lobby')) return;
       setTimeout(()=>this.spot({ id:'tut_lobby', mascot:'🐤', place:'below',
         get:()=>document.getElementById('micBar')||document.querySelector('#s-battle .lg-head'),
-        body:`⚔️ <b>대결 로비</b>예요. 🎤<b>마이크</b> 1개로 대결 1번(지면 소모·이기면 유지, 시간 지나면 충전). 내 승점과 비슷한 상대 3팀이 잡혀요 — 이기면 승점↑ <b>티어 승급</b>!`,
+        body:`👻 <b>고스트 리그</b>예요. 저장된 상대 기록을 불러와 이 기기에서 승패를 판정해요. 🎤<b>마이크</b> 1개로 대결 1번, 이기면 승점↑ <b>티어 승급</b>!`,
         cta:'좋아요!', step:'📖' }), 420);
     }
   };
