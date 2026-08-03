@@ -244,13 +244,21 @@ function playCard(card, state, random) {
   const comboMult = 1 + Math.min(0.6, (state.combo - 1) * 0.15);
   const trendMult = RunBalanceRules.trendMultiplier(stat, state.trendStat);
   const buffOn = Boolean(state.buff?.turns > 0);
-  const judgeKey = card.kind === 'rare' ? 'perfect' : rollJudge(state, random);
+  const judgeKey = card.kind === 'rare' ? 'great' : rollJudge(state, random);
   const judge = JUDGE[judgeKey];
-  const gain = judge.mult > 0
-    ? Math.round(card.base * judge.mult * growthMult(state[stat]) * (stat === state.spec ? 1.25 : 1)
-      * trendMult * state.cardGrowth * comboMult * (buffOn ? state.buff.mult : 1) * (0.9 + random() * 0.2))
-    : Math.round(card.base * judge.mult);
-  state[stat] = Math.max(0, Math.min(800, state[stat] + gain));
+  const growth = RunBalanceRules.growthOutcome({
+    base: card.base,
+    judgeMult: judge.mult,
+    current: state[stat],
+    growthMult: judge.mult > 0 ? growthMult(state[stat]) : 1,
+    talentMult: judge.mult > 0 && stat === state.spec ? 1.25 : 1,
+    trendMult: judge.mult > 0 ? trendMult : 1,
+    cardGrowth: judge.mult > 0 ? state.cardGrowth : 1,
+    comboMult: judge.mult > 0 ? comboMult : 1,
+    buffMult: judge.mult > 0 && buffOn ? state.buff.mult : 1,
+    randomMult: judge.mult > 0 ? 0.9 + random() * 0.2 : 1,
+  });
+  state[stat] = growth.next;
   state.fans += Math.max(0, Math.round((28 + state[stat] * 0.5) * (card.kind === 'light' ? 0.6 : 1) * judge.fanMult));
   if (card.kind === 'rare') {
     state.cond = Math.min(100, state.cond + 28);

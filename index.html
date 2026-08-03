@@ -1061,7 +1061,7 @@
 <script src="fandom-onboarding.js?v=b79c701b69"></script>
 <script src="season-edition.js?v=5b6e84402d"></script>
 <script src="beginner-flow.js?v=13f261628a"></script>
-<script src="run-balance-rules.js?v=7b52debd66"></script>
+<script src="run-balance-rules.js?v=7e1af59983"></script>
 <script src="stage-criteria.js?v=6d23aaaa14"></script>
 <script src="completion-transaction.js?v=8c3a470bcb"></script>
 <script src="product-telemetry.js?v=36d3c57a97"></script>
@@ -2020,7 +2020,12 @@ const Game = {
       const badge = c.kind==="rare"?'<span class="hc-tag">RARE ✦</span>'
         : c.kind==="burst"?'<span class="hc-tag" style="color:#ff7a4d">RISK ⚠</span>'
         : (spec?'<span class="spk">⭐</span>':'');
-      const impact=c.base?dgT('run.expectedGain',{stat:c.stat?stnm(c.stat):dgT('run.keyStage'),amount:Math.round(c.base*ci.mult)})+((s.mental<MENTAL_THRESH||cb==='bad')?' · '+dgT('run.accidentRisk'):'')
+      const impactStat=(c.kind==="rare"||c.kind==="burst")?s.runDirection:c.stat;
+      const nextCombo=s.comboStat===impactStat?(s.combo||0)+1:1;
+      const previewJudge=c.kind==="rare"?JUDGE.great:JUDGE.ok;
+      const preview=impactStat?RunBalanceRules.growthOutcome({base:c.base,judgeMult:previewJudge.mult,current:s[impactStat],growthMult:growthMult(s[impactStat]),talentMult:impactStat===s.runDirection?1.25:1,trendMult:RunBalanceRules.trendMultiplier(impactStat,_trendStat),cardGrowth:s.cardGrowth||1,comboMult:1+Math.min(.6,(nextCombo-1)*.15),buffMult:s.buff&&s.buff.turns>0?s.buff.mult:1,randomMult:1}):{applied:0};
+      const appliedPreview=preview.applied;
+      const impact=c.base?dgT('run.expectedGain',{stat:impactStat?stnm(impactStat):dgT('run.keyStage'),amount:appliedPreview})+((s.mental<MENTAL_THRESH||cb==='bad')?' · '+dgT('run.accidentRisk'):'')
         : c.kind==='rest'?dgT('run.recover')
         : c.kind==='live'?dgT('run.fansGain')
         : c.kind==='focus'?'3 TURN · +30%':dgT('run.specialEffect');
@@ -2071,8 +2076,8 @@ const Game = {
     }
     if(c.kind==="live"){
       const fan=140+Math.round(Math.random()*140); s.fans+=fan;
-      const k=STATS[Math.floor(Math.random()*STATS.length)].k, g=Math.round(12*mult*growthMult(s[k]));
-      const oldV=Math.round(s[k]); s[k]=Math.max(0,Math.min(800,s[k]+g)); s.cond=Math.max(0,s.cond-6);
+      const k=STATS[Math.floor(Math.random()*STATS.length)].k, rawGain=Math.round(12*mult*growthMult(s[k]));
+      const oldV=Math.round(s[k]); s[k]=Math.max(0,Math.min(800,s[k]+rawGain)); const g=Math.round(s[k])-oldV; s.cond=Math.max(0,s.cond-6);
       s.combo=0; s.comboStat=null;   // 무대=콤보 끊김
       this.trainReveal(s.idol,"charm","great",{cls:"dg",label:dgT('run.liveLabel'),emoji:"📺"},
         dgT('run.liveResult',{fans:`<b>${fmt(fan)}</b>`,stat:esc(t('st_'+k)),gain:`<b>${g}</b>`}), dgT('run.liveSay'),
@@ -2091,15 +2096,15 @@ const Game = {
     let trendStat=null; try{ if(window.DG&&DG.currentTrend) trendStat=TREND_STAT[DG.currentTrend().pos]; }catch(e){}
     const onTrend = stat===trendStat;
     const trendMult = RunBalanceRules.trendMultiplier(stat,trendStat);
-    // ⭐판정: rare=각성 확정. 나머지는 컨디션·멘탈이 확률에 가중된 rollJudge(대실패/실패/성공/대성공/각성).
-    const jk = (c.kind==="rare") ? "perfect" : rollJudge(s.cond, s.mental);
+    // ⭐판정: rare=대성공 확정. 나머지는 컨디션·멘탈이 확률에 가중된 rollJudge(대실패/실패/성공/대성공/각성).
+    // 각성(4.6배) 강제는 초반 한 장으로 성장 상한에 닿아 이후 선택을 무효화하므로 사용하지 않는다.
+    const jk = (c.kind==="rare") ? "great" : rollJudge(s.cond, s.mental);
     const J = JUDGE[jk]||JUDGE.ok;
     // gain: 판정 배율 태움. 실패계열=급감, 대실패(mult<0)=스탯 하락 = 진짜 리스크.
-    let g = J.mult>0
-      ? Math.round(c.base * J.mult * growthMult(s[stat]) * talent * trendMult * (s.cardGrowth||1) * comboMult * buffMult * rndv)
-      : Math.round(c.base * J.mult);
     const oldV=Math.round(s[stat]), oldG=grade(oldV), oldL=levelOf(oldV);
-    s[stat]=Math.max(0,Math.min(800,s[stat]+g));
+    const growth=RunBalanceRules.growthOutcome({base:c.base,judgeMult:J.mult,current:s[stat],growthMult:J.mult>0?growthMult(s[stat]):1,talentMult:J.mult>0?talent:1,trendMult:J.mult>0?trendMult:1,cardGrowth:J.mult>0?(s.cardGrowth||1):1,comboMult:J.mult>0?comboMult:1,buffMult:J.mult>0?buffMult:1,randomMult:J.mult>0?rndv:1});
+    s[stat]=growth.next;
+    let g=growth.applied;   // 상한/하한으로 잘린 양이 아니라 실제 반영된 성장량만 결과에 표시
     if(!s.trainCount)s.trainCount={}; s.trainCount[stat]=(s.trainCount[stat]||0)+1;
     const fanGain=Math.max(0,Math.round((28+s[stat]*0.5)*(c.kind==="light"?0.6:1)*J.fanMult)); s.fans+=fanGain;
     // 판정이 컨디션·멘탈에 피드백(대실패=급락→다음 판정 더 위험 = 긴장). rare만 好調 부여.

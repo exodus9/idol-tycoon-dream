@@ -11,7 +11,15 @@
     return !!isGate&&!won&&Math.max(1,Math.round(Number(runNo)||1))===1;
   }
   function trendMultiplier(stat,trendStat){ return stat&&stat===trendStat?1.25:1; }
+  function growthOutcome(input){
+    const p=input||{};
+    const num=(value,fallback=1)=>Number.isFinite(Number(value))?Number(value):fallback;
+    const current=num(p.current,0), cap=Math.max(0,num(p.cap,800));
+    const raw=Math.round(num(p.base,0)*num(p.judgeMult)*num(p.growthMult)*num(p.talentMult)*num(p.trendMult)*num(p.cardGrowth)*num(p.comboMult)*num(p.buffMult)*num(p.randomMult));
+    const next=Math.max(0,Math.min(cap,current+raw));
+    return Object.freeze({raw,applied:Math.round(next)-Math.round(current),next});
+  }
   function seasonNo(now){ return Math.max(0,Math.floor(((Number(now)||Date.now())-SEASON_EPOCH)/SEASON_MS)); }
   function trendStatAt(now){ return TREND_STATS[seasonNo(now)%TREND_STATS.length]; }
-  return Object.freeze({SEASON_MS,SEASON_EPOCH,TREND_STATS,protectsFirstGate,trendMultiplier,seasonNo,trendStatAt});
+  return Object.freeze({SEASON_MS,SEASON_EPOCH,TREND_STATS,protectsFirstGate,trendMultiplier,growthOutcome,seasonNo,trendStatAt});
 });
