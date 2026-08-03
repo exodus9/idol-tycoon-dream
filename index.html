@@ -1003,7 +1003,7 @@
 <!-- 콘텐츠(다국어·아이돌DB) 갱신 시 v= 날짜를 올려 캐시 무효화 → 재방문 유저에게도 반영 -->
 <script src="storage-journal.js?v=20260803b"></script>
 <script src="run-migration.js?v=20260803b"></script>
-<script src="daily-retention.js?v=20260803a"></script>
+<script src="daily-retention.js?v=20260803b"></script>
 <script src="product-telemetry.js?v=20260803a"></script>
 <script src="i18n.js?v=20260803a"></script>
 <script src="idols.js?v=sync202608030520"></script>
@@ -4470,6 +4470,12 @@ window.addEventListener("popstate", ()=>{
   .daily-option b{display:block;font-size:13px}.daily-option small{display:block;margin-top:3px;font-size:10px;line-height:1.4;color:#91a0b6}.daily-option em{font-style:normal;font-size:10px;font-weight:900;color:#ff83ad;white-space:nowrap}
   .daily-done{margin-top:13px;padding:14px;border:1px solid rgba(255,95,146,.4);border-radius:15px;background:linear-gradient(135deg,rgba(255,95,146,.13),rgba(69,101,255,.1))}
   .daily-done b{font-size:14px}.daily-done p{margin:5px 0 0;font-size:11px;line-height:1.55;color:#aab6c8}
+  .daily-reply{position:relative;overflow:hidden;margin-top:13px;padding:15px;border:1px solid rgba(255,211,92,.48);border-radius:17px;
+    background:radial-gradient(circle at 92% 10%,rgba(255,211,92,.16),transparent 36%),linear-gradient(145deg,#1a2133,#101522);box-shadow:0 18px 34px -28px #000}
+  .daily-reply-row{display:grid;grid-template-columns:52px 1fr;align-items:center;gap:12px}.daily-reply-row img{width:52px;height:52px;border-radius:14px;object-fit:cover;background:#202b40}
+  .daily-reply-kicker{font-size:9px;font-weight:1000;letter-spacing:1.4px;color:#ffd35c}.daily-reply h3{margin:4px 0 0;font-size:15px}.daily-reply p{margin:10px 0 0;font-size:11px;line-height:1.6;color:#bbc6d7}
+  .daily-reply-reward{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:11px;padding:9px 11px;border-radius:11px;background:rgba(255,255,255,.055);font-size:10px;color:#9eabc0}
+  .daily-reply-reward b{color:#ffd35c;font-size:11px}.daily-reply.open{border-color:rgba(255,95,146,.52);background:radial-gradient(circle at 92% 10%,rgba(255,95,146,.2),transparent 36%),linear-gradient(145deg,#1b2034,#111522)}
   .daily-memory{display:flex;gap:10px;padding:10px 11px;border-bottom:1px solid #1c2738}.daily-memory:last-child{border-bottom:0}.daily-memory time{font-size:9px;color:#718098;min-width:54px}.daily-memory span{font-size:11px;color:#b9c5d6}
   .daily-locked{text-align:center;padding:28px 18px;border:1px solid #26354d;border-radius:17px;background:#0c1421}.daily-locked img{width:84px;height:84px;object-fit:contain}.daily-locked h3{margin:8px 0 5px}.daily-locked p{font-size:11px;line-height:1.55;color:#91a0b6}
 
@@ -4803,6 +4809,9 @@ window.addEventListener("popstate", ()=>{
       d.roster.forEach(r=>{
         if(!r.joinedAt) r.joinedAt=Date.now();
         if(r.fanBond==null){r.fanBond=8;bondMigrated=true;}
+      });
+      if(Array.isArray(d.bondHistory)) d.bondHistory.forEach(x=>{
+        if(x&&typeof x.text==='string'&&x.text.indexOf('팬덤와 ')===0){ x.text='팬덤과 '+x.text.slice(4); bondMigrated=true; }
       });
       if(d.favRid!=null && !d.roster.some(r=>r.rid===d.favRid)) delete d.favRid;   // 은퇴/소실된 최애 정리
       Object.keys(d.wear).forEach(k=>{ const p=k.split(':'), n=(d.cards[p[0]]&&d.cards[p[0]][p[1]])||0, w=d.wear[k];
@@ -5283,6 +5292,7 @@ window.addEventListener("popstate", ()=>{
       this.data.lineup[best]=rid; this.persist(); return {ok:true, slot:best}; },
     discard(rid){ this.load(); const r=this.rosterById(rid); if(!r)return {err:'noidol'};
       if(this.lineupRids().indexOf(rid)>=0) return {err:'inup'};   // #21 편성중 계약해지 불가(안전망)
+      const pendingEcho=DailyRetention.pendingEcho(this.data.dailyEchoes,rid); if(pendingEcho) return {err:'pendingEcho',revealDay:pendingEcho.revealDay};
       const top=this.idolTop(r.stats), cardType=STATCARD[this.topStat(r.stats)], rk=grank(grade(top.score));
       const cnt = rk>=6?3 : rk>=4?2 : 1;   // S+↑=3 · B~A=2 · 그외=1
       this.add(cardType,1,cnt);
@@ -5502,7 +5512,7 @@ window.addEventListener("popstate", ()=>{
     _stageHero(o){
       const cards=(o.members||[]).slice(0,3), lead=cards[0]||{};
       const sg=o.sg||STAGE_HUE.center;
-      const daily=this.dailyState(), dailyOpen=!daily.done;
+      const daily=this.dailyState(), dailyReply=this.dailyEchoState().ready, dailyOpen=!!dailyReply||!daily.done;
       let achvOpen=false; try{ achvOpen=this.achvClaimable(); }catch(e){}
       const card=o.idol
         ? this.idolCardHTML(o.idol,{cls:'home-idol-card',state:o.cardState||'complete',progress:o.progress,onclick:o.idol.rid?`DG.showRosterDetail(${o.idol.rid})`:''})
@@ -5513,7 +5523,7 @@ window.addEventListener("popstate", ()=>{
       return `<div class="hero hero-stage3 ${o.extra?'has-extra':''}" style="--sg1:${sg[0]};--sg2:${sg[1]}">
         <div class="hs3-shade"></div>
         <div class="hs2-particles" aria-hidden="true"></div>
-        <button class="hs3-spot mission" onclick="DG.goDaily()"><b>오늘</b>${dailyOpen?'<i></i>':''}</button>
+        <button class="hs3-spot mission" onclick="DG.goDaily()"><b>${dailyReply?'답장':'오늘'}</b>${dailyOpen?'<i></i>':''}</button>
         <button class="hs3-spot gift" onclick="DG.goAchv()"><b>업적</b>${achvOpen?'<i></i>':''}</button>
         <button class="hs3-spot dorm" onclick="DG.goRoster()"><b>숙소</b></button>
         <button class="hs3-spot cards" onclick="DG.goCards()"><b>카드 랩</b></button>
@@ -5880,6 +5890,14 @@ window.addEventListener("popstate", ()=>{
     dayDiff(a,b){ return DailyRetention.dayDiff(a,b); },
     dailyState(){ return DailyRetention.state((this.data&&this.data.daily)||{},this.kstDay()); },
     dailyFavorite(){ const rs=(this.data&&this.data.roster)||[]; return this.rosterById(this.data&&this.data.favRid)||rs.slice().sort((a,b)=>(b.joinedAt||0)-(a.joinedAt||0))[0]||null; },
+    dailyEchoState(rid){ return DailyRetention.echoState((this.data&&this.data.dailyEchoes)||[],this.kstDay(),rid); },
+    dailyEchoCopy(kind,fav,archived){ const fd=fav&&fav._fandomName?{name:fav._fandomName}:fandomOf(fav||{}), subject=koWith(fd.name,'이','가');
+      if(archived) return {img:'assets/emo/buddy.png',kicker:'MEMORY ARCHIVE',title:`${(fav&&fav.name)||'이전 아이돌'}의 답장을 간직했어요`,text:'함께했던 선택은 사라지지 않아요. 팬덤의 마음을 다음 제작에 쓸 수 있는 기록으로 보관했어요.',reward:'팬 소통 플랜 +1'};
+      return ({
+      letter:{img:'assets/emo/buddy.png',kicker:'FANDOM LETTER',title:`${fd.name}의 마음이 도착했어요`,text:`${subject} 어제 모아준 한마디를 오래 기억하고 있어요. 오늘도 같은 편에서 지켜볼게요.`,reward:'다음 RUN 시작 유대 +3',boost:{bond:3}},
+      chant:{img:'assets/mascot.png',kicker:'CHANT REPLY',title:`${fd.name}의 응원 준비 완료`,text:`${subject} 연습한 타이밍을 완성했어요. 다음 클라이맥스에서 더 크게 이름을 외칠게요.`,reward:'다음 올인 성공 +4%p',boost:{climax:4}},
+      idea:{img:'assets/emo/act-charm.png',kicker:'STAGE PICK',title:'팬들이 고른 장면이 열렸어요',text:`${subject} 고른 장면이 다음 콘셉트 보드에 올라왔어요. 새 RUN에서 달라진 시작을 확인해요.`,reward:'다음 RUN 선택 방향 +6',boost:{start:6}},
+    })[kind]||null; },
     dailyChoices(fav){ const fd=fandomOf(fav||{}); return [
       {id:'letter',img:'assets/emo/buddy.png',nm:'팬레터 모아 전하기',copy:`${fd.name}의 마음을 골라 오늘의 한마디를 전해요.`,effect:'유대 +8 · 다음 RUN 시작 유대 +6',bond:8,boost:{bond:6}},
       {id:'chant',img:'assets/mascot.png',nm:'응원법 리허설',copy:`${fd.rally} 타이밍을 맞춰 다음 클라이맥스를 준비해요.`,effect:'유대 +5 · 다음 올인 성공 +8%p',bond:5,boost:{climax:8}},
@@ -5887,24 +5905,29 @@ window.addEventListener("popstate", ()=>{
     ]; },
     goDaily(){ this.load(); this.renderDaily(); show('s-daily'); },
     renderDaily(){ const box=document.getElementById('dailyBody'), head=document.getElementById('dailyHead'); if(!box)return;
-      const state=this.dailyState(), fav=this.dailyFavorite(); if(head) head.textContent=state.done?'오늘 완료':`연속 ${state.streak}일`;
+      const state=this.dailyState(), fav=this.dailyFavorite(), echoState=this.dailyEchoState(), ready=echoState.ready, revealed=echoState.revealed;
+      if(head) head.textContent=ready?'답장 도착':(state.done?'오늘 완료':`연속 ${state.streak}일`);
       if(!fav){ box.innerHTML=`<div class="daily-locked"><img src="assets/mascot.png" alt="최애돌 마스코트"><h3>첫 아이돌 카드가 필요해요</h3>
           <p>육성을 한 번 완주하면 최애와 팬덤의 하루 프로젝트가 열려요.</p><button class="btn" style="margin-top:13px" onclick="Game.goSelect()">첫 최애 육성하기</button></div>`; return; }
       const fd=fandomOf(fav), fdWith=koWith(fd.name,'과','와'), choices=this.dailyChoices(fav), hist=(this.data.bondHistory||[]).filter(x=>x.rid===fav.rid).slice(-4).reverse();
       const weekDots=Array.from({length:7},(_,i)=>`<i class="${i<Math.min(7,state.streak)?'on':''}"></i>`).join('');
       const hero=`<div class="daily-hero"><div class="daily-kicker">DAILY FANDOM PROJECT</div><div class="daily-title">${esc(fdWith)} 만드는<br>${esc(fav.name)}의 오늘</div>
-        <div class="daily-copy">하루의 선택이 관계 기록으로 남고, 다음 재육성에서 실제 힘이 돼요.</div>
+        <div class="daily-copy">오늘의 선택은 내일 팬덤의 답장으로 돌아오고, 다음 재육성에서 실제 힘이 돼요.</div>
         <div class="daily-idol">${this.idolCardHTML(fav,{favorite:true})}</div>
         <div class="daily-streak"><b>연속 ${state.streak}일</b><span>3일 마이크 · 7일 팬 소통 카드</span><div class="daily-dots">${weekDots}</div></div></div>`;
+      let replyOpen='';
+      if(revealed){ const rf=this.rosterById(revealed.rid)||{rid:revealed.rid,name:revealed.idolName||'이전 아이돌',_fandomName:revealed.fandomName||'팬덤'}, rm=this.dailyEchoCopy(revealed.kind,rf,!!revealed.archivedReward); if(rm) replyOpen=`<div class="daily-reply open"><div class="daily-reply-row"><img src="${rm.img}" alt=""><div><div class="daily-reply-kicker">${esc(rm.kicker)} · OPENED</div><h3>${esc(rm.title)}</h3></div></div><p>${esc(rm.text)}</p><div class="daily-reply-reward"><span>오늘 받은 추가 보정</span><b>${esc(rm.reward)}</b></div></div>`; }
       let action='';
-      if(state.done){ const picked=choices.find(x=>x.id===state.choice)||choices[0], pending=(this.data.dailyBoosts||[]).filter(x=>x.rid===fav.rid&&!x.usedAt).length;
-        action=`<div class="daily-done"><b>오늘의 프로젝트 완료</b><p>${esc(picked.nm)} · ${esc(picked.effect)}<br>다음 재육성 보정 ${pending}개 대기 중 · 내일 00:00(KST) 새 프로젝트</p></div>
+      if(ready){ const rf=this.rosterById(ready.rid)||{rid:ready.rid,name:ready.idolName||'이전 아이돌',_fandomName:ready.fandomName||'팬덤'}, rm=this.dailyEchoCopy(ready.kind,rf);
+        action=rm?`<div class="daily-reply"><div class="daily-reply-row"><img src="${rm.img}" alt=""><div><div class="daily-reply-kicker">${esc(rm.kicker)} · ARRIVED</div><h3>${esc(rf.name)}의 어제 선택에 답장이 왔어요</h3></div></div><p>열어보기 전까지 내용은 비밀이에요. 답장을 확인하면 오늘 프로젝트와 추가 RUN 보정이 열려요.</p><div class="daily-reply-reward"><span>수신일 ${esc(ready.revealDay)}</span><b>추가 보정 포함</b></div></div><button class="btn" style="margin-top:10px;width:100%" onclick="DG.claimDailyEcho()">팬덤 답장 열기</button>`:'';
+      } else if(state.done){ const picked=choices.find(x=>x.id===state.choice)||choices[0], pending=(this.data.dailyBoosts||[]).filter(x=>x.rid===fav.rid&&!x.usedAt).length;
+        action=`<div class="daily-done"><b>오늘의 프로젝트 완료</b><p>${esc(picked.nm)} · ${esc(picked.effect)}<br>다음 재육성 보정 ${pending}개 대기 중 · 내일 00:00(KST) 팬덤 답장 도착</p></div>
           <button class="btn" style="margin-top:10px;width:100%" onclick="DG.retrain(${fav.rid})">${esc(fav.name)} 다음 RUN 준비하기</button>`;
       } else { action=`<div class="daily-section-title"><b>오늘 무엇을 함께할까?</b><span>하나만 선택</span></div><div class="daily-options">${choices.map(c=>
           `<button class="daily-option" onclick="DG.completeDaily('${c.id}')"><img src="${c.img}" alt=""><span><b>${esc(c.nm)}</b><small>${esc(c.copy)}</small></span><em>${esc(c.effect)}</em></button>`).join('')}</div>`; }
       const memory=hist.length?`<div class="daily-section-title"><b>${esc(koWith(fav.name,'과','와'))} 함께한 기록</b><span>${hist.length}개 표시</span></div><div class="daily-done" style="padding:3px 10px">${hist.map(x=>
         `<div class="daily-memory"><time>${esc(x.day)}</time><span>${esc(x.text)}</span></div>`).join('')}</div>`:'';
-      box.innerHTML=hero+action+memory+`<button class="btn ghost" style="margin-top:11px;width:100%" onclick="DG.goAchv()">전체 업적 보기</button><div style="height:14px"></div>`;
+      box.innerHTML=hero+replyOpen+action+memory+`<button class="btn ghost" style="margin-top:11px;width:100%" onclick="DG.goAchv()">전체 업적 보기</button><div style="height:14px"></div>`;
     },
     completeDaily(kind){ this.load(); const state=this.dailyState(), fav=this.dailyFavorite(); if(!fav||state.done){ this.renderDaily(); return; }
       const choice=this.dailyChoices(fav).find(x=>x.id===kind); if(!choice)return;
@@ -5915,19 +5938,33 @@ window.addEventListener("popstate", ()=>{
         rid:fav.rid,kind,boost:choice.boost,text:`${fdWith} ${choice.nm} · 유대 ${fav.fanBond}`});
       if(!done.accepted){ this.renderDaily(); return; }
       const streak=done.streak; this.data.dailyBoosts=done.boosts; this.data.bondHistory=done.history;
+      this.data.dailyEchoes=DailyRetention.queueEcho(this.data.dailyEchoes,{today:state.today,rid:fav.rid,kind,idolName:fav.name,fandomName:fd.name});
       let milestone='';
       if(streak%7===0){ this.add('charmC',1,1); milestone=' · 7일 보상 팬 소통 플랜 +1'; }
       else if(streak%3===0){ this._regenMic(); if(this.data.mic<this.MIC_MAX){this.data.mic++;this.data.micAt=Date.now();} milestone=' · 3일 보상 마이크 +1'; }
       this.data.daily=done.daily; this.persist();
       try{ ProductTelemetry.track('daily_complete',{choice:kind,streak,total:this.data.daily.total,milestone:streak%7===0?'7d':streak%3===0?'3d':'none'}); }catch(e){}
-      try{ sfx('fanfare'); if(Game.confetti)Game.confetti(70,false); toast(`${fd.name} 프로젝트 완료${milestone}`); }catch(e){}
+      try{ sfx('fanfare'); if(Game.confetti)Game.confetti(70,false); toast(`${fd.name} 프로젝트 완료 · 내일 답장이 도착해요${milestone}`); }catch(e){}
+      this.renderDaily();
+    },
+    claimDailyEcho(id){ this.load(); const state=this.dailyState(); id=id||(this.dailyEchoState().ready||{}).id; const claimed=DailyRetention.claimEcho(this.data.dailyEchoes,id,state.today); if(!claimed.accepted){ this.renderDaily(); return; }
+      const echo=claimed.echo, fav=this.rosterById(echo.rid); if(!fav){ echo.archivedReward=true; this.add('charmC',1,1); this.data.dailyEchoes=claimed.echoes; this.persist();
+        try{ ProductTelemetry.track('daily_reply_open',{kind:echo.kind,wait_days:this.dayDiff(state.today,echo.fromDay),archived:true}); toast('팬덤 답장을 기록으로 보관 · 팬 소통 플랜 +1'); }catch(e){} this.renderDaily(); return; }
+      const meta=this.dailyEchoCopy(echo.kind,fav); if(!meta)return;
+      this.data.dailyBoosts=DailyRetention.mergeReplyBoost(this.data.dailyBoosts,echo,meta.boost,state.today);
+      fav.fanBond=Math.min(100,Math.max(8,Math.round((fav.fanBond||8)+3)));
+      if(!Array.isArray(this.data.bondHistory))this.data.bondHistory=[];
+      this.data.bondHistory.push({rid:fav.rid,day:state.today,kind:`reply-${echo.kind}`,text:`${fandomOf(fav).name} 답장 도착 · 유대 ${fav.fanBond}`});
+      this.data.bondHistory=this.data.bondHistory.slice(-40); this.data.dailyEchoes=claimed.echoes; this.persist();
+      try{ ProductTelemetry.track('daily_reply_open',{kind:echo.kind,wait_days:this.dayDiff(state.today,echo.fromDay)}); }catch(e){}
+      try{ sfx('fanfare'); if(Game.confetti)Game.confetti(54,false); toast(`팬덤 답장 공개 · ${meta.reward}`); }catch(e){}
       this.renderDaily();
     },
     takeDailyBoost(rid){ this.load(); const used=DailyRetention.consume(this.data.dailyBoosts,rid); if(!used.boost)return null;
       this.data.dailyBoosts=used.boosts; this.persist(); return used.boost; },
     goAchv(){ this.load(); this.checkAchv(); this.data.achvViewed=this.achvDone(); this.persist(); this.renderAchv(); show('s-achv'); },   // 메뉴 도트 해제 기준
     showMenu(){ this.load(); const m=document.getElementById('menuAchv'); if(m){ try{ m.textContent=this.achvDone()+' / '+ACHV.length; }catch(e){} }
-      const md=document.getElementById('menuDaily'); if(md){ const ds=this.dailyState(); md.textContent=ds.done?`완료 · ${ds.streak}일`:'오늘 참여 가능'; }
+      const md=document.getElementById('menuDaily'); if(md){ const ds=this.dailyState(), er=this.dailyEchoState().ready; md.textContent=er?'답장 도착':(ds.done?`완료 · ${ds.streak}일`:'오늘 참여 가능'); }
       const dot=document.getElementById('menuAchvDot'); if(dot){ try{ dot.style.display=this.achvClaimable()?'':'none'; }catch(e){} }   // 업적 항목 빨간불 = 미수령 보상
       show('s-menu'); },
     renderAchv(){ const box=document.getElementById('achvList'); if(!box) return;
@@ -6192,6 +6229,7 @@ window.addEventListener("popstate", ()=>{
     doDiscard(rid){ const r=this.rosterById(rid); if(!r)return;
       if(r.locked){ toast('🔒 잠긴 연습생이야 — 상세에서 잠금 해제 먼저'); return; }   // #9 실수 방지
       if(this.lineupRids().indexOf(rid)>=0){ toast('📋 편성 중인 연습생은 방출 못 해 — 먼저 편성에서 빼줘'); return; }   // #21
+      const pendingEcho=DailyRetention.pendingEcho(this.data.dailyEchoes,rid); if(pendingEcho){ toast(`${pendingEcho.revealDay} 도착할 팬덤 답장을 확인한 뒤 방출할 수 있어`); return; }
       this.confirmModal({title:'방출', body:`<b>${esc(r.name)}</b> 을(를) 방출할까?<br><span class="muted" style="font-size:12.5px">그동안의 노력이 <b>육성 카드</b>로 남아.</span>`, ok:'방출', cancel:'취소', danger:true,
         onOk:()=>{ const res=this.discard(rid); if(res.err==='inup'){ toast('편성 중이라 해지 못 해'); return; }
           if(res.ok){ this._discardFx(res); this.renderRoster(); } }}); },

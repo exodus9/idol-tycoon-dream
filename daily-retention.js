@@ -19,6 +19,13 @@
     return Math.round((Date.UTC(pa[0],pa[1]-1,pa[2])-Date.UTC(pb[0],pb[1]-1,pb[2]))/86400000);
   }
 
+  function addDays(day,amount){
+    const p=String(day||'').split('-').map(Number);
+    if(p.length<3||p.some(Number.isNaN)) return '';
+    const d=new Date(Date.UTC(p[0],p[1]-1,p[2]+Number(amount||0)));
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
+  }
+
   function state(daily,today){
     const d=daily&&typeof daily==='object'?daily:{}, day=today||kstDay(), done=d.lastDay===day;
     const streak=done?(d.streak||1):(dayDiff(day,d.lastDay)===1?(d.streak||0):0);
@@ -40,6 +47,44 @@
     };
   }
 
+  function queueEcho(echoes,input){
+    const list=(Array.isArray(echoes)?echoes:[]).filter(x=>x&&typeof x==='object').slice();
+    const id=`${input.today}:${input.rid}:${input.kind}`;
+    if(!list.some(x=>x.id===id)) list.push({id,rid:input.rid,kind:input.kind,fromDay:input.today,revealDay:addDays(input.today,1),idolName:input.idolName||'',fandomName:input.fandomName||''});
+    return list.slice(-20);
+  }
+
+  function echoState(echoes,today,rid){
+    const list=(Array.isArray(echoes)?echoes:[]).filter(x=>x&&typeof x==='object'), day=today||kstDay();
+    const same=x=>rid==null||String(x.rid)===String(rid);
+    const ready=list.find(x=>same(x)&&!x.claimedAt&&x.revealDay&&dayDiff(day,x.revealDay)>=0)||null;
+    const revealed=list.slice().reverse().find(x=>same(x)&&x.claimedDay===day)||null;
+    return {ready,revealed};
+  }
+
+  function claimEcho(echoes,id,today,now){
+    const list=(Array.isArray(echoes)?echoes:[]).filter(x=>x&&typeof x==='object'), day=today||kstDay(), echo=list.find(x=>x.id===id);
+    if(!echo||echo.claimedAt||!echo.revealDay||dayDiff(day,echo.revealDay)<0) return {accepted:false,echo:null,echoes:list};
+    echo.claimedAt=now==null?Date.now():now; echo.claimedDay=day;
+    return {accepted:true,echo,echoes:list.slice(-20)};
+  }
+
+  function pendingEcho(echoes,rid){
+    return (Array.isArray(echoes)?echoes:[]).find(x=>x&&typeof x==='object'&&!x.claimedAt&&String(x.rid)===String(rid))||null;
+  }
+
+  function mergeReplyBoost(boosts,echo,boost,today){
+    const list=(Array.isArray(boosts)?boosts:[]).filter(x=>x&&typeof x==='object'&&!x.usedAt).slice(-7);
+    const target=list.find(x=>String(x.rid)===String(echo.rid)&&x.day===echo.fromDay&&x.kind===echo.kind);
+    if(target){
+      for(const key of ['bond','climax','start']) if(boost&&boost[key]) target[key]=(target[key]||0)+boost[key];
+      target.reply=true;
+      return [target,...list.filter(x=>x!==target)].slice(0,7);
+    }
+    const reply={id:`reply:${echo.id}`,rid:echo.rid,kind:`reply-${echo.kind}`,day:today,...boost};
+    return [reply,...list].slice(0,7);
+  }
+
   function consume(boosts,rid,now){
     const list=Array.isArray(boosts)?boosts:[], at=now==null?Date.now():now;
     const found=list.find(x=>!x.usedAt&&String(x.rid)===String(rid));
@@ -48,7 +93,7 @@
     return {boost:found,boosts:list.filter(x=>!x.usedAt||at-x.usedAt<7*86400000).slice(-7)};
   }
 
-  const api={kstDay,dayDiff,state,complete,consume};
+  const api={kstDay,dayDiff,addDays,state,complete,queueEcho,echoState,claimEcho,pendingEcho,mergeReplyBoost,consume};
   root.DailyRetention=api;
   if(typeof module!=='undefined'&&module.exports) module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

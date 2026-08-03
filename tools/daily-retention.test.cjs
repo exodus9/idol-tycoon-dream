@@ -4,6 +4,7 @@ const Daily=require('../daily-retention.js');
 assert.equal(Daily.kstDay(Date.UTC(2026,7,3,14,59)),'2026-08-03');
 assert.equal(Daily.kstDay(Date.UTC(2026,7,3,15,0)),'2026-08-04','daily reset must follow KST midnight');
 assert.equal(Daily.dayDiff('2026-08-04','2026-08-03'),1);
+assert.equal(Daily.addDays('2026-08-31',1),'2026-09-01');
 
 const first=Daily.complete({daily:{},boosts:[],history:[],today:'2026-08-03',rid:7,kind:'chant',boost:{climax:8},text:'플리와 응원법 리허설'});
 assert.equal(first.accepted,true);
@@ -22,6 +23,28 @@ assert.equal(missed.streak,0,'a missed day must reset the live streak');
 const consumed=Daily.consume(next.boosts,7,Date.UTC(2026,7,4));
 assert.equal(consumed.boost.kind,'chant','oldest pending boost must be consumed first');
 assert.equal(Daily.consume(consumed.boosts,999).boost,null,'another idol must not consume the boost');
+
+const echoes=Daily.queueEcho([],{today:'2026-08-03',rid:7,kind:'chant'});
+assert.equal(Daily.echoState([null,...echoes],'2026-08-04').ready.id,echoes[0].id,'damaged optional entries must not break the daily screen');
+assert.equal(Daily.pendingEcho(echoes,7).id,echoes[0].id);
+assert.equal(echoes[0].revealDay,'2026-08-04');
+assert.equal(Daily.echoState(echoes,'2026-08-03').ready,null,'the fandom reply must stay closed until the next KST day');
+assert.equal(Daily.echoState(echoes,'2026-08-04').ready.id,'2026-08-03:7:chant');
+const earlyClaim=Daily.claimEcho(echoes,'2026-08-03:7:chant','2026-08-03',1);
+assert.equal(earlyClaim.accepted,false);
+const claimed=Daily.claimEcho(echoes,'2026-08-03:7:chant','2026-08-04',2);
+assert.equal(claimed.accepted,true);
+assert.equal(Daily.echoState(claimed.echoes,'2026-08-04').revealed.id,claimed.echo.id);
+assert.equal(Daily.claimEcho(claimed.echoes,claimed.echo.id,'2026-08-04',3).accepted,false,'a reply reward must be claimed only once');
+const matchingBoost=[{id:'2026-08-03:7:chant',rid:7,kind:'chant',day:'2026-08-03',climax:8}];
+const merged=Daily.mergeReplyBoost(matchingBoost,claimed.echo,{climax:4},'2026-08-04');
+assert.equal(merged.length,1,'the next-day reply must enhance the matching pending RUN boost, not delay into a second RUN');
+assert.equal(merged[0].climax,12);
+const replyOnly=Daily.mergeReplyBoost([],claimed.echo,{climax:4},'2026-08-04');
+assert.equal(replyOnly[0].kind,'reply-chant','a reply still creates a next-RUN boost if yesterday\'s boost was already used');
+const older=[{id:'old',rid:7,kind:'letter',day:'2026-08-02',bond:6},...matchingBoost];
+const prioritized=Daily.mergeReplyBoost(older,claimed.echo,{climax:4},'2026-08-04');
+assert.equal(Daily.consume(prioritized,7,4).boost.id,matchingBoost[0].id,'the opened reply must apply to the literal next RUN even with an older pending boost');
 
 let bounded={daily:{},boosts:[],history:[]};
 for(let i=1;i<=45;i++) bounded=Daily.complete({...bounded,today:`2026-09-${String(i).padStart(2,'0')}`,rid:7,kind:'idea',boost:{start:12},text:String(i)});
