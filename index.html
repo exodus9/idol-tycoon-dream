@@ -435,6 +435,11 @@
   .lg-tier-ic{font-size:42px;line-height:1}
   .lg-tier-nm{font-size:20px;font-weight:800;margin-top:5px}
   .lg-tier-sub{color:var(--sub);font-size:12.5px;margin-top:4px;line-height:1.5}
+  .lg-squad{display:grid;gap:7px;margin:12px 0 2px}
+  .lg-member{min-width:0;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.045);border-radius:12px;padding:7px 3px 6px;color:var(--text);font:inherit;overflow:hidden}
+  .lg-member .lgm-av{display:block;width:38px;height:38px;margin:0 auto 4px;border-radius:50%;background:#202b40 center/cover no-repeat;border:1px solid rgba(255,211,92,.4)}
+  .lg-member b,.lg-member small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lg-member b{font-size:10px}.lg-member small{font-size:8.5px;color:var(--sub);margin-top:1px}
+  .lg-member.more{display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:11px;font-weight:900}
   .lg-rank-badge{display:inline-block;margin-top:10px;background:var(--accent);color:#fff;font-weight:800;font-size:13.5px;padding:5px 14px;border-radius:999px}
   .lb-row .lg-logo{margin-right:2px}
   .lb-row .who small{margin-left:5px}
@@ -3981,6 +3986,7 @@ window.addEventListener("popstate", ()=>{
   .dg-head{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;text-align:center;margin-top:10px;box-shadow:0 4px 14px rgba(0,0,0,.05)}
   .dg-h-l{font-size:13px;color:#8a8a97}
   .dg-h-g{font-size:36px;color:#ec3a5c;font-weight:bold;line-height:1.1}
+  .dg-h-g small{display:block;font-size:9px;letter-spacing:1.5px;color:var(--sub);margin-bottom:2px}
   .dg-h-s{font-size:13px}
   .dg-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
   .dg-slot{background:var(--panel);border:1.5px dashed #ffc7d5;border-radius:14px;padding:9px 5px;text-align:center;min-height:112px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;position:relative}
@@ -3991,7 +3997,10 @@ window.addEventListener("popstate", ()=>{
   .dg-av{width:46px;height:46px;border-radius:50%;background:#322748 center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-size:22px}
   .dg-av.empty{background:none;color:#ffb3c6;font-size:26px}
   .dg-nm{font-size:12px;max-width:88px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .dg-gr{font-size:12px;color:#ec3a5c;font-weight:bold}
+  .dg-gr{font-size:10.5px;color:#ec3a5c;font-weight:bold;line-height:1.2;min-height:25px;display:flex;align-items:center;justify-content:center;text-align:center}
+  .role-coach{margin-top:10px;padding:11px 12px;border-radius:13px;background:linear-gradient(135deg,rgba(95,201,255,.09),rgba(255,95,162,.08));border:1px solid rgba(95,201,255,.24);display:flex;align-items:center;gap:9px;text-align:left}
+  .role-coach .rc-copy{flex:1;min-width:0}.role-coach b{display:block;font-size:12px}.role-coach span{display:block;margin-top:2px;font-size:10.5px;line-height:1.4;color:var(--sub)}
+  .role-coach button{flex:0 0 auto;border:1px solid rgba(95,201,255,.38);background:rgba(95,201,255,.1);color:#aee7ff;border-radius:10px;padding:7px 9px;font:inherit;font-size:10px;font-weight:900}
   .dg-sub{display:flex;justify-content:space-between;align-items:center;margin:16px 0 7px;font-size:15px}
   .dg-chips{display:flex;flex-wrap:wrap;gap:6px}
   .dg-chip{display:inline-block;background:var(--panel);border:1.5px solid var(--line);border-radius:999px;padding:6px 11px;font-size:12.5px;line-height:1.35}
@@ -4578,8 +4587,11 @@ window.addEventListener("popstate", ()=>{
   /* 상위 탭의 고정 헤더와 내부 스크롤 영역 */
   #s-roster>.sub-head,#s-cards>.sub-head,#s-league>.sub-head,#s-battle>.sub-head{flex:none;height:38px;margin:0 0 8px}
   #s-roster>.sub-head h2,#s-cards>.sub-head h2,#s-league>.sub-head h2,#s-battle>.sub-head h2{font-size:17px;letter-spacing:.5px}
-  #rosterList,#cardsList,#leagueBoard,#battleFoes{min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
-  #rosterList{flex:1} #cardsList{flex:1} #leagueBoard{flex:1} #battleFoes{max-height:31vh}
+  #rosterList,#cardsList,#leagueBoard{min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+  #rosterList{flex:1} #cardsList{flex:1} #leagueBoard{flex:1}
+  #s-battle{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+  #s-battle::-webkit-scrollbar{display:none}
+  #battleFoes{flex:none;max-height:none;overflow:visible}
   #cardsFilter{flex:none} #cardsHint{flex:none}
   #s-league #leagueBattle,#s-league .rank-seg,#s-league .rank-seg2,#s-league #leagueHead,#s-league #leagueNote{flex:none}
   /* 홈·턴 선택은 고정, 나머지 긴 도구/결과 화면은 740px에서도 끝까지 도달 가능 */
@@ -5086,8 +5098,14 @@ window.addEventListener("popstate", ()=>{
       if(kind==='debut')return {kind,label:`🎬 이 데뷔조 데뷔시키기 · ${gi.n}명`,on:'DG.doDebut()'};
       return {kind:'battle',label:`👻 ${rep?esc(rep.name):'대표 그룹'} 시즌 무대`,on:'DG.showBattleLobby()'};
     },
-    // K. 포지션 적합도 = posScore 숫자 대신 3단계 등급표현(어떤 능력치인지도 비공개 — 탐색의 재미)
-    fitLabel(val){ const L = val>=520?['최적','#ffd35c'] : val>=320?['우수','#5fc9ff'] : ['적합','#c3b6dd']; return `<b style="color:${L[1]}">${L[0]}</b>`; },
+    // 역할 파워는 실존 인물 평가가 아니라 '이번 RUN 카드 × 현재 무대 역할'의 조합 결과다.
+    roleFitInfo(val){ const g=grade(val), lv=levelOf(val);
+      if(lv>=6)return {grade:g,label:'시그니처 역할',color:'#ffd35c'};
+      if(lv>=4)return {grade:g,label:'강점 발휘',color:'#5fc9ff'};
+      if(lv>=2)return {grade:g,label:'성장 중',color:'#9fd9c0'};
+      return {grade:g,label:'재배치 후보',color:'#c3b6dd'}; },
+    fitLabel(val,roleName){ const f=this.roleFitInfo(val), role=roleName?`${esc(roleName)} 슬롯`:'현재 슬롯';
+      return `<b style="color:${f.color}">${role}</b><span style="display:block;color:var(--sub);font-weight:700">${f.label==='재배치 후보'?'RUN 버전 재매칭':f.label}</span>`; },
     // ===== 트렌드 (경쟁전③) = 2주 시즌 '대세' =====
     seasonNo(){ return Math.max(0, Math.floor((Date.now()-SEASON_EPOCH)/SEASON_MS)); },
     currentTrend(){ return TRENDS[this.seasonNo()%TRENDS.length]; },
@@ -5203,11 +5221,13 @@ window.addEventListener("popstate", ()=>{
       const g=this.repGroup(); if(!g) return;
       const bs=this.battleSeason(), tier=this.battleTier(bs.pts);
       const mem=this.groupMembers(g), bp=this.battlePower(mem);
+      const squad=mem.slice(0,5), more=Math.max(0,mem.length-squad.length), squadCols=Math.max(1,squad.length+(more?1:0));
       document.getElementById('battleMine').innerHTML=
         `<div class="mic-bar" id="micBar">${this.micBarHTML()}</div>
          <div class="lg-head"><div class="lg-tier-ic">${tier.ic}</div><div class="lg-tier-nm">${esc(tier.nm)}</div>
           <div class="lg-tier-sub">${this.logoHtml(g.logo,20)} ${esc(g.name)} · 승점 <b>${bs.pts}</b>P · ${bs.w||0}승 ${bs.l||0}패</div>
           <div class="lg-rank-badge">전투력 ${bp.power.toLocaleString()} · IDOL CARD +${bp.cardBonus||0} · 시너지 +${bp.syn}%${bp.fanBonus?` · 💗팬덤 +${bp.fanBonus}`:''}</div>
+          <div class="lg-squad" style="grid-template-columns:repeat(${squadCols},minmax(0,1fr))">${squad.map(m=>{const im=this.idolCardMeta(m.r),av=m.r.img?`style="background-image:url('${m.r.img}')"`:'';return `<button class="lg-member" onclick="DG.showRosterDetail(${m.r.rid})"><span class="lgm-av" ${av}>${m.r.img?'':'🎤'}</span><b>${esc(m.r.name)}</b><small>${POSICO[m.type]||'🎤'} ${esc((POSTYPES[m.type]||{}).nm||m.type)} · ★${im.star}</small></button>`;}).join('')}${more?`<div class="lg-member more">+${more}명</div>`:''}</div>
           <div class="muted" style="font-size:11px;margin-top:6px">👻 저장된 상대 기록과 비동기 대결 · 승패는 이 기기에서 판정</div>
           <div class="muted" style="font-size:11px;margin-top:3px">⚔️ 대결마다 🎤 필요 · 이기면 유지, 지면 1개 소모</div></div>`;
       const myAg=(this.agency()&&this.agency().name)||'';
@@ -5772,7 +5792,7 @@ window.addEventListener("popstate", ()=>{
       } else if(gi.n>=3){
         hero=this._stageHero({ members:_lineMem.map(r=>({img:r.img})), idol:_lineMem[0], sg:_sgTrend,
           greet:'우리 데뷔만 기다리고 있어요! 🎬', badge:'🎤 데뷔 준비 완료',
-          nm:'새 데뷔조', sub:`${gi.grade}등급 · ${gi.n}/9명`,
+          nm:'새 데뷔조', sub:`역할 파워 ${gi.grade} · ${gi.n}/9명`,
           goal:`데뷔조 ${gi.n}/3 · 그룹 데뷔 확정`,
           cta:{on:'DG.doDebut()', label:'🎬 데뷔시키기'}, extra:_mentorBtn });
       } else {
@@ -5906,22 +5926,27 @@ window.addEventListener("popstate", ()=>{
       // 동적 슬롯: 리더 첫칸 고정 + 자유 편성(보컬그룹/힙합크루…). 최소 3칸·최대 9인
       const shown=this.slots();
       const syn=this.groupSynergy();
+      const autoPlan=this.autoPlan(), autoDelta=Math.max(0,(autoPlan.sum||0)-(gi.sum||0));
+      const roleRows=shown.map(s=>{const r=this.rosterById(this.data.lineup[s.sid]);return r?{s,r,val:this.posScore(r.stats,s.type)}:null;}).filter(Boolean).sort((a,b)=>a.val-b.val);
+      const weakRole=roleRows[0]||null, weakInfo=weakRole?this.roleFitInfo(weakRole.val):null;
       const slotCells=shown.map(s=>{ const r=this.rosterById(this.data.lineup[s.sid]); const nm=this.slotNm(s), ic=this.slotIco(s);
         if(r){ const val=this.posScore(r.stats,s.type), av=r.img?`style="background-image:url('${r.img}')"`:'';
           const im=this.idolCardMeta(r);
           return `<div class="dg-slot filled" onclick="DG.openAssign('${s.sid}')"><div class="dg-pos">${ic} ${nm}</div>
             <span class="dg-av" ${av}>${r.img?'':'🎤'}</span>
-            <div class="dg-nm">${esc(r.name)}</div><div class="dg-card-ver">★${im.star} · RUN ${im.runs}</div><div class="dg-gr">${this.fitLabel(val)}</div></div>`; }
+            <div class="dg-nm">${esc(r.name)}</div><div class="dg-card-ver">★${im.star} · RUN ${im.runs}</div><div class="dg-gr">${this.fitLabel(val,nm)}</div></div>`; }
         const canClose=(s.type!=='leader' && shown.length>MIN_SLOTS);
         return `<div class="dg-slot" onclick="DG.openAssign('${s.sid}')">${canClose?`<span class="dg-slot-x" onclick="event.stopPropagation();DG.removeSlot('${s.sid}')" title="이 자리 닫기">✕</span>`:''}<div class="dg-pos">${ic} ${nm}</div>
           <span class="dg-av empty">＋</span><div class="dg-nm muted">배치</div></div>`;
       }).join('');
       document.getElementById('dgGroup').innerHTML=
         `<div class="dg-sub" style="margin-top:15px"><b>📋 데뷔조 편성</b><span class="muted">${gi.n}/9명</span></div>
-         <div class="dg-head"><div class="dg-h-l">새 데뷔조 편성${gi.n>=3?' <span style="color:#18b06e;font-size:11px">● 활동 가능</span>':''}</div>
-          <div class="dg-h-g">${gi.n? gi.grade : '–'}</div>
-          <div class="dg-h-s muted">${gi.n? `합산 ${gi.sum} · ${gi.n}/9명` : '숙소에서 3명 이상 편성하면 활동 시작'}</div></div>
+         <div class="dg-head"><div class="dg-h-l">새 데뷔조 편성${gi.n>=3?' <span style="color:#18b06e;font-size:11px">● 데뷔 가능</span>':''}</div>
+          <div class="dg-h-g"><small>GROUP ROLE POWER</small>${gi.n? gi.grade : '–'}</div>
+          <div class="dg-h-s muted">${gi.n? `현재 역할 합 ${gi.sum} · RUN 카드 완성도와 별도` : '숙소에서 3명 이상 편성하면 활동 시작'}</div></div>
          <div class="dg-grid nine">${slotCells}</div>
+         ${gi.n>=3&&autoDelta>=20?`<div class="role-coach"><div class="rc-copy"><b>🎧 지금 카드로 역할 파워 +${autoDelta}</b><span>RUN 카드는 그대로 두고 역할만 다시 맞출 수 있어.</span></div><button onclick="DG.autoFill()">최적 배치</button></div>`
+           :gi.n>=3&&weakRole&&weakInfo&&levelOf(weakRole.val)<2?`<div class="role-coach"><div class="rc-copy"><b>🎧 ${esc(this.slotNm(weakRole.s))} 슬롯과 맞는 RUN이 없어</b><span>아이돌 평가가 아니라, 현재 보유한 RUN 버전과 이 슬롯의 조합이야.</span></div><button onclick="DG.openAssign('${weakRole.s.sid}')">RUN 버전 보기</button></div>`:''}
          ${(gi.n>=3&&syn.list.length)?`<div class="syn-box" onclick="DG.showSynergy()" style="cursor:pointer">
            <div class="syn-h">🔥 그룹 시너지 <b>+${syn.pct}%</b>${syn.capped?'<span class="syn-cap">상한</span>':''} <span style="font-size:11px;opacity:.6;float:right">자세히 ›</span></div>
            <div class="syn-chips">${syn.list.map(x=>`<span class="syn-chip k-${x.k}">${esc(x.nm)} +${x.pct}</span>`).join('')}</div>
@@ -5972,7 +5997,7 @@ window.addEventListener("popstate", ()=>{
         // #22 아바타/이름 탭 → 카드 정보 팝업(스탯·육각) 확인 후 배치
         return `<div class="ros-row${isCur?' cur':''}"><span class="ros-av" ${av} onclick="event.stopPropagation();DG.assignInfo(${r.rid})" style="cursor:pointer">${r.img?'':'🎤'}</span>
           <div class="ros-m" onclick="DG.assignInfo(${r.rid})" style="cursor:pointer"><div class="ros-nm">${esc(r.name)} <span style="font-size:11px;opacity:.6">ⓘ</span>${dup&&!isCur?` <span style="color:#18b06e;font-size:11px">● ${esc(otherPos)}</span>`:''}</div>
-            <div class="muted" style="font-size:12px">RUN 카드 × ${snm} 조합 · ${this.fitLabel(val)}</div></div>
+            <div class="muted" style="font-size:12px">RUN 카드 조합 · ${this.fitLabel(val,snm)}</div></div>
           <button class="cr-btn" onclick="DG.pickForSlot(${r.rid})">${label}</button></div>`;}).join('');
       document.getElementById('assignList').innerHTML=html;
     },
@@ -6350,8 +6375,8 @@ window.addEventListener("popstate", ()=>{
       this.showFlipCard(front, back, '');
     },
     doQuick(rid){ const r=this.quickAssign(rid); if(r.err==='dup'){ toast('이미 데뷔조에 있어'); return; } if(r.err==='full'){ toast('데뷔조 9자리가 꽉 찼어'); return; } if(r.err){ toast('편성 실패'); return; } toast('데뷔조 편성 완료! 🎉'); this.renderRoster(); },
-    // 자동 편성: 열린 빈 자리를 무소속·미편성 로스터 best-fit로 채움
-    autoFill(){ this.load();
+    // 자동 편성 계획: 실제 저장 전에 현재 카드로 만들 수 있는 최선의 역할 합을 미리 계산한다.
+    autoPlan(){
       const slotList=this.slots();
       // 재율애비: '이미 배치된 칸도 수정' = 전속(commit) 자리만 두고 나머지 전역 재배치
       const newLineup={}, usedRid=new Set(), usedKey=new Set();
@@ -6363,9 +6388,20 @@ window.addEventListener("popstate", ()=>{
       pairs.sort((a,b)=>b.sc-a.sc);
       pairs.forEach(pr=>{ if(newLineup[pr.sid]||usedRid.has(pr.rid)||usedKey.has(pr.idkey))return;
         newLineup[pr.sid]=pr.rid; usedRid.add(pr.rid); usedKey.add(pr.idkey); });
-      this.data.lineup=newLineup; this.persist(); this.renderOffice();
-      const placed=Object.values(newLineup).filter(rid=>!this.isCommitted(rid)).length;
-      try{ toast(placed? `🎯 자동 편성 ${placed}명 배치!` : '편성할 무소속 연습생이 없어'); }catch(e){}
+      let sum=0,n=0; slotList.forEach(s=>{const r=this.rosterById(newLineup[s.sid]);if(this.isEligibleRosterMember(r)){sum+=this.posScore(r.stats,s.type);n++;}});
+      return {lineup:newLineup,sum,n,grade:n?grade(Math.round(sum/n)):'–',placed:Object.values(newLineup).filter(rid=>!this.isCommitted(rid)).length};
+    },
+    // 자동 편성: 인원 보존을 불변조건으로 검사하고, 실제 저장 전 결과를 확인받는다.
+    autoFill(){ this.load(); const before=this.groupInfo(), plan=this.autoPlan();
+      if(plan.n<before.n){ try{toast(`편성 보호 · ${before.n}명을 유지할 수 없어 적용하지 않았어`);}catch(e){} return; }
+      const changed=Object.keys(Object.assign({},this.data.lineup||{},plan.lineup||{})).some(sid=>String((this.data.lineup||{})[sid]||'')!==String((plan.lineup||{})[sid]||''));
+      if(!changed){ try{toast('현재 편성이 이미 가장 잘 맞아');}catch(e){} return; }
+      const apply=()=>{ const liveBefore=this.groupInfo(); if(plan.n<liveBefore.n){ try{toast('편성 인원이 줄어 적용하지 않았어');}catch(e){} return; }
+        this.data.lineup=Object.assign({},plan.lineup); this.persist(); this.renderOffice();
+        try{toast(`🎯 ${plan.n}명 유지 · 역할 파워 ${before.grade}→${plan.grade}`);}catch(e){} };
+      this.confirmModal({title:'🎯 역할 배치를 바꿀까?',
+        body:`멤버 <b>${before.n}명 → ${plan.n}명</b> 유지<br>역할 파워 <b>${before.grade} ${before.sum.toLocaleString()} → ${plan.grade} ${plan.sum.toLocaleString()}</b><br><span class="muted" style="font-size:12px">RUN 카드는 바뀌지 않고 슬롯만 다시 배치돼.</span>`,
+        ok:'배치 적용',cancel:'그대로 두기',onOk:apply});
     },
     // 자리 추가 — 포지션 타입 선택(보컬/래퍼/댄서/프로듀서 무제한, 센터 최대1). 리더는 첫칸 고정.
     addSlot(){ this.load();
