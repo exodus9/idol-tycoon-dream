@@ -277,6 +277,11 @@ function simulateOne(mode, supportKey, strategy, runNo, random) {
   const out = {debut: false, stage: null, gate: null, final: null};
 
   while (state.week <= schedule.total) {
+    if (state.week === (mode === 'quick' ? 5 : 9)) {
+      // 대표 약속 경로: 시그니처 장면을 끝까지 밀어붙임(실게임 promise checkpoint와 동일).
+      state.stam = Math.max(0, state.stam - 8);
+      state[spec] += 8;
+    }
     if (mentorStat && state.week === (mode === 'quick' ? 4 : 7)) {
       state[mentorStat] += 10; // 보장 멘토콜에서 노하우 계승 선택
       state.mental = Math.min(100, state.mental + 3);
@@ -390,5 +395,6 @@ console.log('');
 console.log('- 마진 = 내 파이널 점수 − 가장 강한 라이벌 점수. 양수면 1위.');
 console.log('- 이벤트 효과는 제외했다. 무작위 이벤트 운이 아닌 카드 선택·컨디션·멘탈·지원 카드·무대 선택의 힘을 분리하기 위해서다.');
 console.log('- 2회차부터 자동 선택되는 평균 ★2 멘토의 시작 +10과 보장 멘토콜 +10·멘탈 +3은 포함했다.');
+console.log('- RUN 약속은 대표 경로인 시그니처 장면 고수(점검 시 기력 -8·핵심 방향 +8)를 포함했다.');
 console.log('- 현재 index.html 핵심 상수와 불일치하면 실행을 중단한다.');
 if(args.acceptance==='true') console.log('- 밸런스 acceptance: 대표 회차별 목표 구간 통과.');

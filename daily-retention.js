@@ -50,7 +50,8 @@
   function queueEcho(echoes,input){
     const list=(Array.isArray(echoes)?echoes:[]).filter(x=>x&&typeof x==='object').slice();
     const id=`${input.today}:${input.rid}:${input.kind}`;
-    if(!list.some(x=>x.id===id)) list.push({id,rid:input.rid,kind:input.kind,fromDay:input.today,revealDay:addDays(input.today,1),idolName:input.idolName||'',fandomName:input.fandomName||''});
+    if(!list.some(x=>x.id===id)) list.push({id,rid:input.rid,kind:input.kind,fromDay:input.today,revealDay:addDays(input.today,1),idolName:input.idolName||'',fandomName:input.fandomName||'',
+      runId:input.runId||'',promiseId:input.promiseId||'',promiseTitle:input.promiseTitle||'',promiseStatus:input.promiseStatus||''});
     return list.slice(-20);
   }
 

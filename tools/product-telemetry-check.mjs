@@ -6,8 +6,9 @@ const fail=[];
 const need=(ok,msg)=>{if(!ok)fail.push(msg);};
 
 need(html.includes('product-telemetry.js?v='),'telemetry bridge must load before the game');
-for(const event of ['run_start','run_finish','daily_complete','daily_reply_open','mentor_offer','mentor_select','mentor_home_start','mentor_moment','group_debut','stage_strategy','result_share']) need(html.includes(`'${event}'`),`missing funnel event: ${event}`);
+for(const event of ['run_start','run_finish','daily_complete','daily_reply_open','mentor_offer','mentor_select','mentor_home_start','mentor_moment','promise_offer','promise_selected','promise_checkpoint','promise_result','run_album_open','run_record_open','retrain_started','promise_reply_open','promise_reply_to_retrain','group_debut','stage_strategy','result_share']) need(html.includes(`'${event}'`),`missing funnel event: ${event}`);
 need(html.includes('ProductTelemetry.screen(id)'),'screen transitions must be measurable');
+need(html.includes("ProductTelemetry.track('run_start'")&&html.includes('...replyLink')&&html.includes("ProductTelemetry.track('retrain_started'")&&html.includes('...link}'),'reply origin must join retrain_started to run_start');
 need(html.includes("window.addEventListener('dream-group-context'"),'verified app favorite context must reach the first-RUN selection flow');
 need(bridge.includes("type:'DREAM_GROUP_EVENT'"),'native app event bridge is missing');
 need(bridge.includes("type:'DREAM_GROUP_READY'"),'native app readiness handshake is missing');
