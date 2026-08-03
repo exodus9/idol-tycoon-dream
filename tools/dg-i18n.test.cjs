@@ -91,6 +91,11 @@ test('reply time and rank-versus-grade explanations are localized',()=>{
     const reply=i18n.t(locale,'daily.replyAt',{time:'Aug 4, 22:00 WIB'});
     assert.match(reply,/22:00/);
     assert.equal(/00:00\s*KST/i.test(reply),false);
-    assert.notEqual(i18n.t(locale,'result.rankGradeExplain',{grade:'D',average:142,goal:'X'}),'result.rankGradeExplain');
+    const grade=i18n.t(locale,'result.rankGradeExplain',{grade:'D',peak:171,average:142,goal:'X'});
+    assert.notEqual(grade,'result.rankGradeExplain');
+    assert.match(grade,/171/); assert.match(grade,/142/);
+    const gift=i18n.t(locale,'home.giftToast',{name:'Jimin',card:'Fandom Plan'});
+    assert.notEqual(gift,'home.giftToast');
+    assert.match(gift,/Jimin/); assert.match(gift,/Fandom Plan/);
   }
 });

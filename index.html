@@ -1066,7 +1066,7 @@
 <script src="stage-criteria.js?v=6d23aaaa14"></script>
 <script src="completion-transaction.js?v=8c3a470bcb"></script>
 <script src="product-telemetry.js?v=36d3c57a97"></script>
-<script src="dg-i18n.js?v=fb58991cf6"></script>
+<script src="dg-i18n.js?v=fca0328069"></script>
 <script src="i18n.js?v=1d3ac651ea"></script>
 <script src="idols.js?v=sync202608040520"></script>
 <script>
@@ -5824,6 +5824,7 @@ window.addEventListener("popstate", ()=>{
       if(newRid) (this.data.groups||[]).filter(g=>Object.values(g.lineup||{}).includes(newRid)).forEach(g=>this.submitGroup(g));
       const editionResult=editionRegistration?Object.assign({},seasonEdition,{newCollection:editionRegistration.created,bestUpdated:editionRegistration.bestChanged,versionAdded:editionRegistration.versionAdded,versionCount:editionRegistration.row.runIds.length}):null;
       return {persisted:true,drops:dropInfo, joinMsg, completionView, debuted, adopted:!!adoptedCurrent, newRid, titles, newRecord, fans:fansV, tier:(end&&end.tier)||'',runMemory:st&&st.runMemory||null,seasonEdition:editionResult,
+        runAverage:Math.round(STATS.reduce((sum,x)=>sum+(stats[x.k]||0),0)/STATS.length), runPeak:Math.round(top.score||0),
         fandom:fandomOf(st&&st.idol).name, fanBond:Math.round((st&&st.fanBond)||0), mentorName:st&&st.mentor&&st.mentor.name||'', mentorChoice:st&&st.mentorChoice||''};
     },
     // ⑳⑲ 드랍 재설계(재율애비 확정): 최다 훈련영역 1장 확정 + 랜덤 추가 최대 2장(안 나올 수도).
@@ -6165,7 +6166,7 @@ window.addEventListener("popstate", ()=>{
           if(Math.random()<0.15){
             const gid=this.rollRandomCard(this.topStat(fav.stats), grank(fav.grade));
             const wasNew=!this.owned(gid); this.add(gid,1,1); if(wasNew) this.data.newCards[gid]=1; this.persist();
-            setTimeout(()=>{ try{ toast(`💝 ${fav.name}: "연습하다 찾은 카드예요. 다음 무대에 같이 써봐요!" (${this.nmOf(gid)} +1)`); sfx('win'); }catch(e){} }, 2600);
+            setTimeout(()=>{ try{ toast(`💝 ${dgT('home.giftToast',{name:fav.name,card:this.nmOf(gid)})}`); sfx('win'); }catch(e){} }, 2600);
           }
         } }catch(e){}
       // ── 시즌 정산 모달: 시즌 넘어가고 첫 홈 진입 때 지난 시즌 결산 + 새 트렌드 브리핑(2주 루프의 복귀 보람) ──
@@ -6903,7 +6904,7 @@ window.addEventListener("popstate", ()=>{
         : cv.kind==='first'?`✨ <b>${dgT('result.joinFirst',{name:esc(cv.name||'')})}</b><br><span class="muted">${cvMeta} · ${dgT('result.firstGateNext')}</span>`
         : cv.kind==='passed'?`🎊 <b>${dgT('result.joinPassed',{name:esc(cv.name||'')})}</b><br><span class="muted">${cvMeta} · ${dgT('result.groupCandidate')}</span>`
         : /^fail/.test(cv.kind||'')?`💤 <b>${dgT(cv.kind==='failKept'?'result.joinFailKept':'result.joinFailNew',{name:esc(cv.name||'')})}</b><br><span class="muted">${dgT(cv.kind==='failKept'?'result.joinFailAlbum':'result.joinFailCopy')}</span>`:res.joinMsg;
-      const gradeExplain=res.debuted&&idolR?`<small class="res-grade-explain">${dgT('result.rankGradeExplain',{grade:cv.grade||'F',average:Math.round(res.overall||0),goal:this.idolNextGoal(this.idolCardMeta(idolR))})}</small>`:'';
+      const gradeExplain=res.debuted&&idolR?`<small class="res-grade-explain">${dgT('result.rankGradeExplain',{grade:cv.grade||'F',peak:Math.round(res.runPeak||0),average:Math.round(res.runAverage||0),goal:this.idolNextGoal(this.idolCardMeta(idolR))})}</small>`:'';
       const idolReveal=idolR?`<div class="res-idol-reveal">
         <div class="res-card-kicker">${dgT(idolR.incomplete?'result.kickerRetry':keptAfterFail||!res.adopted?'result.kickerRecorded':(idolR.runs||1)>1?'result.kickerUpdated':'result.kickerNew')}</div>
         ${this.idolCardHTML(idolR,{cls:'result-idol-card',state:idolR.incomplete?'incomplete':(keptAfterFail||!res.adopted?'complete':'new'),onclick:`DG.showRosterDetail(${idolR.rid})`})}
