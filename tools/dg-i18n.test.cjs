@@ -80,3 +80,8 @@ test('growth preview teaches normal and failed outcome ranges in every release l
     for(const amount of ['40','50','11','14']) assert.match(copy,new RegExp(amount));
   }
 });
+
+test('stage coach and immediate recovery guidance are localized in every release locale', () => {
+  const keys=['run.firstGateProtected','run.finalImprove','run.finalRecover','run.rankImprove','run.rankRecover','run.gateImprove','run.gateRecover','run.restProtected','run.restProtectedCopy','run.restBeforeStage','run.restBeforeStageCopy'];
+  for(const locale of ['ko','en','ja','id']) for(const key of keys) assert.notEqual(i18n.t(locale,key),key,`${locale}.${key} missing`);
+});

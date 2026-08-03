@@ -1065,7 +1065,7 @@
 <script src="stage-criteria.js?v=6d23aaaa14"></script>
 <script src="completion-transaction.js?v=8c3a470bcb"></script>
 <script src="product-telemetry.js?v=36d3c57a97"></script>
-<script src="dg-i18n.js?v=9c5f08b9c4"></script>
+<script src="dg-i18n.js?v=59ff918fc1"></script>
 <script src="i18n.js?v=1d3ac651ea"></script>
 <script src="idols.js?v=8bb60ae14f"></script>
 <script>
@@ -1934,9 +1934,20 @@ const Game = {
       recommend=STATS.find(x=>x.k===recommendedKey)||null;
     }
     const target=c.base*this.difficulty(s), need=Math.max(0,Math.ceil(target-mine));
-    if(!recommend)return {risk:need>0,html:dgT(need>0?'run.needPowerReady':'run.safeReady',{need:`<b>${need}</b>`})};
-    const recommendName=esc(t('st_'+recommend.k));
-    return need>0?{risk:true,html:dgT('run.needPower',{need:`<b>${need}</b>`,stat:recommendName})}:{risk:false,html:dgT('run.safeAdvice',{stat:`<b>${recommendName}</b>`})};
+    const recommendName=recommend?esc(t('st_'+recommend.k)):'';
+    // 카드 성장량과 관문 무대력은 서로 다른 단위다. 숫자를 나란히 보여 가짜 덧셈을 유도하지 않고,
+    // 실제 결과 의미(진출 관문/순위전/파이널)와 지금 누를 수 있는 행동만 안내한다.
+    if(c.gate&&(s.runNo||1)===1)return {risk:false,html:dgT('run.firstGateProtected')};
+    if(c.final){
+      if(need>0&&recommend)return {risk:true,html:dgT('run.finalImprove',{stat:recommendName})};
+      return {risk:need>0,html:dgT(need>0?'run.finalRecover':'run.finalReady')};
+    }
+    if(!c.gate){
+      if(need>0&&recommend)return {risk:true,html:dgT('run.rankImprove',{stat:recommendName})};
+      return {risk:need>0,html:dgT(need>0?'run.rankRecover':'run.rankReady')};
+    }
+    if(!recommend)return {risk:need>0,html:dgT(need>0?'run.gateRecover':'run.safeReady')};
+    return need>0?{risk:true,html:dgT('run.gateImprove',{stat:recommendName})}:{risk:false,html:dgT('run.safeAdvice',{stat:recommendName})};
   },
   // 상황 반응형 코치 한 줄(버디 멘트) — 관문 임박·저컨디션·저멘탈·호조에 반응
   coachLine(s, dday, fore){
@@ -2041,8 +2052,12 @@ const Game = {
     if(s.combo>=2) chips+=`<span class="tstat-chip combo">${dgT('run.combo',{count:s.combo})}</span>`;
     if(s.buff && s.buff.turns>0) chips+=`<span class="tstat-chip buff">🧘 ${dgT('run.focusChip',{turns:s.buff.turns})}</span>`;
     const handCards=s.hand.map(cardById), recovery=BeginnerFlow.recoveryState(s.stam,handCards);
+    const nextCompetition=this.sch().compets[nx.w], stageNext=dday===1&&!!nextCompetition;
+    const protectedNext=stageNext&&nextCompetition.gate&&(s.runNo||1)===1;
+    const recoveryTitleKey=protectedNext?'run.restProtected':stageNext?'run.restBeforeStage':(recovery.urgent?'run.restNow':'run.restEarly');
+    const recoveryCopyKey=protectedNext?'run.restProtectedCopy':stageNext?'run.restBeforeStageCopy':'run.restCopy';
     const recoveryCta=recovery.recommended&&recovery.restIndex>=0
-      ? `<button class="recovery-cta${recovery.urgent?' urgent':''}" onclick="Game.playCard(${recovery.restIndex})">🛌 ${dgT(recovery.urgent?'run.restNow':'run.restEarly')}<small>${dgT('run.restCopy')}</small></button>`:'';
+      ? `<button class="recovery-cta${recovery.urgent?' urgent':''}" onclick="Game.playCard(${recovery.restIndex})">🛌 ${dgT(recoveryTitleKey)}<small>${dgT(recoveryCopyKey)}</small></button>`:'';
     document.getElementById("actionBox").innerHTML=
       `${chips?`<div class="tstat-row">${chips}</div>`:''}
        ${recoveryCta}<div class="hand">${s.hand.map((id,i)=>cardHTML(id,i)).join("")}</div>`;

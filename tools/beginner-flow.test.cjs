@@ -62,6 +62,24 @@ test('award-gate advice also filters recommendations through the current hand',(
   assert.ok(advice.includes("if(!recommend)return"));
 });
 
+test('gate coach never compares incomparable stage-power and card-growth numbers',()=>{
+  const html=require('node:fs').readFileSync(require('node:path').join(__dirname,'..','index.html'),'utf8');
+  const advice=html.slice(html.indexOf('  gateAdvice(s,nxw)'),html.indexOf('  // 상황 반응형 코치'));
+  assert.equal(advice.includes("dgT('run.needPower'"),false);
+  assert.equal(advice.includes("dgT('run.needPowerReady'"),false);
+  assert.ok(advice.includes("dgT('run.firstGateProtected')"));
+  assert.ok(advice.includes("dgT('run.finalImprove'"));
+  assert.ok(advice.includes("dgT('run.rankImprove'"));
+  assert.ok(advice.includes("dgT('run.gateImprove'"));
+});
+
+test('recovery copy tells players when the next turn is already a stage',()=>{
+  const html=require('node:fs').readFileSync(require('node:path').join(__dirname,'..','index.html'),'utf8');
+  assert.ok(html.includes('const nextCompetition=this.sch().compets[nx.w], stageNext=dday===1&&!!nextCompetition'));
+  assert.ok(html.includes("protectedNext?'run.restProtected':stageNext?'run.restBeforeStage'"));
+  assert.ok(html.includes("protectedNext?'run.restProtectedCopy':stageNext?'run.restBeforeStageCopy':'run.restCopy'"));
+});
+
 test('result action names the exact next turn',()=>{
   assert.equal(BeginnerFlow.nextTurnLabel(1,12),'다음 턴 2/12');
   assert.equal(BeginnerFlow.nextTurnLabel(12,12),'결과 확인하기');
