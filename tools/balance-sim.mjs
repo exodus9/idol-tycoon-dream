@@ -267,14 +267,20 @@ function simulateOne(mode, supportKey, strategy, runNo, random) {
   const support = SUPPORTS[supportKey];
   const difficulty = modeDifficulty(mode, runNo);
   const spec = STATS[Math.floor(random() * STATS.length)];
+  const mentorStat = runNo > 1 ? STATS[Math.floor(random() * STATS.length)] : null;
   const state = {spec, cond: 100, mental: 60, stam: 100, fans: 0, bond: 8, combo: 0, comboStat: null,
     buff: null, cardGrowth: support.growth, cardGate: support.gate, week: 1};
   for (const stat of STATS) state[stat] = 12 + support.all;
   state[spec] += 18 + support.spec;
   state[STATS[(STATS.indexOf(spec) + 3) % STATS.length]] += 2;
+  if (mentorStat) state[mentorStat] += 10; // 완주자 평균 ★2 시작 계승(+10)
   const out = {debut: false, stage: null, gate: null, final: null};
 
   while (state.week <= schedule.total) {
+    if (mentorStat && state.week === (mode === 'quick' ? 4 : 7)) {
+      state[mentorStat] += 10; // 보장 멘토콜에서 노하우 계승 선택
+      state.mental = Math.min(100, state.mental + 3);
+    }
     if (state.week === schedule.debut) {
       const cut = schedule.debutCut;
       const expected = Math.max(STATS.reduce((sum, stat) => sum + state[stat], 0) / cut.total,
@@ -337,7 +343,7 @@ const rows = scenarios.map((scenario, index) => {
   return {
     ...scenario,
     runNo,
-    supportLabel: SUPPORTS[scenario.support].label,
+    supportLabel: SUPPORTS[scenario.support].label+(runNo>1?' + 멘토 ★2':''),
     debut: results.filter((r) => r.debut).length / RUNS,
     stageWin: stages.filter((r) => r.rank === 1).length / RUNS,
     gateWin: gates.filter((r) => r.rank === 1).length / RUNS,
@@ -383,5 +389,6 @@ for (const row of rows) {
 console.log('');
 console.log('- 마진 = 내 파이널 점수 − 가장 강한 라이벌 점수. 양수면 1위.');
 console.log('- 이벤트 효과는 제외했다. 무작위 이벤트 운이 아닌 카드 선택·컨디션·멘탈·지원 카드·무대 선택의 힘을 분리하기 위해서다.');
+console.log('- 2회차부터 자동 선택되는 평균 ★2 멘토의 시작 +10과 보장 멘토콜 +10·멘탈 +3은 포함했다.');
 console.log('- 현재 index.html 핵심 상수와 불일치하면 실행을 중단한다.');
 if(args.acceptance==='true') console.log('- 밸런스 acceptance: 대표 회차별 목표 구간 통과.');

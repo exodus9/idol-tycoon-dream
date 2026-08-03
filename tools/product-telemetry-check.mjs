@@ -6,7 +6,7 @@ const fail=[];
 const need=(ok,msg)=>{if(!ok)fail.push(msg);};
 
 need(html.includes('product-telemetry.js?v='),'telemetry bridge must load before the game');
-for(const event of ['run_start','run_finish','daily_complete','daily_reply_open','group_debut','stage_strategy','result_share']) need(html.includes(`'${event}'`),`missing funnel event: ${event}`);
+for(const event of ['run_start','run_finish','daily_complete','daily_reply_open','mentor_offer','mentor_select','mentor_home_start','mentor_moment','group_debut','stage_strategy','result_share']) need(html.includes(`'${event}'`),`missing funnel event: ${event}`);
 need(html.includes('ProductTelemetry.screen(id)'),'screen transitions must be measurable');
 need(html.includes("window.addEventListener('dream-group-context'"),'verified app favorite context must reach the first-RUN selection flow');
 need(bridge.includes("type:'DREAM_GROUP_EVENT'"),'native app event bridge is missing');
