@@ -28,12 +28,37 @@ for (const needle of REQUIRED_SOURCE) {
   if (!source.includes(needle)) throw new Error(`index.html 수치가 바뀌었습니다. 시뮬레이터 동기화 필요: ${needle}`);
 }
 
-const args = Object.fromEntries(process.argv.slice(2).map((arg) => {
-  const [k, v = 'true'] = arg.replace(/^--/, '').split('=');
-  return [k, v];
-}));
-const RUNS = Math.max(100, Number(args.runs || 10_000));
-const SEED = Number(args.seed || 20260803) >>> 0;
+function parseArgs(argv) {
+  const out = {};
+  for (let i = 0; i < argv.length; i += 1) {
+    const arg = argv[i];
+    if (!arg.startsWith('--')) throw new Error(`알 수 없는 인자입니다: ${arg}`);
+    const body = arg.slice(2);
+    const eq = body.indexOf('=');
+    if (eq >= 0) {
+      out[body.slice(0, eq)] = body.slice(eq + 1);
+      continue;
+    }
+    const next = argv[i + 1];
+    if (next != null && !next.startsWith('--')) {
+      out[body] = next;
+      i += 1;
+    } else out[body] = 'true';
+  }
+  return out;
+}
+
+const args = parseArgs(process.argv.slice(2));
+const runsInput = Number(args.runs ?? 10_000);
+const seedInput = Number(args.seed ?? 20260803);
+if (!Number.isFinite(runsInput) || !Number.isInteger(runsInput) || runsInput < 100) {
+  throw new Error(`--runs는 100 이상의 정수여야 합니다: ${String(args.runs)}`);
+}
+if (!Number.isFinite(seedInput) || !Number.isInteger(seedInput)) {
+  throw new Error(`--seed는 정수여야 합니다: ${String(args.seed)}`);
+}
+const RUNS = runsInput;
+const SEED = seedInput >>> 0;
 
 const STATS = ['vocal', 'acting', 'dance', 'visual', 'charm', 'creative'];
 const GROWTH = [2.6, 2.4, 2.8, 2.7, 2.4, 2.0, 1.3, 0.75];
@@ -372,6 +397,11 @@ if (args.acceptance === 'true') {
     ['4회차 간이육성 파이널 1위율',row('quick','prodigy').finalWin,0.30,0.50],
     ['4회차 정규육성 파이널 1위율',row('full','prodigy').finalWin,0.35,0.55],
   ];
+  const invalid=checks.filter(([,value])=>!Number.isFinite(value));
+  if(invalid.length){
+    invalid.forEach(([label,value])=>console.error(`ACCEPTANCE INVALID: ${label} ${String(value)}`));
+    process.exit(1);
+  }
   const failed=checks.filter(([,value,min,max])=>value<min||value>max);
   if(failed.length){
     failed.forEach(([label,value,min,max])=>console.error(`ACCEPTANCE FAIL: ${label} ${(value*100).toFixed(1)}% (목표 ${(min*100).toFixed(0)}~${(max*100).toFixed(0)}%)`));

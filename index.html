@@ -1018,6 +1018,7 @@
 <script src="storage-journal.js?v=20260803b"></script>
 <script src="run-migration.js?v=20260803b"></script>
 <script src="daily-retention.js?v=20260803b"></script>
+<script src="progress-action.js?v=20260803a"></script>
 <script src="mentor-inheritance.js?v=20260803a"></script>
 <script src="run-memory.js?v=20260803a"></script>
 <script src="product-telemetry.js?v=20260803b"></script>
@@ -5070,6 +5071,21 @@ window.addEventListener("popstate", ()=>{
       return (idx<PRE.length? PRE[idx] : (idx+1)+'번')+base; },   // 메인보컬·리드보컬·서브보컬·4번보컬…
     filledCount(){ let n=0; this.slots().forEach(s=>{ if(this.isEligibleRosterMember(this.rosterById(this.data.lineup[s.sid]))) n++; }); return n; },
     groupInfo(){ let sum=0,n=0; this.slots().forEach(s=>{ const r=this.rosterById(this.data.lineup[s.sid]); if(this.isEligibleRosterMember(r)){ sum+=this.posScore(r.stats,s.type); n++; } }); return {sum,n,grade:n?grade(Math.round(sum/n)):'–'}; },
+    // 홈·일일·완주 결과가 서로 다른 행동을 시키지 않도록 한 곳에서 다음 목표를 결정한다.
+    progressAction(focus,opts){
+      opts=opts||{}; const readyCount=(this.data.roster||[]).filter(r=>this.isEligibleRosterMember(r)).length;
+      const gi=this.groupInfo(), rep=this.repGroup();
+      const kind=ProgressAction.decide({readyCount,lineupCount:gi.n,hasRepresentative:!!rep,
+        focusIncomplete:!!(focus&&focus.incomplete),promisePending:!!opts.promisePending,battleLoss:!!opts.battleLoss});
+      if(kind==='promiseRetry'||kind==='retry'||kind==='retrain'){
+        if(!focus)return {kind:'scout',label:`✨ 새 멤버 스카우트 · ${readyCount}/3`,on:'Game.goSelect()'};
+        return {kind,label:kind==='promiseRetry'?`↻ ${esc(focus.name)} 미완결 약속 다시 도전`:`🔥 ${esc(focus.name)} RUN 다시 도전`,on:`DG.retrain(${focus.rid})`};
+      }
+      if(kind==='scout')return {kind,label:`✨ 새 멤버 스카우트 · ${readyCount}/3`,on:'Game.goSelect()'};
+      if(kind==='lineup')return {kind,label:`📋 데뷔조 편성 · 후보 ${readyCount}/3`,on:'DG.go();DG.editLineup()'};
+      if(kind==='debut')return {kind,label:`🎬 이 데뷔조 데뷔시키기 · ${gi.n}명`,on:'DG.doDebut()'};
+      return {kind:'battle',label:`👻 ${rep?esc(rep.name):'대표 그룹'} 시즌 무대`,on:'DG.showBattleLobby()'};
+    },
     // K. 포지션 적합도 = posScore 숫자 대신 3단계 등급표현(어떤 능력치인지도 비공개 — 탐색의 재미)
     fitLabel(val){ const L = val>=520?['최적','#ffd35c'] : val>=320?['우수','#5fc9ff'] : ['적합','#c3b6dd']; return `<b style="color:${L[1]}">${L[0]}</b>`; },
     // ===== 트렌드 (경쟁전③) = 2주 시즌 '대세' =====
@@ -5774,17 +5790,11 @@ window.addEventListener("popstate", ()=>{
         // 이미 데뷔 그룹이 있는 이후에만 반복 육성을 주 CTA로 승격한다.
         const _repeat=!!(_focus && !_lineMem.length && readyCount>=3 && groups.length>0);
         const _focusMeta=_focus?this.idolCardMeta(_focus):null;
+        const _nextProgress=this.progressAction(_focus);
         hero=this._stageHero({ members:_heroMembers, idol:_focus, sg:_sgTrend, collection:true,
           greet: _lineMem.length?'조금만 더 모으면 데뷔예요!':(_focus?`첫 그룹을 만들어봐요, ${esc(_focus.name)} ✨`:'연습생을 포지션에 배치해요'),
           badge:'📋 데뷔조 편성', nm:_focus?`${esc(_focus.name)}의 데뷔조`:'데뷔조를 완성하자', sub:`${gi.n}/최소 3명`,
-          cta: _focus&&_focus.incomplete
-            ? {on:`DG.retrain(${_focus.rid})`,label:`🔥 ${esc(_focus.name)} 오디션 재도전`}
-            : _repeat
-            ? {on:`DG.retrain(${_focus.rid})`, label:`🔥 ${esc(_focus.name)} ${(_focusMeta&&_focusMeta.runs||1)+1}회차 · 다음 ★ 도전`}
-            : (gi.n<3 && readyCount<3)
-            ? {on:'Game.goSelect()', label:`✨ 새 연습생 스카우트 · ${readyCount}/3`}
-            : (gi.n<3 ? {on:'DG.editLineup()', label:'📋 포지션 직접 고르기'}
-              : {on:'DG.doDebut()', label:'🎬 이 조합으로 데뷔 준비'}),
+          cta:{on:_nextProgress.on,label:_nextProgress.label},
           next:_repeat&&_focusMeta?`영구 계승 +${4+_focusMeta.star*3} · 다음 ★ 조건 ${this.idolNextGoal(_focusMeta)}`:'',
           goal:_focus&&_focus.incomplete?`${esc(_focus.name)} 미완성 카드 · 정식 등록 도전`
             :(_repeat&&_focusMeta?`${esc(_focus.name)} 다음 ★ · ${this.idolNextGoal(_focusMeta)}`
@@ -6063,7 +6073,7 @@ window.addEventListener("popstate", ()=>{
       const fd=fandomOf(fav), fdWith=koWith(fd.name,'과','와'), choices=this.dailyChoices(fav), hist=(this.data.bondHistory||[]).filter(x=>x.rid===fav.rid).slice(-4).reverse();
       const weekDots=Array.from({length:7},(_,i)=>`<i class="${i<Math.min(7,state.streak)?'on':''}"></i>`).join('');
       const hero=`<div class="daily-hero"><div class="daily-kicker">DAILY FANDOM PROJECT</div><div class="daily-title">${esc(fdWith)} 만드는<br>${esc(fav.name)}의 오늘</div>
-        <div class="daily-copy">오늘의 선택은 내일 팬덤의 답장으로 돌아오고, 다음 재육성에서 실제 힘이 돼요.</div>
+        <div class="daily-copy">오늘의 선택은 내일 팬덤의 답장으로 돌아오고, 다음 RUN에서 실제 힘이 돼요.</div>
         <div class="daily-idol">${this.idolCardHTML(fav,{favorite:true})}</div>
         <div class="daily-streak"><b>연속 ${state.streak}일</b><span>3일 마이크 · 7일 팬 소통 카드</span><div class="daily-dots">${weekDots}</div></div></div>`;
       let replyOpen='';
@@ -6072,8 +6082,12 @@ window.addEventListener("popstate", ()=>{
       if(ready){ const rf=this.rosterById(ready.rid)||{rid:ready.rid,name:ready.idolName||'이전 아이돌',_fandomName:ready.fandomName||'팬덤'}, rm=this.dailyEchoCopy(ready.kind,rf,false,ready);
         action=rm?`<div class="daily-reply"><div class="daily-reply-row"><img src="${rm.img}" alt=""><div><div class="daily-reply-kicker">${esc(rm.kicker)} · ARRIVED</div><h3>${esc(rf.name)}의 ${String(ready.kind).startsWith('promise:')?'지난 RUN 장면':'어제 선택'}에 답장이 왔어요</h3></div></div><p>열어보기 전까지 내용은 비밀이에요. 답장을 확인하면 오늘 프로젝트와 추가 RUN 보정이 열려요.</p><div class="daily-reply-reward"><span>수신일 ${esc(ready.revealDay)}</span><b>추가 보정 포함</b></div></div><button class="btn" style="margin-top:10px;width:100%" onclick="DG.claimDailyEcho()">팬덤 답장 열기</button>`:'';
       } else if(state.done){ const picked=choices.find(x=>x.id===state.choice)||choices[0], pending=(this.data.dailyBoosts||[]).filter(x=>x.rid===fav.rid&&!x.usedAt).length;
-        action=`<div class="daily-done"><b>오늘의 프로젝트 완료</b><p>${esc(picked.nm)} · ${esc(picked.effect)}<br>다음 재육성 보정 ${pending}개 대기 중 · 내일 00:00(KST) 팬덤 답장 도착</p></div>
-          <button class="btn" style="margin-top:10px;width:100%" onclick="DG.retrain(${fav.rid})">${esc(fav.name)} 다음 RUN 준비하기</button>`;
+        const next=this.progressAction(fav);
+        const banked=next.kind==='scout'||next.kind==='lineup'||next.kind==='debut'
+          ? `${esc(fav.name)} 다음 RUN 보정 ${pending}개는 보관 중 · 지금은 첫 그룹을 완성할 차례`
+          : `다음 RUN 보정 ${pending}개 대기 중`;
+        action=`<div class="daily-done"><b>오늘의 프로젝트 완료</b><p>${esc(picked.nm)} · ${esc(picked.effect)}<br>${banked} · 내일 00:00(KST) 팬덤 답장 도착</p></div>
+          <button class="btn" style="margin-top:10px;width:100%" onclick="${next.on}">${next.label}</button>`;
       } else { action=`<div class="daily-section-title"><b>오늘 무엇을 함께할까?</b><span>하나만 선택</span></div><div class="daily-options">${choices.map(c=>
           `<button class="daily-option" onclick="DG.completeDaily('${c.id}')"><img src="${c.img}" alt=""><span><b>${esc(c.nm)}</b><small>${esc(c.copy)}</small></span><em>${esc(c.effect)}</em></button>`).join('')}</div>`; }
       const memory=hist.length?`<div class="daily-section-title"><b>${esc(koWith(fav.name,'과','와'))} 함께한 기록</b><span>${hist.length}개 표시</span></div><div class="daily-done" style="padding:3px 10px">${hist.map(x=>
@@ -6532,10 +6546,8 @@ window.addEventListener("popstate", ()=>{
             <span class="rg-bar"><i style="width:${Math.max(5,pct)}%"></i></span></div>`; }).join('')}</div>` : '';
       const idolR=res.newRid?this.rosterById(res.newRid):null;
       const idolGroup=idolR?this.groupOfRid(idolR.rid):null;
-      const readyCount=(this.data.roster||[]).filter(r=>!r.incomplete).length;
       const keptAfterFail=!!(idolR&&!res.debuted&&!idolR.incomplete);
-      const needScout=!!(idolR&&res.debuted&&!idolR.incomplete&&readyCount<3);
-      const readyForLineup=!!(idolR&&res.debuted&&!idolR.incomplete&&!idolGroup&&readyCount>=3);
+      const nextAction=this.progressAction(idolR);
       const idolReveal=idolR?`<div class="res-idol-reveal">
         <div class="res-card-kicker">${idolR.incomplete?'TRY AGAIN CARD':keptAfterFail||!res.adopted?'RUN RECORDED':((idolR.runs||1)>1?'BEST VERSION UPDATED':'NEW IDOL CARD')}</div>
         ${this.idolCardHTML(idolR,{cls:'result-idol-card',state:idolR.incomplete?'incomplete':(keptAfterFail||!res.adopted?'complete':'new'),onclick:`DG.showRosterDetail(${idolR.rid})`})}
@@ -6546,11 +6558,10 @@ window.addEventListener("popstate", ()=>{
         ${titleChips}
         <div class="dg-res-cards"><b>SUPPORT CARD · 다음 육성 장비</b><div class="dg-chips" style="margin-top:6px">${chips}</div></div>
         ${goalPull}
-        ${needScout?`<button class="btn" onclick="Game.goSelect()" style="margin-top:10px">새 아이돌 육성 · ${readyCount}/3</button>`:''}
-        ${readyForLineup?`<button class="btn" onclick="DG.go();DG.editLineup()" style="margin-top:10px">📋 데뷔조 편성 · ${readyCount}/3 준비 완료</button>`:''}
-        ${idolR?`<button class="btn ${(needScout||readyForLineup)?'ghost':''}" onclick="DG.retrain(${idolR.rid})" style="margin-top:${(needScout||readyForLineup)?'9':'10'}px">${esc(idolR.name)} ${_rm&&_rm.status==='failed'?'미완결 약속 다시 도전':_rm&&_rm.status==='success'?'이 장면 이어서 재육성':idolR.incomplete||keptAfterFail?'다시 도전':'재육성 · 다음 ★ 도전'}</button>`:''}
+        <button class="btn" onclick="${nextAction.on}" style="margin-top:10px">${nextAction.label}</button>
+        ${idolR&&!['promiseRetry','retry','retrain'].includes(nextAction.kind)?`<button class="btn ghost" onclick="DG.retrain(${idolR.rid})" style="margin-top:9px">🔥 ${esc(idolR.name)} 재육성 · 다음 ★ 도전</button>`:''}
         ${res.debuted?`<button class="btn ghost" onclick="${idolGroup?'DG.showBattleLobby()':'DG.goRoster()'}" style="margin-top:9px">${idolGroup?`${esc(idolGroup.name)}에서 강화 확인`:'아이돌 카드 보관함 보기'}</button>`:''}
-        ${(!needScout&&!readyForLineup)?`<button class="btn ghost" onclick="Game.goSelect()" style="margin-top:9px">＋ 새 아이돌 육성</button>`:''}</div>`;
+        ${nextAction.kind!=='scout'?`<button class="btn ghost" onclick="Game.goSelect()" style="margin-top:9px">＋ 새 아이돌 육성</button>`:''}</div>`;
       if(res.debuted) setTimeout(()=>{ try{toast('연습생 숙소 합류! 📋');}catch(e){} }, 450);
       setTimeout(()=>{ try{ this.checkAchv(); }catch(e){} }, 1400);   // #7 완주 직후 업적 토스트
     },
