@@ -1501,17 +1501,24 @@ window.I18N = {
   Object.assign(window.I18N.en,{
     ev_themepick_title:"Theme Pick Nominee!",ev_themepick_text:"This RUN is nominated for the monthly Theme Pick. First place earns a major outdoor ad!",ev_themepick_c1:"Rally the fandom for Theme Pick",ev_themepick_w_l:"Theme Pick #1!",ev_themepick_w_d:"Fans <b>way up↑↑</b> · Styling <b>+18</b>",ev_themepick_lo_l:"The ranking race overheated",ev_themepick_lo_d:"Mental <b>-12</b> · Fans <b>↓</b>",ev_themepick_c2:"Join at a steady pace (safe fan gain)",
     ev_freetalk_title:"Trending on Free Talk!",ev_freetalk_text:"This RUN's fancam is #1 on Free Talk, the fan board. New posts are pouring in.",ev_freetalk_c1:"Reply to the Free Talk buzz (Fans ↑↑, Mental +8)",
-    ev_miracle_title:"Miracle of the Month!",ev_miracle_text:"This RUN was selected as the month’s most talked-about rookie project.",ev_miracle_c1:"Thank the fandom (Fans ↑↑, Mental +10)"
+    ev_miracle_title:"Miracle of the Month!",ev_miracle_text:"This RUN was selected as the month’s most talked-about rookie project.",ev_miracle_c1:"Thank the fandom (Fans ↑↑, Mental +10)",
+    ev_mv_c2:"Use a safer cut (Styling +12)",ev_mv_w_d:"Styling <b>+30</b> · Stage Planning <b>+16</b> · Fans <b>↑↑</b>",ev_collab_w_d:"Vocal Stage <b>+24</b> · Stage Planning <b>+20</b> · Fans <b>way up↑↑</b>"
   });
   Object.assign(window.I18N.ja,{
     ev_themepick_title:"テーマピック候補に選出！",ev_themepick_text:"今回のRUNが今月のテーマピック候補に。1位なら大型屋外広告！",ev_themepick_c1:"ファンダムとテーマピックに全力",ev_themepick_w_l:"テーマピック1位！",ev_themepick_w_d:"ファン <b>大幅↑↑</b>・スタイリング <b>+18</b>",ev_themepick_lo_l:"順位争いが過熱",ev_themepick_lo_d:"メンタル <b>-12</b>・ファン <b>↓</b>",ev_themepick_c2:"無理せず参加（ファン安定増加）",
     ev_freetalk_title:"フリートークでリアルタイム話題！",ev_freetalk_text:"今回のRUNのファンカムがファン掲示板の1位。投稿が次々と届いている。",ev_freetalk_c1:"フリートークの反応に応える（ファン↑↑・メンタル+8）",
-    ev_miracle_title:"今月のミラクル！",ev_miracle_text:"今回のRUNが今月最も話題になった新人プロジェクトに選ばれた。",ev_miracle_c1:"ファンダムに感謝する（ファン↑↑・メンタル+10）"
+    ev_miracle_title:"今月のミラクル！",ev_miracle_text:"今回のRUNが今月最も話題になった新人プロジェクトに選ばれた。",ev_miracle_c1:"ファンダムに感謝する（ファン↑↑・メンタル+10）",
+    ev_cf_w_d:"スタイリング <b>+36</b>・ファン <b>↑↑↑</b>",ev_cf_lo_d:"スタイリング <b>+5</b>・メンタル <b>-12</b>・ファン <b>↓</b>",ev_cf_c2:"まず基礎を固める（スタイリング +12）",
+    ev_selfwrite_c1:"公開する（舞台企画 +24・ファン↑）",ev_tour_c1:"最後までやり切る（スタイリング・ファン交流 +14・コンディション -16・ファン↑↑）",
+    ev_concept_f_w_d:"スタイリング <b>+26</b>・ファン交流 <b>+18</b>・ファン <b>↑↑</b>",ev_concept_m_w_d:"スタイリング <b>+22</b>・パフォーマンス <b>+22</b>・ファン <b>↑↑</b>",
+    ev_mv_text:"大胆なMV絵コンテ。スタイリングと舞台コンセプトの一撃を狙う？",ev_mv_c2:"安全な構成にする（スタイリング +12）",ev_mv_w_d:"スタイリング <b>+30</b>・舞台企画 <b>+16</b>・ファン <b>↑↑</b>",ev_collab_w_d:"ボーカル舞台 <b>+24</b>・舞台企画 <b>+20</b>・ファン <b>大幅↑↑</b>",
+    ev_photobook_c2:"自然な日常写真集（スタイリング +14）",ev_photobook_w_d:"スタイリング <b>+30</b>・ファン <b>↑↑↑</b>",ev_photobook_lo_d:"スタイリング <b>+8</b>・ファン <b>↓</b>",ev_diet_c1:"集中管理する（スタイリング +18・コンディション -12）",ev_diet_c2:"バランスを守る（スタイリング +8・コンディション +8）",ev_awards_w_d:"ファン <b>大幅↑↑</b>・メンタル <b>+10</b>・スタイリング <b>+10</b>"
   });
   Object.assign(window.I18N.id,{
     ev_themepick_title:"Nominasi Theme Pick!",ev_themepick_text:"RUN ini masuk nominasi Theme Pick bulanan. Peringkat pertama mendapat iklan luar ruang besar!",ev_themepick_c1:"Ajak fandom mengejar Theme Pick",ev_themepick_w_l:"Theme Pick peringkat pertama!",ev_themepick_w_d:"Penggemar <b>naik besar↑↑</b> · Styling <b>+18</b>",ev_themepick_lo_l:"Persaingan peringkat memanas",ev_themepick_lo_d:"Mental <b>-12</b> · Penggemar <b>↓</b>",ev_themepick_c2:"Ikut dengan ritme stabil (penggemar naik aman)",
     ev_freetalk_title:"Trending di Free Talk!",ev_freetalk_text:"Fancam RUN ini berada di peringkat pertama papan penggemar. Postingan baru terus berdatangan.",ev_freetalk_c1:"Balas antusiasme Free Talk (penggemar ↑↑, mental +8)",
-    ev_miracle_title:"Miracle Bulan Ini!",ev_miracle_text:"RUN ini terpilih sebagai proyek rookie yang paling ramai dibicarakan bulan ini.",ev_miracle_c1:"Berterima kasih pada fandom (penggemar ↑↑, mental +10)"
+    ev_miracle_title:"Miracle Bulan Ini!",ev_miracle_text:"RUN ini terpilih sebagai proyek rookie yang paling ramai dibicarakan bulan ini.",ev_miracle_c1:"Berterima kasih pada fandom (penggemar ↑↑, mental +10)",
+    ev_mv_c2:"Pilih susunan aman (Styling +12)",ev_mv_w_d:"Styling <b>+30</b> · Perencanaan Panggung <b>+16</b> · Penggemar <b>↑↑</b>",ev_collab_w_d:"Panggung Vokal <b>+24</b> · Perencanaan Panggung <b>+20</b> · Penggemar <b>naik besar↑↑</b>"
   });
   // 선언된 언어들 중 실제 언어팩(I18N)이 존재하는 것만 활성. 팩 추가하면 스위처에 자동 노출.
   // 상용 안전 게이트: RUN 제작 모델로 전량 검수된 언어만 노출한다.
@@ -1519,8 +1526,20 @@ window.I18N = {
   const DECLARED=["ko","en","ja","id"];
   const has=l=>DECLARED.includes(l)&&!!I18N[l];
   const SUPPORTED=DECLARED.filter(has);
+  function normalizeLocale(raw){
+    let code=String(raw||'').trim().toLowerCase().replace(/_/g,'-').split('-')[0];
+    if(code==='in')code='id';
+    if(code==='jp')code='ja';
+    return has(code)?code:null;
+  }
   function urlLang(){
-    try{ const q=new URLSearchParams(location.search||'').get('lang'); return q&&has(q)?q:null; }catch(e){ return null; }
+    try{
+      const q=new URLSearchParams(location.search||'');
+      // Native GameWebView currently sends `locale=jp`. Treat both launch query
+      // forms as document-lifetime contracts so restored state cannot switch the
+      // page back to a previously saved Korean locale a few seconds later.
+      return normalizeLocale(q.get('lang'))||normalizeLocale(q.get('locale'));
+    }catch(e){ return null; }
   }
   function detect(){
     const q=urlLang(); if(q) return q;

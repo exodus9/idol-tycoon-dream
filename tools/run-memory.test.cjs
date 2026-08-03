@@ -11,15 +11,22 @@ assert.match(opts[1].title,/플리/);
 const state={mode:'quick',runId:'r1',runNo:3,runDirection:'vocal',vocal:20,charm:10,mental:72,stam:80,cond:80,fanBond:18,fans:100,trainCount:{vocal:2}};
 RunMemory.applyStart(state,opts[0]);
 assert.equal(RunMemory.progress(state).met,false);
-assert.equal(RunMemory.resolveCheckpoint(state,'commit').choice,'commit');
+const committed=RunMemory.resolveCheckpoint(state,'commit');
+assert.equal(committed.choice,'commit');
+assert.equal(committed.met,true,'a direct promise boost at 2/3 must visibly complete the 3/3 goal');
 assert.equal(state.vocal,28);
-state.trainCount.vocal=3;
 const success=RunMemory.evaluate(state);
 assert.equal(success.status,'success');
 assert.equal(success.run,3,'immutable memory must retain the exact RUN number');
 RunMemory.applyReward(state,success);
 assert.equal(state.fans,900);
 assert.equal(RunMemory.resolveCheckpoint(state,'adapt'),null,'checkpoint resolves once');
+
+const fandomCommit={mode:'quick',runId:'f1',runDirection:'vocal',mental:70,stam:50,cond:70,fanBond:20,fans:0,trainCount:{charm:1}};
+RunMemory.applyStart(fandomCommit,opts[1]);
+const fandomCommitted=RunMemory.resolveCheckpoint(fandomCommit,'commit');
+assert.equal(fandomCommitted.value,2);
+assert.equal(fandomCommitted.met,true,'the fandom promise boost must advance its displayed training count');
 
 const failedPrev={runId:'r0',run:1,baseType:'fandom',title:'플리와 앙코르 약속',status:'failed'};
 const retry=RunMemory.options({...ctx,previous:failedPrev})[0];

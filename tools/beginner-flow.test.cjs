@@ -98,6 +98,13 @@ test('award-gate advice also filters recommendations through the current hand',(
   assert.ok(advice.includes("if(!recommend)return"));
 });
 
+test('the exact next-gate card gets a distinct localized marker',()=>{
+  const html=require('node:fs').readFileSync(require('node:path').join(__dirname,'..','index.html'),'utf8');
+  assert.ok(html.includes("const goalPick=!!(advice&&advice.recommendKey&&impactStat===advice.recommendKey)"));
+  assert.ok(html.includes("dgT('run.goalCard')"));
+  assert.ok(html.includes("${goalPick?' goal':''}"));
+});
+
 test('gate coach never compares incomparable stage-power and card-growth numbers',()=>{
   const html=require('node:fs').readFileSync(require('node:path').join(__dirname,'..','index.html'),'utf8');
   const advice=html.slice(html.indexOf('  gateAdvice(s,nxw)'),html.indexOf('  // 상황 반응형 코치'));

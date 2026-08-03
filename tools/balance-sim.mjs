@@ -31,6 +31,7 @@ const REQUIRED_SOURCE = [
   "n>1 ? (mode==='quick'?1.15:(n>=4?1.24:1.18)) : 1",
   'RunBalanceRules.trendMultiplier(stat,trendStat)',
   'RunBalanceRules.protectsFirstGate(s.runNo,c.gate,win)',
+  'const FIRST_RUN_RIVAL_MULT = 0.88',
   'BeginnerFlow.productiveHand(s.hand,TRAIN_CARDS.concat([RARE_CARD])',
 ];
 for (const needle of REQUIRED_SOURCE) {
@@ -299,8 +300,8 @@ function powerAtGate(state, gate, random, mult) {
   return mine * state.cardGate * mult;
 }
 
-function resolveRankGate(state, gate, random, strategy, difficulty) {
-  const base = gate.base * difficulty;
+function resolveRankGate(state, gate, random, strategy, difficulty, runNo) {
+  const base = gate.base * difficulty * (runNo === 1 ? 0.88 : 1);
   const expected = powerAtGate(state, gate, () => 0.5, 1) / base;
   const mult = stageMultiplier(state, random, strategy, expected);
   const mine = powerAtGate(state, gate, random, mult);
@@ -346,7 +347,7 @@ function simulateOne(mode, supportKey, strategy, runNo, random) {
       state.fans += out.debut ? Math.round(1500 + total * 4) : Math.round(total * 2);
     } else if (schedule.compets[state.week]) {
       const gate = schedule.compets[state.week];
-      const result = resolveRankGate(state, gate, random, strategy, difficulty);
+      const result = resolveRankGate(state, gate, random, strategy, difficulty, runNo);
       if (gate.gate) out.gate = result;
       else if (gate.final) out.final = result;
       else out.stage = result;

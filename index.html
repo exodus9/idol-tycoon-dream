@@ -329,6 +329,8 @@
   .hcard.rare::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.16) 49%,transparent 56%);background-size:250% 100%;animation:hcShine 3.2s ease-in-out infinite}
   @keyframes hcShine{0%,60%{background-position:180% 0}100%{background-position:-120% 0}}
   .hcard .hc-tag{position:absolute;top:6px;right:10px;font-size:8.5px;font-weight:900;color:var(--gold);letter-spacing:.5px}
+  .hcard.goal{border-color:#62dcff;box-shadow:0 0 0 1px rgba(98,220,255,.42),0 0 18px -5px rgba(98,220,255,.62),0 4px 0 rgba(0,0,0,.28)}
+  .hcard .hc-tag.goal{color:#8ae8ff;text-shadow:0 1px 7px rgba(53,183,255,.65)}
   /* 기력/컨디션 HUD */
   .cond-face{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:52px}
   .cond-face .cf{font-size:24px;line-height:1}
@@ -1058,7 +1060,7 @@
 <script src="daily-retention.js?v=d7cd3127fd"></script>
 <script src="progress-action.js?v=a280a2c299"></script>
 <script src="mentor-inheritance.js?v=9b37b72298"></script>
-<script src="run-memory.js?v=be63959df4"></script>
+<script src="run-memory.js?v=4e9d4557c3"></script>
 <script src="fandom-onboarding.js?v=b79c701b69"></script>
 <script src="season-edition.js?v=5b6e84402d"></script>
 <script src="beginner-flow.js?v=30f2aee718"></script>
@@ -1067,8 +1069,8 @@
 <script src="completion-transaction.js?v=8c3a470bcb"></script>
 <script src="product-telemetry.js?v=216a8e51f6"></script>
 <script src="run-adoption.js?v=f5ce39d47f"></script>
-<script src="dg-i18n.js?v=c66fd5003b"></script>
-<script src="i18n.js?v=1d3ac651ea"></script>
+<script src="dg-i18n.js?v=0636aa5572"></script>
+<script src="i18n.js?v=97c85364fb"></script>
 <script src="idols.js?v=sync202608040520"></script>
 <script>
 // 검색용 아이돌: idols.js의 window.IDOL_DB (최애돌 실데이터 = 활성 아이돌만, 전일 하트투표 순위로 정렬됨). 로드 실패 시 빈 배열.
@@ -1584,6 +1586,7 @@ const PEOPLE_EMOJI = ["🧑‍🎤","👩‍🎤","🎤","🎙️","🧑‍🎤"
 //   데뷔 12주(봄) / 국내 무대 20·28(초여름·한여름) / 월드진출 쇼케이스 36(가을,관문) / 월드쇼 44(늦가을) / 연말 글로벌대상 52(12월).
 //   ※ 연말 시상식(대상)은 1년에 한 번 → 52주에만. 36주는 '월드 진출 심사'이지 대상 아님.
 const AWARD_PEAK_K = 0.34;   // 시상식에서 원톱 스탯 반영 계수(낮을수록 몰빵 불리)
+const FIRST_RUN_RIVAL_MULT = 0.88; // 프롤로그는 규칙을 익히고 첫 카드를 자랑스럽게 남기는 구간
 // ===== 턴/관문 스케줄 (드림그룹 프로토) =====
 // ⚡ full=24턴(월2턴×12개월), 관문 6·12·18·24 균등 → 1차오디션(6)·예선무대(12)·서바이벌(18,gate)·데뷔파이널(24,final).
 //    quick(간이)=12턴, 관문 3·6·9·12(= full의 정확히 절반). 성장률은 그대로 두고 턴만 절반이라
@@ -1941,15 +1944,15 @@ const Game = {
     // 실제 결과 의미(진출 관문/순위전/파이널)와 지금 누를 수 있는 행동만 안내한다.
     if(c.gate&&(s.runNo||1)===1)return {risk:false,html:dgT('run.firstGateProtected')};
     if(c.final){
-      if(need>0&&recommend)return {risk:true,html:dgT('run.finalImprove',{stat:recommendName})};
+      if(need>0&&recommend)return {risk:true,recommendKey:recommend.k,html:dgT('run.finalImprove',{stat:recommendName})};
       return {risk:need>0,html:dgT(need>0?'run.finalRecover':'run.finalReady')};
     }
     if(!c.gate){
-      if(need>0&&recommend)return {risk:true,html:dgT('run.rankImprove',{stat:recommendName})};
+      if(need>0&&recommend)return {risk:true,recommendKey:recommend.k,html:dgT('run.rankImprove',{stat:recommendName})};
       return {risk:need>0,html:dgT(need>0?'run.rankRecover':'run.rankReady')};
     }
     if(!recommend)return {risk:need>0,html:dgT(need>0?'run.gateRecover':'run.safeReady')};
-    return need>0?{risk:true,html:dgT('run.gateImprove',{stat:recommendName})}:{risk:false,html:dgT('run.safeAdvice',{stat:recommendName})};
+    return need>0?{risk:true,recommendKey:recommend.k,html:dgT('run.gateImprove',{stat:recommendName})}:{risk:false,recommendKey:recommend.k,html:dgT('run.safeAdvice',{stat:recommendName})};
   },
   // 상황 반응형 코치 한 줄(버디 멘트) — 관문 임박·저컨디션·저멘탈·호조에 반응
   coachLine(s, dday, fore){
@@ -2033,10 +2036,12 @@ const Game = {
       const stamNow=(s.stam!=null?s.stam:100);
       const noStam = c.cost>0 && stamNow < c.cost;
       const costTx = c.cost>0?`−${c.cost}`:`+${-c.cost}`;
-      const badge = c.kind==="rare"?'<span class="hc-tag">RARE ✦</span>'
+      const impactStat=(c.kind==="rare"||c.kind==="burst")?s.runDirection:c.stat;
+      const goalPick=!!(advice&&advice.recommendKey&&impactStat===advice.recommendKey);
+      const badge = goalPick?`<span class="hc-tag goal">🎯 ${dgT('run.goalCard')}</span>`
+        : c.kind==="rare"?'<span class="hc-tag">RARE ✦</span>'
         : c.kind==="burst"?'<span class="hc-tag" style="color:#ff7a4d">RISK ⚠</span>'
         : (spec?'<span class="spk">⭐</span>':'');
-      const impactStat=(c.kind==="rare"||c.kind==="burst")?s.runDirection:c.stat;
       const capped=!!impactStat&&(Number(s[impactStat])||0)>=800;
       const nextCombo=s.comboStat===impactStat?(s.combo||0)+1:1;
       const previewInput=impactStat?{base:c.base,current:s[impactStat],growthMult:growthMult(s[impactStat]),talentMult:impactStat===s.runDirection?1.25:1,trendMult:RunBalanceRules.trendMultiplier(impactStat,_trendStat),cardGrowth:s.cardGrowth||1,comboMult:1+Math.min(.6,(nextCombo-1)*.15),buffMult:s.buff&&s.buff.turns>0?s.buff.mult:1}:null;
@@ -2048,7 +2053,7 @@ const Game = {
         : c.kind==='rest'?dgT('run.recover')
         : c.kind==='live'?dgT('run.fansGain')
         : c.kind==='focus'?'3 TURN · +30%':dgT('run.specialEffect');
-      return `<button class="hcard act${c.kind==="rare"?' rare':''}${c.kind==="burst"?' burst':''}${spec?' spec':''}${noStam||capped?' dim':''}" style="--tc:${tc}" onclick="Game.playCard(${i})"${capped?' disabled aria-disabled="true"':''}>
+      return `<button class="hcard act${c.kind==="rare"?' rare':''}${c.kind==="burst"?' burst':''}${spec?' spec':''}${goalPick?' goal':''}${noStam||capped?' dim':''}" style="--tc:${tc}" onclick="Game.playCard(${i})"${capped?' disabled aria-disabled="true"':''}>
         ${badge}
         <span class="hc-ic">${c.ic}</span>
         <span class="hc-nm">${cardNm(c)}${onTrend?' <span class="hc-trend">📈</span>':''}<small class="hc-impact">${impact}</small></span>
@@ -2652,7 +2657,7 @@ const Game = {
     }
     mine *= (s.cardGate||1) * (mult||1);   // 카드 보정 × ⭐마지막 전략(침착/올인)
     const idxs=[]; while(idxs.length<3){ const r=Math.floor(Math.random()*RIVAL_PEOPLE.length); if(!idxs.includes(r)) idxs.push(r); }
-    const rivalBase=c.base*this.difficulty(s);
+    const rivalBase=c.base*this.difficulty(s)*((s.runNo||1)===1?FIRST_RUN_RIVAL_MULT:1);
     const rivals=idxs.map((i,n)=>({name:window.LANG==='ko'?RIVAL_PEOPLE[i]:dgT('stage.rivalName',{number:n+1}), emoji:PEOPLE_EMOJI[i], score:rivalBase*(0.75+Math.random()*0.5), me:false}));   // 다회차 라이벌 성장 반영
     const board=[{name:idolName(s.idol), emoji:"⭐", score:mine, me:true}, ...rivals].sort((a,b)=>b.score-a.score);
     const myRank=board.findIndex(r=>r.me)+1;

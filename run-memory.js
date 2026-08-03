@@ -56,8 +56,18 @@
     state.promiseCheckpoint=commit?'commit':'adapt';
     if(commit){
       state.stam=Math.max(0,Number(state.stam||0)-8);
-      if(type==='signature') state[state.runDirection]=Number(state[state.runDirection]||0)+8;
-      else if(type==='fandom') state.fanBond=Math.min(100,Number(state.fanBond||0)+5);
+      // "Direct boost toward the goal" must advance count-based promises too.
+      // Previously 2/3 stayed 2/3 after committing, contradicting the choice copy.
+      if(type==='signature'){
+        state[state.runDirection]=Number(state[state.runDirection]||0)+8;
+        state.trainCount=state.trainCount||{};
+        state.trainCount[state.runDirection]=Number(state.trainCount[state.runDirection]||0)+1;
+      }
+      else if(type==='fandom'){
+        state.fanBond=Math.min(100,Number(state.fanBond||0)+5);
+        state.trainCount=state.trainCount||{};
+        state.trainCount.charm=Number(state.trainCount.charm||0)+1;
+      }
       else state.mental=Math.min(100,Number(state.mental||0)+5);
     }else{
       state.cond=Math.min(100,Number(state.cond||0)+5);

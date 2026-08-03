@@ -30,6 +30,14 @@ test('result screen always exposes the appropriate next-day fandom bridge',()=>{
   assert.ok(resultRenderer.indexOf('${returnHook}')<resultRenderer.indexOf('${idolReveal}'),'next-day bridge must appear before the tall idol card');
 });
 
+test('the next-day hook never claims a completed RUN is still continuing',()=>{
+  const banned=[/이 RUN을 내일로 이어가기/,/Carry this RUN into tomorrow/i,/このRUNを明日へつなぐ/,/Lanjutkan RUN ini besok/i];
+  for(const [i,locale] of ['ko','en','ja','id'].entries()){
+    const copy=dgI18n.t(locale,'result.returnStartTitle');
+    assert.equal(banned[i].test(copy),false,`${locale}: ${copy}`);
+  }
+});
+
 test('result explains why final rank and card completion grade can differ',()=>{
   assert.ok(html.includes("dgT('result.rankGradeExplain'"));
   assert.ok(html.includes('score:Math.round(res.runGradeScore||0)'));

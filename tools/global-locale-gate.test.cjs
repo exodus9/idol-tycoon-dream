@@ -27,6 +27,7 @@ test('launch locale detection covers Korean, English, Japanese and Indonesian',(
   assert.equal(boot('id-ID').LANG,'id');
   assert.equal(boot('in-ID').LANG,'id');
   assert.equal(boot('ko-KR','?lang=id').LANG,'id','an explicit QA/deep-link locale must override the device language');
+  assert.equal(boot('ko-KR','?locale=jp').LANG,'ja','the current native Japanese locale query must win at boot');
   assert.deepEqual(Array.from(boot('en-US').langList(),x=>x.code),['ko','en','ja','id']);
   assert.ok(html.includes('src="dg-i18n.js'));
 });
@@ -40,6 +41,16 @@ test('an explicit URL locale stays authoritative after restored page state write
   assert.equal(w.LANG,'ja');
   w.setLang('en',{user:true});
   assert.equal(w.LANG,'en','an explicit in-game language choice may replace the deep-link default');
+});
+
+test('a native locale query stays authoritative after restored page state writes',()=>{
+  const w=boot('ko-KR','?locale=jp');
+  assert.equal(w.LANG,'ja');
+  w.LANG='ko';
+  w.setLang('ko');
+  assert.equal(w.LANG,'ja','restored Korean state must not overwrite the native Japanese launch contract');
+  w.setLang('en',{user:true});
+  assert.equal(w.LANG,'en','an explicit in-game choice may replace the native default');
 });
 
 test('app context applies a locale without a favorite while an explicit URL locale stays authoritative',()=>{
@@ -149,6 +160,15 @@ test('Choeaedol event decisions and outcomes are reviewed in every release local
       if(locale!=='ja') assert.equal(/[가-힣]/.test(pack[key]),false,`${locale}.${key} contains Korean`);
     }
   }
+});
+
+test('Japanese event rewards use the same production-area names as the growth UI',()=>{
+  const pack=boot('ja-JP').I18N.ja;
+  for(const key of ['ev_mv_w_d','ev_collab_w_d','ev_cf_w_d']){
+    assert.equal(/ビジュアル|作曲/.test(pack[key]),false,`${key} uses a retired stat label`);
+  }
+  assert.match(pack.ev_mv_w_d,/スタイリング/);
+  assert.match(pack.ev_mv_w_d,/舞台企画/);
 });
 
 test('critical achievement and support-card renderers use locale keys instead of Korean literals',()=>{
