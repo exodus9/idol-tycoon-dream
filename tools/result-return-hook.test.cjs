@@ -32,13 +32,13 @@ test('result screen always exposes the appropriate next-day fandom bridge',()=>{
 
 test('result explains why final rank and card completion grade can differ',()=>{
   assert.ok(html.includes("dgT('result.rankGradeExplain'"));
-  assert.ok(html.includes('peak:Math.round(res.runPeak||0)'));
+  assert.ok(html.includes('score:Math.round(res.runGradeScore||0)'));
   assert.ok(html.includes('average:Math.round(res.runAverage||0)'));
   assert.ok(html.includes('goal:this.idolNextGoal(this.idolCardMeta(idolR))'));
   assert.ok(html.includes('runAverage:Math.round(STATS.reduce'));
-  assert.ok(html.includes('runPeak:Math.round(top.score||0)'));
+  assert.ok(html.includes('runGradeScore:Math.round(top.score||0)'));
   for(const locale of ['ko','en','ja','id']){
-    const copy=dgI18n.t(locale,'result.rankGradeExplain',{grade:'D',peak:171,average:142,goal:'1 more RUN'});
+    const copy=dgI18n.t(locale,'result.rankGradeExplain',{grade:'D',score:171,average:142,goal:'1 more RUN'});
     assert.notEqual(copy,'result.rankGradeExplain');
     assert.match(copy,/D/); assert.match(copy,/171/); assert.match(copy,/142/);
   }

@@ -24,5 +24,7 @@ assert.match(html, /let g=growth\.applied;/,
   'result gain must equal the amount actually applied');
 assert.match(sim, /const growth = RunBalanceRules\.growthOutcome\(/,
   'balance simulator must use the same shared growth rule');
+assert.match(sim, /BeginnerFlow\.productiveHand\(/,
+  'balance simulator must also prevent an all-capped hand like the browser');
 
 console.log('growth truthfulness: OK');

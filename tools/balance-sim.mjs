@@ -16,6 +16,7 @@ import StageCriteria from '../stage-criteria.js';
 
 const require=createRequire(import.meta.url);
 const RunBalanceRules=require('../run-balance-rules.js');
+const BeginnerFlow=require('../beginner-flow.js');
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const source = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
@@ -30,6 +31,7 @@ const REQUIRED_SOURCE = [
   "mode==='quick'&&n>1 ? 1.15 : 1",
   'RunBalanceRules.trendMultiplier(stat,trendStat)',
   'RunBalanceRules.protectsFirstGate(s.runNo,c.gate,win)',
+  'BeginnerFlow.productiveHand(s.hand,TRAIN_CARDS.concat([RARE_CARD])',
 ];
 for (const needle of REQUIRED_SOURCE) {
   if (!source.includes(needle)) throw new Error(`index.html 수치가 바뀌었습니다. 시뮬레이터 동기화 필요: ${needle}`);
@@ -178,7 +180,7 @@ function drawHand(state, random) {
   hand.push(BY_ID.get(SITUATIONAL[Math.floor(random() * SITUATIONAL.length)]));
   if (random() < 0.22) hand[Math.floor(random() * hand.length)] = RARE;
   if (state.stam < 27 && !hand.some((card) => card.kind === 'rest')) hand[hand.length - 1] = BY_ID.get('rest');
-  return hand;
+  return BeginnerFlow.productiveHand(hand.map(card=>card.id),[...CARDS,RARE],state,state.spec,800).map(id=>BY_ID.get(id));
 }
 
 function nextGate(schedule, week) {
@@ -193,7 +195,11 @@ function desiredStats(gate, state) {
 }
 
 function chooseCard(hand, state, strategy, schedule) {
-  const affordable = hand.filter((card) => card.cost <= 0 || state.stam >= card.cost);
+  const impactStat=card=>card&&(card.stat||(['rare','burst'].includes(card.kind)?state.spec:null));
+  const affordable = hand.filter((card) => {
+    const stat=impactStat(card);
+    return (!stat||state[stat]<800)&&(card.cost <= 0 || state.stam >= card.cost);
+  });
   if (!affordable.length) return hand.find((card) => card.kind === 'rest') || hand[0];
   const rare = affordable.find((card) => card.kind === 'rare');
   if (rare) return rare;

@@ -79,6 +79,24 @@
     return trainable.sort((a,b)=>(Number(values[a])||0)-(Number(values[b])||0))[0]||null;
   }
 
+  function productiveHand(hand,cards,values,direction,cap){
+    const ids=Array.isArray(hand)?hand.slice():[];
+    const pool=(cards||[]).filter(Boolean);
+    const byId=new Map(pool.map(card=>[card.id,card]));
+    const current=values||{};
+    const limit=Math.max(1,Number(cap)||800);
+    const impactStat=card=>card&&(card.stat||(['rare','burst'].includes(card.kind)?direction:null));
+    const isCappedGrowth=card=>{const stat=impactStat(card);return !!stat&&(Number(current[stat])||0)>=limit;};
+    if(ids.some(id=>!isCappedGrowth(byId.get(id))))return ids;
+    // 드물게 세 장 모두 상한 성장 카드면 한 장만 유틸리티로 바꿔 진행 불능을 막는다.
+    // 일부만 상한이면 손패를 재추첨하지 않고 UI에서 MAX로 비활성화해 난이도와 빌드를 보존한다.
+    const replacement=pool.find(candidate=>['live','buff','rest'].includes(candidate.kind)&&!ids.includes(candidate.id));
+    if(!replacement)return ids;
+    const index=ids.findIndex(id=>isCappedGrowth(byId.get(id)));
+    if(index>=0)ids[index]=replacement.id;
+    return ids;
+  }
+
   function nextTurnLabel(week,total){
     const now=Math.max(1,Math.round(Number(week)||1));
     const end=Math.max(now,Math.round(Number(total)||now));
@@ -115,5 +133,5 @@
     return !!isGate&&!won&&Math.max(1,Math.round(Number(runNo)||1))===1;
   }
 
-  return Object.freeze({isFirstRun,recommendedDirection,recoveryState,recoveryHand,firstRunHand,actionableStats,recommendedTrainableStat,nextTurnLabel,debutProgress,protectsFirstGate});
+  return Object.freeze({isFirstRun,recommendedDirection,recoveryState,recoveryHand,firstRunHand,actionableStats,recommendedTrainableStat,productiveHand,nextTurnLabel,debutProgress,protectsFirstGate});
 });

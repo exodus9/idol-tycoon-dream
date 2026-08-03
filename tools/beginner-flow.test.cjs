@@ -53,6 +53,42 @@ test('gate advice never recommends an actionable stat that is already capped',()
   }),null);
 });
 
+test('a mixed hand keeps its build while capped growth is handled by the UI',()=>{
+  const cards=[
+    {id:'l_vocal',kind:'lesson',stat:'vocal',cost:27},
+    {id:'g_vocal',kind:'light',stat:'vocal',cost:13},
+    {id:'l_dance',kind:'lesson',stat:'dance',cost:27},
+    {id:'l_charm',kind:'lesson',stat:'charm',cost:25},
+    {id:'special',kind:'rare',stat:null,cost:22},
+    {id:'burst',kind:'burst',stat:null,cost:40},
+    {id:'live',kind:'live',stat:null,cost:22},
+    {id:'focus',kind:'buff',stat:null,cost:16},
+    {id:'rest',kind:'rest',stat:null,cost:-44}
+  ];
+  const values={vocal:800,dance:280,charm:140};
+  const hand=BeginnerFlow.productiveHand(['l_vocal','l_charm','focus'],cards,values,'vocal',800);
+  assert.deepEqual(hand,['l_vocal','l_charm','focus']);
+});
+
+test('an all-capped hand falls back to useful non-growth actions',()=>{
+  const cards=[
+    {id:'l_vocal',kind:'lesson',stat:'vocal',cost:27},
+    {id:'special',kind:'rare',stat:null,cost:22},
+    {id:'live',kind:'live',stat:null,cost:22},
+    {id:'focus',kind:'buff',stat:null,cost:16},
+    {id:'rest',kind:'rest',stat:null,cost:-44}
+  ];
+  const hand=BeginnerFlow.productiveHand(['l_vocal','special'],cards,{vocal:800},'vocal',800);
+  assert.deepEqual(hand,['live','special']);
+});
+
+test('capped growth is visibly disabled instead of pretending to add zero',()=>{
+  const html=require('node:fs').readFileSync(require('node:path').join(__dirname,'..','index.html'),'utf8');
+  assert.ok(html.includes("capped?dgT('run.areaMax'"));
+  assert.ok(html.includes("capped?' disabled aria-disabled=\"true\"'"));
+  assert.ok(html.includes("capped?'MAX':'⚡ '+costTx"));
+});
+
 test('award-gate advice also filters recommendations through the current hand',()=>{
   const html=require('node:fs').readFileSync(require('node:path').join(__dirname,'..','index.html'),'utf8');
   const advice=html.slice(html.indexOf('  gateAdvice(s,nxw)'),html.indexOf('  // 상황 반응형 코치'));
