@@ -1743,13 +1743,13 @@ const Game = {
     this._crop={img, min:mins, scale:mins, x:(V-img.width*mins)/2, y:(V-img.height*mins)/2};
     const ov=document.getElementById("ov"); ov.className="ov on"; ov.onclick=null;
     ov.innerHTML=`<div class="ev-card" style="max-width:300px;text-align:center">
-      <div class="ev-title" style="margin-bottom:2px">📷 사진 위치 조정</div>
-      <p class="muted" style="margin:0 0 10px;font-size:12px">드래그로 옮기고 · 슬라이더로 확대</p>
+      <div class="ev-title" style="margin-bottom:2px">📷 ${dgT('crop.title')}</div>
+      <p class="muted" style="margin:0 0 10px;font-size:12px">${dgT('crop.copy')}</p>
       <div class="cropvp" id="cropVp"><img id="cropImg" src="${img.src}"><div class="cring"></div></div>
       <input type="range" class="cropzoom" id="cropZoom" min="100" max="300" value="100" oninput="Game.cropZoom(this.value)">
       <div style="display:flex;gap:8px;margin-top:12px">
-        <button class="btn ghost" style="flex:1" onclick="var o=document.getElementById('ov');o.className='ov';o.onclick=null">취소</button>
-        <button class="btn" style="flex:1" onclick="Game.cropDone()">✓ 확정</button>
+        <button class="btn ghost" style="flex:1" onclick="var o=document.getElementById('ov');o.className='ov';o.onclick=null">${dgT('common.cancel')}</button>
+        <button class="btn" style="flex:1" onclick="Game.cropDone()">✓ ${dgT('crop.confirm')}</button>
       </div></div>`;
     this._cropApply();
     // 드래그(포인터) — 뷰포트 캡처
@@ -1810,8 +1810,8 @@ const Game = {
   },
   start(){
     if(this.hasSave()&&!this._replaceConfirmed){
-      try{ DG.confirmModal({title:'진행 중인 육성이 있어',body:'새 육성을 시작하면 현재 턴 진행은 덮어써져.<br><b>계속 키우던 아이를 이어갈까?</b>',
-        cancel:'계속 육성',ok:'새 육성 시작',onCancel:()=>this.continueGame(),
+      try{ DG.confirmModal({title:dgT('run.replaceTitle'),body:dgT('run.replaceCopy'),
+        cancel:dgT('run.keepPlaying'),ok:dgT('run.startNew'),onCancel:()=>this.continueGame(),
         onOk:()=>{ this._replaceConfirmed=true; this.start(); }}); }catch(e){}
       return;
     }
@@ -1820,7 +1820,7 @@ const Game = {
     this._finished=false;   // 새 판 = finish 멱등 가드 해제
     const mode=(this.trainMode==="quick")?"quick":"full";
     const runDirection=this.runDirection;
-    if(!STATS.some(x=>x.k===runDirection)){ try{toast('이번 RUN 무대 방향을 먼저 골라줘');}catch(e){} return; }
+    if(!STATS.some(x=>x.k===runDirection)){ try{toast(dgT('setup.startDisabled'));}catch(e){} return; }
     const seasonTarget=DG.seasonEditionFor(runDirection);
     const runPromise=DG.runPromiseForStart(this.runPromiseId);
     if(!runPromise){ try{toast('이번 RUN에서 지킬 약속을 골라줘');}catch(e){} return; }
@@ -2512,18 +2512,18 @@ const Game = {
     ov.innerHTML=`<div class="ev-card bond idol-moment">
       <div class="idol-moment-photo" ${m.img?`style="background-image:url('${esc(m.img)}')"`:''}></div>
       <div class="idol-moment-shade"></div><div class="idol-moment-body">
-      <div class="ev-banner">🫶 완주자가 남긴 멘토 링크</div>
+      <div class="ev-banner">🫶 ${dgT('mentor.banner')}</div>
       <div class="ev-title">${esc(m.name)} → ${esc(target)}</div>
-      <div class="ev-text">“내가 완주하며 배운 ${esc(mentorDirection)} 노하우야. 그대로 이어도 좋고, 네 무대로 바꿔도 좋아.”</div>
+      <div class="ev-text">“${dgT('mentor.copy',{direction:esc(mentorDirection)})}”</div>
       <div class="ev-choices locked" id="evc"></div></div></div>`;
     const box=document.getElementById('evc');
-    [{id:'follow',label:`${esc(m.name)}의 노하우를 그대로 잇기`,sub:`${esc(mentorDirection)} +10 · 멘탈 +3`},
-     {id:'remix',label:'이번 RUN 방식으로 재해석하기',sub:`${esc(statLabel(s.runDirection))} +8 · 유대 +5`}].forEach(ch=>{
+    [{id:'follow',label:dgT('mentor.follow',{name:esc(m.name)}),sub:dgT('mentor.followEffect',{direction:esc(mentorDirection)})},
+     {id:'remix',label:dgT('mentor.remix'),sub:dgT('mentor.remixEffect',{direction:esc(statLabel(s.runDirection))})}].forEach(ch=>{
       const b=document.createElement('button'); b.className='btn ghost'; b.innerHTML=`${ch.label} <small>${ch.sub}</small>`;
       b.onclick=()=>{ const got=MentorInheritance.resolve(s,ch.id); if(!got)return; ov.className='ov';
         this.logWeek(`🫶 ${esc(m.name)} 멘토 링크 · ${ch.id==='follow'?'노하우 계승':'내 방식으로 재해석'} · ${statLabel(got.direction)} +${got.gain}`);
         this.save(); try{ ProductTelemetry.track('mentor_moment',{run_id:s.runId||'',run_no:s.runNo||1,mentor_rid:String(m.rid),choice:ch.id,direction:got.direction}); }catch(e){}
-        this.showRoll({cls:'dg',emoji:'🫶',label:'멘토 링크 완성'},`<b>${esc(m.name)}</b>의 완주가 ${esc(target)}의 다음 장면으로 이어졌어.`,()=>{this.render();done();}); };
+        this.showRoll({cls:'dg',emoji:'🫶',label:dgT('mentor.complete')},dgT('mentor.result',{name:`<b>${esc(m.name)}</b>`,target:esc(target)}),()=>{this.render();done();}); };
       box.appendChild(b);
     });
     setTimeout(()=>{box.classList.remove('locked');box.classList.add('ready');try{sfx('sparkle');}catch(e){}},650);
