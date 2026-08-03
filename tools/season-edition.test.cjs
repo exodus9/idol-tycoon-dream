@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const SeasonEditionLedger = require('../season-edition.js');
+const dgI18n = require('../dg-i18n.js');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const trend = {nm:'보컬 대세',ic:'🎵',pos:'vocal'};
@@ -55,7 +56,12 @@ test('legacy editions without final qualification are removed from records and l
 });
 
 test('pre-run target, card, classified result, album and current-season collection all read the canonical ledger', () => {
-  for (const marker of ['SeasonEditionLedger.upsert', 'ownedEdition=rr?this.seasonEditionOf', 'class="season-edition-preview"', '미수집 · 파이널 완주 시', '보유 중 · 완주하면 새 버전', 'seasonEditionCount=this.seasonEditionsOf(rid).length', 'class="ic-season"', 'EDITION 수집', '대표 RUN 갱신', '새 버전 기록', 'season_edition_new:', '시즌 ${this.seasonNo()+1} 에디션 컬렉션']) {
+  for (const marker of ['SeasonEditionLedger.upsert', 'ownedEdition=rr?this.seasonEditionOf', 'class="season-edition-preview"', "dgT(ownedEdition?'setup.editionOwned':'setup.editionUnowned')", 'seasonEditionCount=this.seasonEditionsOf(rid).length', 'class="ic-season"', "'result.editionCollected'", "'result.editionBest'", "'result.editionVersion'", 'season_edition_new:']) {
     assert.ok(html.includes(marker), `missing season edition surface: ${marker}`);
+  }
+  for(const locale of ['ko','en','ja','id']){
+    for(const key of ['setup.editionUnowned','setup.editionOwned','result.editionCollected','result.editionBest','result.editionVersion']){
+      assert.notEqual(dgI18n.t(locale,key),key,`${locale} missing ${key}`);
+    }
   }
 });

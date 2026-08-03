@@ -2,6 +2,7 @@ import fs from 'node:fs';
 
 const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const daily=fs.readFileSync(new URL('../daily-retention.js',import.meta.url),'utf8');
+const metaI18n=fs.readFileSync(new URL('../dg-i18n.js',import.meta.url),'utf8');
 const fail=[];
 const need=(ok,msg)=>{if(!ok)fail.push(msg);};
 
@@ -21,7 +22,7 @@ need(html.includes('replyPromiseSource')&&html.includes('reply_run_id')&&html.in
 need(html.includes('if(exactSource&&!linkedSource)'),'exact-source CTA must reject a mismatched immutable RUN promise');
 need(html.includes('retrainFromRunRecord')&&html.includes("source:'run_record'"),'album retry CTA must bind to the selected immutable RUN record');
 need(html.includes('RunMemory.recordSource(this.data.runRecords'),'album and reply retries must validate an exact RUN and promise pair');
-need(html.includes('RUN 기록에서 이어진 약속'),'RUN setup must disclose that the promise came from the selected album record');
+need(html.includes("linkedFromRecord?dgT('setup.recordPromiseSource')")&&metaI18n.includes("'setup.recordPromiseSource'"),'RUN setup must disclose that the promise came from the selected album record in every locale');
 need(html.includes('promiseTitle:record.runMemory.title'),'the exact RUN scene must queue a next-day reply');
 for(const unsafe of ['프로듀서님','제일 좋아','저만 봐','손 놓','우리 둘','책임져','안 뺏','프로듀서님만 믿','프로듀서님 얼굴','프로듀서님 없었으면']) need(!html.includes(unsafe),`unsafe real-idol intimacy copy remains: ${unsafe}`);
 need(daily.includes('promiseStatus:input.promiseStatus'),'next-day echo storage must preserve the result state');

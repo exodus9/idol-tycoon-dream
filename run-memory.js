@@ -74,7 +74,7 @@
       :`${pg.label} · ${success?'끝까지 중심을 지킴':'마지막까지 흔들림'}`;
     const reward=success?(type==='fandom'?'다음 회차 유대 계승 +6':type==='signature'?'팬 800명 추가':'팬 500명 추가'):'다음 RUN에서 미완결 약속 재도전';
     return {runId:String(state.runId||''),run:Number(state.runNo||0),promiseId:String(p.id),baseType:type,title:String(p.title||''),goal:String(p.goal||''),status:success?'success':'failed',
-      checkpoint:String(state.promiseCheckpoint||'none'),evidence,reward,retryOf:String(p.retryOf||''),retry,bonusCard:success&&retry};
+      checkpoint:String(state.promiseCheckpoint||'none'),value:pg.value,target:pg.target,relaxed:!!pg.relaxed,evidence,reward,retryOf:String(p.retryOf||''),retry,bonusCard:success&&retry};
   }
 
   function applyReward(state,result){

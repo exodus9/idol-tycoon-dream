@@ -27,7 +27,7 @@ need(html.includes("const arr=['run-v3',r.name,r.grp,r.direction||r.spec,r.overa
 need(!/\['run-v3'[^\n]*statVals/.test(html), 'share payload must not include six-area stat values');
 need(html.indexOf('id="runDirectionPick"') > html.indexOf('id="cardPickHero"'), 'direction picker must be outside the clipped hero');
 need(html.includes('if(directionBox) directionBox.innerHTML=directionPick;'), 'direction picker must render into its independent container');
-need(i18n.includes('const DECLARED=["ko"];'), 'only fully reviewed languages may be exposed');
+need(i18n.includes('const DECLARED=["ko","en","ja","id"];'), 'the four reviewed launch locales must be exposed');
 
 const koStart = i18n.indexOf('  ko: {');
 const enStart = i18n.indexOf('  en: {');
@@ -35,9 +35,9 @@ const ko = i18n.slice(koStart, enStart);
 for (const phrase of ['타고난 재능','종합 등급','약점이 없어','실력 스탯','S급 이상 연습생','SS급 연습생']) {
   need(!ko.includes(phrase), `reviewed Korean surface still contains: ${phrase}`);
 }
-need(html.includes("scoreLabel+` 6영역 평균 ${m.best}`"), 'card must expose aggregate RUN result without raw six-area stats');
+need(html.includes("dgT('run.average',{score:m.best})"), 'card must expose localized aggregate RUN result without raw six-area stats');
 need(html.includes('역할 기여 +${c.val.toLocaleString()}'), 'battle must expose numeric role contribution');
-need(html.includes("langs.length>1?`<div class=\"sheet-lang\">${langBtns}</div>`:''"), 'single-language build must not expose fake language choices');
+need(html.includes("langs.length>1?`<div class=\"sheet-lang\">${langBtns}</div>`:''"), 'language choices must only render when reviewed alternatives exist');
 need(!html.includes('시너지 상한 +40%'), 'synergy help must not claim the removed +40% cap');
 need(html.includes('시너지는 조합한 만큼 누적'), 'synergy help must explain the uncapped model');
 need(html.includes("StorageJournal.write(localStorage,RUN_SAVE_KEY,RUN_BACKUP_KEY,this.st,validRunSave)"), 'active RUN save must use validated journal writes');
