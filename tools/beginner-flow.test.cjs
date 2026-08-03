@@ -15,6 +15,13 @@ test('low stamina exposes a direct rest recovery action',()=>{
   assert.equal(BeginnerFlow.recoveryState(20,cards).urgent,false);
 });
 
+test('an event or promise cannot strand the player with an unaffordable hand',()=>{
+  const cards=[{id:'vocal',cost:27},{id:'focus',cost:16},{id:'rest',cost:-44}];
+  assert.deepEqual(BeginnerFlow.recoveryHand(['vocal','focus','vocal'],9,cards),['vocal','focus','rest']);
+  assert.deepEqual(BeginnerFlow.recoveryHand(['vocal','focus','rest'],9,cards),['vocal','focus','rest']);
+  assert.deepEqual(BeginnerFlow.recoveryHand(['vocal','focus'],40,cards),['vocal','focus']);
+});
+
 test('the first hand teaches the recommended direction with an affordable card',()=>{
   const cards=[
     {id:'l_vocal',stat:'vocal',cost:27,base:36},

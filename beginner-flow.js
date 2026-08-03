@@ -32,6 +32,20 @@
     };
   }
 
+  function recoveryHand(hand,stamina,cards){
+    const ids=Array.isArray(hand)?hand.slice():[];
+    const byId=new Map((cards||[]).filter(Boolean).map(card=>[card.id,card]));
+    const current=Math.max(0,Number(stamina)||0);
+    const hasRest=ids.some(id=>Number((byId.get(id)||{}).cost)<0);
+    const hasPlayable=ids.some(id=>{const card=byId.get(id);return card&&Number(card.cost)>0&&current>=Number(card.cost);});
+    if(hasRest||(current>=27&&hasPlayable))return ids;
+    const rest=(cards||[]).find(card=>card&&Number(card.cost)<0);
+    if(!rest)return ids;
+    if(ids.length)ids[ids.length-1]=rest.id;
+    else ids.push(rest.id);
+    return ids;
+  }
+
   function firstRunHand(hand,direction,cards){
     const ids=Array.isArray(hand)?hand.slice():[];
     const pool=(cards||[]).filter(Boolean);
@@ -87,5 +101,5 @@
     return !!isGate&&!won&&Math.max(1,Math.round(Number(runNo)||1))===1;
   }
 
-  return Object.freeze({isFirstRun,recommendedDirection,recoveryState,firstRunHand,actionableStats,nextTurnLabel,debutProgress,protectsFirstGate});
+  return Object.freeze({isFirstRun,recommendedDirection,recoveryState,recoveryHand,firstRunHand,actionableStats,nextTurnLabel,debutProgress,protectsFirstGate});
 });

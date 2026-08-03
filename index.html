@@ -2001,6 +2001,7 @@ const Game = {
        </div>`;
     // ⭐손패: 이번 주 3장 중 1택 (기력을 재고 특기·컨디션을 계산 = 매 턴 판단). 학마스식 카드 선택 루프.
     if(!s.hand || !s.hand.length) s.hand = drawHand(s.stam!=null?s.stam:100);
+    s.hand=BeginnerFlow.recoveryHand(s.hand,s.stam,TRAIN_CARDS);   // 약속·이벤트가 기력을 깎아도 막힌 손패를 즉시 휴식으로 복구
     const stc=k=>((STATS.find(x=>x.k===k)||{}).c)||"#5a4a8f";
     const stnm=k=>t('st_'+k);
     const cardById=id=>(id==="special"?RARE_CARD:TRAIN_CARDS.find(c=>c.id===id));
