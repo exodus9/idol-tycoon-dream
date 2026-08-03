@@ -13,7 +13,7 @@ need(html.includes("ProductTelemetry.track('mentor_moment'"),'mentor moment tele
 need(html.includes('mentorWeek=s.mode===\'quick\'?4:7'),'guaranteed mentor timing is missing');
 need(html.indexOf('if(s.mentor&&!s.mentorMomentDone') < html.indexOf('Math.random()<0.25'),'mentor moment must preempt random overlays');
 need(html.includes('saved.mentorRid=st.mentor.rid'),'mentor lineage is not persisted');
-need(html.includes('멘토 링크 · ${esc(r.mentorName)}'),'mentor lineage is not visible in roster detail');
+need(html.includes("dgT('card.mentorLink',{name:esc(r.mentorName)})"),'mentor lineage is not visible in roster detail');
 need(html.includes('mentorHomeOffer()'),'mentor value is not exposed on the return home');
 need(html.includes("run_id:s.runId||''"),'mentor events are not joinable to their RUN');
 need(!html.includes('.slice(0,12)'),'mentor candidates are silently truncated');

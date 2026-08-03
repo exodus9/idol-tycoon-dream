@@ -38,3 +38,12 @@ test('active global result copy evaluates the RUN production, not a real idol',(
     assert.match(active,/RUN|制作|stage|production|ステージ/i);
   }
 });
+
+test('core RUN recovery and fandom talk never render untranslated meta keys',()=>{
+  assert.ok(html.includes("toast(dgT('run.noStamina'))"));
+  assert.ok(html.includes("toast(dgT('save.noSpace'))"));
+  assert.ok(html.includes('prompt:dgTOr(`bondTalk.${raw.id}.prompt`,raw.prompt)'));
+  assert.ok(html.includes('t:dgTOr(`bondTalk.${raw.id}.r${i+1}`,ch.t)'));
+  assert.ok(html.includes('react:dgTOr(`bondTalk.${raw.id}.a${i+1}`,ch.react)'));
+  assert.equal(/toast\(["']기력이 부족해/.test(html),false);
+});

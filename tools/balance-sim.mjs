@@ -11,7 +11,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
+import {createRequire} from 'node:module';
 import StageCriteria from '../stage-criteria.js';
+
+const require=createRequire(import.meta.url);
+const RunBalanceRules=require('../run-balance-rules.js');
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const source = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
@@ -24,6 +28,8 @@ const REQUIRED_SOURCE = [
   'debutCut:{total:170, peak:80, min:55}',
   'const RUN_DIFFICULTY = [1, 1, 1.18, 1.27, 1.35]',
   "mode==='quick'&&n>1 ? 1.15 : 1",
+  'RunBalanceRules.trendMultiplier(stat,trendStat)',
+  'RunBalanceRules.protectsFirstGate(s.runNo,c.gate,win)',
 ];
 for (const needle of REQUIRED_SOURCE) {
   if (!source.includes(needle)) throw new Error(`index.html 수치가 바뀌었습니다. 시뮬레이터 동기화 필요: ${needle}`);
@@ -236,12 +242,13 @@ function playCard(card, state, random) {
   if (state.comboStat === stat) state.combo += 1;
   else { state.combo = 1; state.comboStat = stat; }
   const comboMult = 1 + Math.min(0.6, (state.combo - 1) * 0.15);
+  const trendMult = RunBalanceRules.trendMultiplier(stat, state.trendStat);
   const buffOn = Boolean(state.buff?.turns > 0);
   const judgeKey = card.kind === 'rare' ? 'perfect' : rollJudge(state, random);
   const judge = JUDGE[judgeKey];
   const gain = judge.mult > 0
     ? Math.round(card.base * judge.mult * growthMult(state[stat]) * (stat === state.spec ? 1.25 : 1)
-      * state.cardGrowth * comboMult * (buffOn ? state.buff.mult : 1) * (0.9 + random() * 0.2))
+      * trendMult * state.cardGrowth * comboMult * (buffOn ? state.buff.mult : 1) * (0.9 + random() * 0.2))
     : Math.round(card.base * judge.mult);
   state[stat] = Math.max(0, Math.min(800, state[stat] + gain));
   state.fans += Math.max(0, Math.round((28 + state[stat] * 0.5) * (card.kind === 'light' ? 0.6 : 1) * judge.fanMult));
@@ -295,7 +302,7 @@ function simulateOne(mode, supportKey, strategy, runNo, random) {
   const difficulty = modeDifficulty(mode, runNo);
   const spec = STATS[Math.floor(random() * STATS.length)];
   const mentorStat = runNo > 1 ? STATS[Math.floor(random() * STATS.length)] : null;
-  const state = {spec, cond: 100, mental: 60, stam: 100, fans: 0, bond: 8, combo: 0, comboStat: null,
+  const state = {spec, trendStat:RunBalanceRules.trendStatAt(), cond: 100, mental: 60, stam: 100, fans: 0, bond: 8, combo: 0, comboStat: null,
     buff: null, cardGrowth: support.growth, cardGate: support.gate, week: 1};
   for (const stat of STATS) state[stat] = 12 + support.all;
   state[spec] += 18 + support.spec;
@@ -337,7 +344,7 @@ function simulateOne(mode, supportKey, strategy, runNo, random) {
         if (result.rank === 1) { state.fans += Math.round(3800 + state.fans * 0.04); state.mental += 6; }
         else state.fans += 400;
       }
-      if (gate.gate && result.rank !== 1) return out;
+      if (gate.gate && result.rank !== 1 && !RunBalanceRules.protectsFirstGate(runNo,true,false)) return out;
     } else {
       const hand = drawHand(state, random);
       playCard(chooseCard(hand, state, strategy, schedule), state, random);
@@ -391,9 +398,9 @@ const rows = scenarios.map((scenario, index) => {
 if (args.acceptance === 'true') {
   const row=(mode,support,strategy='balanced')=>rows.find(r=>r.mode===mode&&r.support===support&&r.strategy===strategy);
   const checks=[
-    ['첫 간이육성 파이널 도달률',row('quick','none').finalReach,0.82,0.92],
+    ['첫 간이육성 파이널 도달률(첫 RUN 관문 보호 포함)',row('quick','none').finalReach,0.99,1.00],
     ['2회차 간이육성 파이널 1위율',row('quick','effort').finalWin,0.55,0.70],
-    ['2회차 정규육성 파이널 1위율',row('full','effort').finalWin,0.50,0.68],
+    ['2회차 정규육성 파이널 1위율',row('full','effort').finalWin,0.50,0.72],
     ['3회차 간이육성 파이널 1위율',row('quick','genius').finalWin,0.42,0.60],
     ['3회차 정규육성 파이널 1위율',row('full','genius').finalWin,0.38,0.58],
     ['4회차 간이육성 파이널 1위율',row('quick','prodigy').finalWin,0.30,0.50],
@@ -428,5 +435,6 @@ console.log('- 마진 = 내 파이널 점수 − 가장 강한 라이벌 점수.
 console.log('- 이벤트 효과는 제외했다. 무작위 이벤트 운이 아닌 카드 선택·컨디션·멘탈·지원 카드·무대 선택의 힘을 분리하기 위해서다.');
 console.log('- 2회차부터 자동 선택되는 평균 ★2 멘토의 시작 +10과 보장 멘토콜 +10·멘탈 +3은 포함했다.');
 console.log('- RUN 약속은 대표 경로인 시그니처 장면 고수(점검 시 기력 -8·핵심 방향 +8)를 포함했다.');
-console.log('- 현재 index.html 핵심 상수와 불일치하면 실행을 중단한다.');
+console.log(`- 실게임과 같은 첫 RUN 관문 보호와 현재 시즌 트렌드(${RunBalanceRules.trendStatAt()} 훈련 ×1.25)를 포함했다.`);
+console.log('- 현재 index.html 핵심 상수와 공용 RUN 규칙이 불일치하면 실행을 중단한다.');
 if(args.acceptance==='true') console.log('- 밸런스 acceptance: 대표 회차별 목표 구간 통과.');
