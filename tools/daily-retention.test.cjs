@@ -60,7 +60,31 @@ assert.equal(Daily.consume(prioritized,7,4).boost.id,matchingBoost[0].id,'the op
 
 let bounded={daily:{},boosts:[],history:[]};
 for(let i=1;i<=45;i++) bounded=Daily.complete({...bounded,today:`2026-09-${String(i).padStart(2,'0')}`,rid:7,kind:'idea',boost:{start:12},text:String(i)});
-assert.ok(bounded.boosts.length<=7);
+assert.equal(bounded.boosts.length,45,'unused promised rewards must never disappear behind an undisclosed storage cap');
 assert.ok(bounded.history.length<=40);
+
+let eight={daily:{},boosts:[],history:[]}, eightEchoes=[];
+for(let day=1;day<=8;day++){
+  const today=`2026-10-${String(day).padStart(2,'0')}`;
+  eight=Daily.complete({...eight,today,rid:7,kind:'chant',boost:{climax:8},text:`day ${day}`});
+  eightEchoes=Daily.queueEcho(eightEchoes,{today,rid:7,kind:'chant'});
+  const reveal=`2026-10-${String(day+1).padStart(2,'0')}`;
+  const opened=Daily.claimEcho(eightEchoes,`${today}:7:chant`,reveal,day);
+  assert.equal(opened.accepted,true);
+  eightEchoes=opened.echoes;
+  eight.boosts=Daily.mergeReplyBoost(eight.boosts,opened.echo,{climax:4},reveal);
+}
+assert.equal(eight.boosts.length,8,'the eighth project must preserve all seven earlier unused rewards');
+assert.equal(new Set(eight.boosts.map(x=>x.id)).size,8);
+assert.ok(eight.boosts.every(x=>!x.awaitingReply&&x.climax===12));
+const oneRun=Daily.consume(eight.boosts.map(x=>({...x})),7,100);
+assert.equal(oneRun.boost.climax,12);
+assert.equal(oneRun.boosts.filter(x=>!x.usedAt).length,7,'one RUN must consume exactly one of eight preserved rewards');
+assert.equal(Daily.consume(oneRun.boosts,999,101).boost,null,'another idol must not consume preserved rewards');
+
+let promiseQueue=[];
+for(let i=1;i<=25;i++) promiseQueue=Daily.queueEcho(promiseQueue,{today:'2026-11-01',rid:7,kind:`promise:run-${i}`,runId:`run-${i}`,promiseId:'signature'});
+assert.equal(promiseQueue.length,25,'unopened RUN replies must never disappear behind the claimed-history cap');
+assert.equal(promiseQueue[0].runId,'run-1');
 
 console.log('daily retention: OK');
