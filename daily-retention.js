@@ -26,6 +26,12 @@
     return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
   }
 
+  function nextKstResetAt(now){
+    const day=kstDay(now), p=day.split('-').map(Number);
+    if(p.length<3||p.some(Number.isNaN)) return NaN;
+    return Date.UTC(p[0],p[1]-1,p[2]+1)-9*3600000;
+  }
+
   function keepEchoes(list){
     const rows=(Array.isArray(list)?list:[]).filter(x=>x&&typeof x==='object');
     const recentClaimed=new Set(rows.filter(x=>x.claimedAt).slice(-20));
@@ -100,7 +106,7 @@
     return {boost:found,boosts:list.filter(x=>!x.usedAt||at-x.usedAt<7*86400000)};
   }
 
-  const api={kstDay,dayDiff,addDays,state,complete,queueEcho,echoState,claimEcho,pendingEcho,mergeReplyBoost,consume};
+  const api={kstDay,dayDiff,addDays,nextKstResetAt,state,complete,queueEcho,echoState,claimEcho,pendingEcho,mergeReplyBoost,consume};
   root.DailyRetention=api;
   if(typeof module!=='undefined'&&module.exports) module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

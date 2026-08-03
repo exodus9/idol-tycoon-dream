@@ -85,3 +85,12 @@ test('stage coach and immediate recovery guidance are localized in every release
   const keys=['run.firstGateProtected','run.finalImprove','run.finalRecover','run.rankImprove','run.rankRecover','run.gateImprove','run.gateRecover','run.restProtected','run.restProtectedCopy','run.restBeforeStage','run.restBeforeStageCopy'];
   for(const locale of ['ko','en','ja','id']) for(const key of keys) assert.notEqual(i18n.t(locale,key),key,`${locale}.${key} missing`);
 });
+
+test('reply time and rank-versus-grade explanations are localized',()=>{
+  for(const locale of ['ko','en','ja','id']){
+    const reply=i18n.t(locale,'daily.replyAt',{time:'Aug 4, 22:00 WIB'});
+    assert.match(reply,/22:00/);
+    assert.equal(/00:00\s*KST/i.test(reply),false);
+    assert.notEqual(i18n.t(locale,'result.rankGradeExplain',{grade:'D',average:142,goal:'X'}),'result.rankGradeExplain');
+  }
+});

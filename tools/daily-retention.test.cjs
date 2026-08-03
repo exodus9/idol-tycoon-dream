@@ -3,6 +3,8 @@ const Daily=require('../daily-retention.js');
 
 assert.equal(Daily.kstDay(Date.UTC(2026,7,3,14,59)),'2026-08-03');
 assert.equal(Daily.kstDay(Date.UTC(2026,7,3,15,0)),'2026-08-04','daily reset must follow KST midnight');
+assert.equal(Daily.nextKstResetAt(Date.UTC(2026,7,3,14,59)),Date.UTC(2026,7,3,15,0),'the next reply opens at the immediately following KST midnight');
+assert.equal(Daily.nextKstResetAt(Date.UTC(2026,7,3,15,0)),Date.UTC(2026,7,4,15,0),'a new KST day must schedule the next midnight, not the one that just passed');
 assert.equal(Daily.dayDiff('2026-08-04','2026-08-03'),1);
 assert.equal(Daily.addDays('2026-08-31',1),'2026-09-01');
 
