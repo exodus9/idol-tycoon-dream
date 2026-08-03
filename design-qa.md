@@ -68,6 +68,15 @@ At 390 × 740, 844, and 920 the document height equals the viewport height, the 
 
 Production uses the existing Firestore-backed leaderboard. Server-authoritative anti-cheat is outside this frontend redesign; this pass does resubmit live group power after card changes.
 
-## Final result
+## Fandom immersion slice (2026-08-03)
 
-passed
+- PLAVE → PLLI (`플리`) mapping verified across training HUD, bond talk, stage choice, result, and permanent card.
+- Bond choice changes persistent `fanBond`; stage all-in odds reflect the current value.
+- Old active-run saves and old roster cards migrate to bond 8 and are persisted.
+- Idol photo remains visible in bond, stage strategy, debut result, and ranking presentation.
+- Recorded SFX assets are wired to click, rest, bond, transition, outcome, and win/fail cues.
+- Stale tutorial roots are cleared on screen transitions, bond talks, stage choices, and finish.
+- 390 × 740 / 844 / 920 training overflow: 0px.
+- Inline JavaScript syntax and `git diff --check`: passed.
+
+final result: passed

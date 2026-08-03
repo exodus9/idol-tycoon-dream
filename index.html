@@ -151,7 +151,7 @@
   .gsel.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset;color:var(--accent)}
   #s-select .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;overflow-y:auto;padding:4px 0 12px}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;
-    cursor:pointer;transition:transform .12s,border-color .12s,box-shadow .15s;position:relative;box-shadow:0 6px 16px -10px rgba(0,0,0,.6)}
+    color:var(--txt);font:inherit;text-align:left;padding:0;width:100%;cursor:pointer;transition:transform .12s,border-color .12s,box-shadow .15s;position:relative;box-shadow:0 6px 16px -10px rgba(0,0,0,.6)}
   .card:active{transform:scale(.97)}
   .card .ph{width:100%;aspect-ratio:.82;background:#322748 center 22%/cover no-repeat;display:block}
   .card .ph::after{content:"";position:absolute;left:0;right:0;top:0;height:56%;background:linear-gradient(180deg,transparent,rgba(20,10,36,.66));pointer-events:none}
@@ -189,13 +189,15 @@
     background:linear-gradient(135deg,var(--accent2),var(--accent))}
 
   /* 활력 2열 (컨디션·멘탈) */
-  .vitals{display:flex;gap:10px;margin-bottom:10px}
+  .vitals{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
   .vital{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px 11px;
     box-shadow:var(--shadow-sm), var(--hi)}
   .vital .vlbl{display:flex;justify-content:space-between;font-size:11px;color:var(--sub);margin-bottom:5px;font-weight:700}
   .vital .vlbl b{color:var(--txt);font-variant-numeric:tabular-nums}
   .vital .bar{height:8px;background:var(--panel2);border-radius:20px;overflow:hidden}
   .vital .bar>i{display:block;height:100%;border-radius:20px;transition:width .45s cubic-bezier(.3,.8,.4,1)}
+  .vital.fandom-vital{flex-basis:calc(100% - 70px);padding-block:6px;background:linear-gradient(135deg,rgba(255,95,162,.13),rgba(255,211,92,.06))}
+  .vital.fandom-vital small{display:block;margin-top:3px;color:#ffb6d1;font-size:9.5px;font-weight:800;letter-spacing:.2px}
   /* 관문 카드: 돌파 예상 칩 · 임박 펄스 · 코치 멘트 */
   .pr-fore{display:inline-flex;align-items:center;font-size:11px;font-weight:900;
     padding:2px 9px;border-radius:20px;margin-left:5px;vertical-align:middle;white-space:nowrap}
@@ -364,6 +366,20 @@
   .ev-choices.ready .btn{opacity:1;transform:none}
   .ev-choices.ready .btn:nth-child(2){transition-delay:.09s}
   .ev-choices.ready .btn:nth-child(3){transition-delay:.18s}
+  /* 아이돌이 사라지지 않는 감정/클라이맥스 카드 */
+  .idol-moment{position:relative;overflow:hidden;isolation:isolate;min-height:390px;padding:0!important;background:#130b22!important;color:#fff}
+  .idol-moment-photo{position:absolute;inset:0;background:linear-gradient(145deg,#452244,#171029) center 18%/cover no-repeat;z-index:-3;transform:scale(1.02);filter:saturate(1.08) contrast(1.04)}
+  .idol-moment-shade{position:absolute;inset:0;z-index:-2;background:linear-gradient(180deg,rgba(8,4,18,.04) 0%,rgba(8,4,18,.35) 32%,rgba(8,4,18,.96) 72%)}
+  .idol-moment-body{min-height:390px;padding:168px 18px 18px;display:flex;flex-direction:column;justify-content:flex-end;position:relative;z-index:1}
+  .idol-moment .ev-banner{align-self:center;background:rgba(18,8,30,.7);border:1px solid rgba(255,255,255,.2);color:#ffd5e5;backdrop-filter:blur(8px)}
+  .idol-moment .ev-title{color:#fff;text-shadow:0 3px 16px rgba(0,0,0,.8);font-size:23px}
+  .idol-moment .ev-text{color:#f7edf9;text-shadow:0 2px 10px #000}
+  .idol-moment .btn.ghost{background:rgba(20,12,34,.72);border-color:rgba(255,255,255,.26);color:#fff;backdrop-filter:blur(8px)}
+  .idol-moment .btn small{display:inline-block;margin-left:5px;color:#ffbad5;font-weight:900}
+  .bond-now,.stage-fandom{align-self:center;margin:2px 0 10px;padding:5px 10px;border-radius:999px;background:rgba(255,95,162,.18);border:1px solid rgba(255,154,195,.35);color:#ffd0e2;font-size:11px;font-weight:900;letter-spacing:.3px}
+  .stage-moment .idol-moment-body{padding-top:138px}.stage-moment .sc-fore{margin-bottom:5px}
+  .resolve-moment{min-height:350px}.resolve-moment .idol-moment-body{min-height:350px;padding-top:190px}
+  .debut-result .idol-moment-body{padding-top:210px}.debut-result.pass{box-shadow:inset 0 0 0 2px rgba(255,211,92,.45)}
 
   /* end */
   #s-end{overflow-y:auto}
@@ -466,6 +482,7 @@
     background:conic-gradient(from 0deg at 50% 0%, transparent 0deg, rgba(255,120,150,.16) 22deg, transparent 46deg, rgba(255,190,120,.13) 80deg, transparent 104deg, rgba(255,150,175,.16) 150deg, transparent 180deg);
     animation:spot 9s linear infinite}
   .compstage.t3::before{background:conic-gradient(from 0deg at 50% 0%, transparent 0deg, rgba(255,205,90,.20) 20deg, transparent 44deg, rgba(200,150,255,.16) 80deg, transparent 104deg, rgba(255,205,90,.2) 150deg, transparent 180deg)}
+  .comp-idol-bg{position:absolute;inset:0;z-index:0;background-position:center 18%;background-size:cover;opacity:.2;filter:saturate(1.1) contrast(1.08);-webkit-mask-image:linear-gradient(#000 0%,transparent 70%);mask-image:linear-gradient(#000 0%,transparent 70%)}
   .cs-flash{position:fixed;inset:0;background:var(--panel);opacity:0;pointer-events:none;z-index:47;display:none}
   .cs-flash.go{display:block;animation:csFlash .6s ease-out}
   @keyframes csFlash{0%{opacity:.85}100%{opacity:0}}
@@ -476,6 +493,7 @@
   .comp-emoji.win{animation:csIn .5s cubic-bezier(.2,.9,.3,1.3) both, pfPulse 1s ease-in-out .5s infinite}
   .comp-title{color:#fff;font-size:25px;font-weight:900;margin:8px 0 2px;text-align:center;letter-spacing:-.5px;
     text-shadow:0 3px 22px rgba(236,58,92,.55)}
+  .comp-fandom{color:#ffc3d9;font-size:10.5px;font-weight:900;margin:2px 0 7px;padding:3px 9px;border-radius:999px;background:rgba(255,95,162,.16);border:1px solid rgba(255,150,190,.28)}
   .comp-req{color:#ffe0a0;font-size:12px;font-weight:800;margin:0 0 8px;padding:3px 12px;border-radius:999px;
     background:rgba(255,211,92,.12);border:1px solid rgba(255,211,92,.28)}
   .comp-req b{color:#fff}
@@ -1507,6 +1525,26 @@ const TOTAL_W = SCHEDULES.full.total;
 const DEBUT_W = SCHEDULES.full.debut;
 const COMPETS = SCHEDULES.full.compets;
 
+// 팬덤은 단순 팬 수가 아니라 이번 육성에서 함께 쌓는 관계다. 알려진 공식 팬덤명은 그룹명으로 매칭하고,
+// 커스텀/미등록 그룹도 같은 UI와 성장 루프를 유지한다.
+const FANDOMS=[
+  [/플레이브|plave/i,'플리'],[/방탄소년단|bts/i,'아미'],[/세븐틴|seventeen/i,'캐럿'],
+  [/스트레이\s*키즈|stray\s*kids/i,'스테이'],[/투모로우바이투게더|tomorrow x together|txt/i,'모아'],
+  [/엔하이픈|enhypen/i,'엔진'],[/엑소|exo/i,'엑소엘'],[/몬스타엑스|monsta x/i,'몬베베'],
+  [/에이티즈|ateez/i,'에이티니'],[/아스트로|astro/i,'아로하'],[/제로베이스원|zerobaseone|zb1/i,'제로즈'],
+  [/보이넥스트도어|boynextdoor/i,'원도어'],[/아이브|ive/i,'다이브'],[/트와이스|twice/i,'원스'],
+  [/블랙핑크|blackpink/i,'블링크'],[/에스파|aespa/i,'마이'],[/뉴진스|newjeans/i,'버니즈'],
+  [/르세라핌|le sserafim/i,'피어나'],[/엔믹스|nmixx/i,'엔써'],[/있지|itzy/i,'믿지'],
+  [/베이비몬스터|babymonster/i,'몬스티즈'],[/니쥬|niziu/i,'위쥬'],[/소녀시대|girls.? generation|snsd/i,'소원']
+];
+function fandomOf(idol){
+  const grp=(idol&&((idol.grp||idol.group)||''))||'';
+  const hit=FANDOMS.find(x=>x[0].test(grp));
+  return {name:hit?hit[1]:'팬덤', grp, rally:hit?`${hit[1]}의 함성`:'팬들의 함성'};
+}
+function bondLevel(v){ v=Math.max(0,Math.min(100,+v||0));
+  return v>=80?{n:'전설의 인연',next:100}:v>=55?{n:'하나 된 함성',next:80}:v>=30?{n:'단단한 약속',next:55}:{n:'첫 인사',next:30}; }
+
 // ===== 엔딩 도감 (반복 플레이 훅) =====
 
 const Game = {
@@ -1551,11 +1589,11 @@ const Game = {
     const grid=document.getElementById("idolGrid");
     if(!list.length){ grid.innerHTML=`<p class="muted" style="grid-column:1/-1;text-align:center;padding:24px">${t("sel_no_result")}</p>`; return; }
     grid.innerHTML = list.map(i=>{
-      return `<div class="card" data-id="${i.id}" onclick="Game.pick(${i.id})">
+      return `<button type="button" class="card" data-id="${i.id}" onclick="Game.pick(${i.id})">
         <span class="ph" style="background-image:url('${i.img}')"></span>
         <div class="nm">${esc(idolName(i))}</div>
         <div class="gp">${esc(idolGrp(i))}</div>
-      </div>`;}).join("");
+      </button>`;}).join("");
   },
   pick(id){
     this.selIdol = IDOLS.find(i=>i.id===id) || null;
@@ -1676,7 +1714,10 @@ const Game = {
     if(retrainRid){ const prev=DG.rosterById(retrainRid), pickedKey=idol.id==='custom'?'c:'+idol.name:'i:'+(idol.id!=null?idol.id:idol.name);
       if(!prev || prev.idkey!==pickedKey || (this._retrainIdkey&&this._retrainIdkey!==pickedKey)) retrainRid=null; }
     this._retrainRid=null; this._retrainIdkey=null;
-    this.st = {idol, retrainRid, ...base, cond:100, stam:100, hand:[], combo:0, comboStat:null, buff:null, fans:0, week:1, busy:false, log:[], mode, trainCount:{}};   // stam=기력 · combo=연속 같은스탯 · buff={turns,mult} 몰입지속 · hand=이번 주 손패
+    let inheritedBond=8;
+    if(retrainRid){ const prev=DG.rosterById(retrainRid); if(prev) inheritedBond=Math.min(45,Math.max(8,Math.round((prev.fanBond||8)*.55))); }
+    this.st = {idol, retrainRid, ...base, cond:100, stam:100, hand:[], combo:0, comboStat:null, buff:null, fans:0,
+      fanBond:inheritedBond, fanBondMoments:0, week:1, busy:false, log:[], mode, trainCount:{}};   // 팬덤 유대는 회차 안에서 성장하고 재육성 때 일부 계승
     DG.applyEquipped(this.st);   // 드림그룹: 장착한 육성카드 시작 보정
     // 아이돌 카드 계승: 같은 아이돌 재육성은 이전 영구 카드의 별 단계만큼 시작치가 실제로 강해진다.
     if(retrainRid){ const prev=DG.rosterById(retrainRid); if(prev){ const im=DG.idolCardMeta(prev), inherit=4+im.star*3;
@@ -1754,11 +1795,14 @@ const Game = {
     const stam=Math.max(0,Math.round(s.stam!=null?s.stam:100));
     const cb=condBucket(s.cond), ci=COND_INFO[cb];
     const stamC = stam>55?"var(--good)":stam>25?"var(--visual)":"var(--bad)";
+    const fd=fandomOf(idol), bond=Math.max(0,Math.min(100,Math.round(s.fanBond||0))), bl=bondLevel(bond);
     document.getElementById("vitalsBox").innerHTML=
       `<div class="vital"><div class="vlbl"><span>⚡ 기력</span><b>${stam}/100</b></div>
         <div class="bar"><i style="width:${Math.min(100,stam)}%;background:${stamC}"></i></div></div>
        <div class="vital"><div class="vlbl"><span>🧠 멘탈</span><b>${Math.round(s.mental)}/100</b></div>
         <div class="bar"><i style="width:${Math.min(100,s.mental)}%;background:${s.mental<MENTAL_THRESH?'var(--bad)':'#9aa6c9'}"></i></div></div>
+       <div class="vital fandom-vital" title="${esc(fd.name)}와의 유대는 클라이맥스 승부 확률을 높여요"><div class="vlbl"><span>💞 ${esc(fd.name)} 유대</span><b>${bond}</b></div>
+        <div class="bar"><i style="width:${bond}%;background:linear-gradient(90deg,#ff5fa2,#ffd35c)"></i></div><small>${bl.n}</small></div>
        <div class="cond-face ${cb}" title="컨디션 — 결과 배수"><div class="cf">${ci.cf}</div><div class="ct">${ci.ct}</div></div>`;
     // 스탯 = 색 스트립(숫자·라벨 제거, 이모지+색바+등급만). 정보 다이어트. data-k 유지(bumpStat 손맛)
     document.getElementById("statBox").innerHTML=STATS.map(st=>{
@@ -2132,6 +2176,9 @@ const Game = {
     try{ this.st=JSON.parse(raw); }catch(e){ toast(t("toast_save_broken")); this.clearSave(); return; }
     this._finished=false;   // 이어하기도 진행 중인 판 = finish 가드 해제
     if(!this.st.log) this.st.log=[];
+    if(this.st.fanBond==null) this.st.fanBond=8;
+    if(this.st.fanBondMoments==null) this.st.fanBondMoments=0;
+    this.save();   // 구세이브 팬덤 유대 마이그레이션을 즉시 영속화
     this._fansShown=this.st.fans;   // 이어하기: 저장된 팬 수부터(0→튐 방지)
     show("s-play"); this.startWeek(); this.armBackGuard();
     toast(t("toast_resume",{w:this.st.week}));
@@ -2186,9 +2233,10 @@ const Game = {
     setTimeout(()=>{ box.classList.remove("locked"); box.classList.add("ready"); try{sfx("whoosh");}catch(e){} }, 650);
   },
 
-  // 유대 커뮤(A안): 연습생이 말 걸고, 프로듀서가 답하면 따뜻한 반응만. ⚠️수치/보상 없음(감상형).
+  // 유대 커뮤: 아이돌과 팬덤 사이의 약속이 실제 유대/멘탈/팬 성장으로 남는다.
   bondTalk(done){
     const s=this.st;
+    try{ if(window.Tut&&Tut.clear) Tut.clear(); }catch(e){}
     if(!s.talkedIds) s.talkedIds=[];
     const catOk=e=> !e.cat || e.cat===(s.idol.cat||"F");
     let pool=BOND_TALKS.filter(e=> catOk(e) && !s.talkedIds.includes(e.id));
@@ -2196,27 +2244,33 @@ const Game = {
     if(!pool.length) pool=BOND_TALKS;
     const ev=pool[Math.floor(Math.random()*pool.length)];
     if(!s.talkedIds.includes(ev.id)) s.talkedIds.push(ev.id);
-    const nm=idolName(s.idol);
+    const nm=idolName(s.idol), fd=fandomOf(s.idol), img=s.idol.img||'';
     const ov=document.getElementById("ov");
     ov.className="ov on";
-    ov.innerHTML=`<div class="ev-card bond"><div class="ev-banner">💬 잠깐, 이야기해요</div>
-      <div class="ev-emoji">${ev.emoji}</div>
-      <div class="ev-title" style="font-size:16px;color:var(--sub)">${esc(nm)}</div>
-      <div class="ev-text">"${esc(ev.prompt)}"</div>
-      <div class="ev-choices locked" id="evc"></div></div>`;
+    ov.innerHTML=`<div class="ev-card bond idol-moment">
+      <div class="idol-moment-photo" ${img?`style="background-image:url('${img}')"`:''}></div>
+      <div class="idol-moment-shade"></div><div class="idol-moment-body">
+      <div class="ev-banner">💞 ${esc(fd.name)}와의 약속</div>
+      <div class="ev-title">${esc(nm)}</div>
+      <div class="ev-text">"${esc(ev.prompt.replace(/팬들/g,fd.name))}"</div>
+      <div class="bond-now">현재 유대 ${Math.round(s.fanBond||0)} · ${bondLevel(s.fanBond).n}</div>
+      <div class="ev-choices locked" id="evc"></div></div></div>`;
     ov.onclick=null;
     const box=document.getElementById("evc");
-    ev.replies.forEach((ch)=>{
+    ev.replies.forEach((ch,i)=>{
       const b=document.createElement("button");
       b.className="btn ghost";
-      b.textContent=ch.t;
+      const gain=10+i*3;
+      b.innerHTML=`${esc(ch.t)} <small>유대 +${gain}</small>`;
       b.onclick=()=>{
         ov.className="ov";
         try{ if(navigator.vibrate) navigator.vibrate(12); }catch(e){}
         try{ sfx("sparkle"); }catch(e){}
-        // 반응 = 순수 감상(수치 변화 없음). 큰 이모지 + 짧은 태그 + 연습생 대사.
-        this.showRoll({cls:"dg", emoji:ch.e||"💗", label:ch.tag||"정이 쌓였어요"},
-          `<span style="color:var(--txt)">"${esc(ch.react)}"</span>`, ()=>{ done(); });
+        s.fanBond=Math.min(100,(s.fanBond||0)+gain); s.fanBondMoments=(s.fanBondMoments||0)+1;
+        if(i===0) s.mental=Math.min(100,(s.mental||0)+4); else s.fans+=(120+i*80);
+        clampState(s); this.save();
+        this.showRoll({cls:"dg", emoji:ch.e||"💗", label:`${fd.name} 유대 +${gain}`},
+          `<b style="color:#ff5fa2">${bondLevel(s.fanBond).n}</b><br><span style="color:var(--txt)">"${esc(ch.react.replace(/팬들/g,fd.name))}"</span>`, ()=>{ this.render(); done(); });
       };
       box.appendChild(b);
     });
@@ -2227,7 +2281,10 @@ const Game = {
   // ⭐클라이맥스 인터랙션: 심사 직전 마지막 전략(침착 vs 올인)을 플레이어가 고름 → 결과에 실제 영향.
   //   24턴 도박 끝의 정점에서 '구경'이 아니라 '내 손'으로 승부를 건다.
   stageChoice(title, onPick, fore){
+    try{ if(window.Tut&&Tut.clear) Tut.clear(); }catch(e){}
     const ov=document.getElementById("ov"); ov.className="ov on"; ov.onclick=null;
+    const s=this.st, fd=fandomOf(s.idol), img=s.idol.img||'', bond=Math.round(s.fanBond||0);
+    const allinPct=Math.min(72,55+Math.floor(bond*.2));
     // ⭐지금 내 상태(안전/아슬/위험)를 보여줘 '감'이 아닌 '계산'으로 걸게 → 숙련·학습 루프(중독 요소)
     // 서술형(상태만) — '이렇게 하세요' 지시 대신 '이 정도예요' 재료만. 계산은 플레이어 몫.
     const foreMap={ safe:{ic:'🧘',cls:'safe',msg:'여유 있는 편이에요'},
@@ -2239,25 +2296,27 @@ const Game = {
     let _firstSC=false; try{ _firstSC=!localStorage.getItem('dg_seen_stagechoice'); }catch(e){}
     const hint = _firstSC ? `<div class="sc-hint">🐰 <b>마지막 승부처</b>예요! 위 <b>상태</b>를 보고 — 안정하게 갈지, 크게 걸어볼지 골라봐요.<br><small>거는 만큼 결과가 커지고, 아쉬우면 손해도 커요.</small></div>` : '';
     try{ localStorage.setItem('dg_seen_stagechoice','1'); }catch(e){}
-    ov.innerHTML=`<div class="ev-card" style="text-align:center;max-width:330px">
-      <div class="ev-emoji">🎤</div><div class="ev-title">${title}</div>
-      <p class="muted" style="margin:6px 3px 10px;font-size:13px">마지막 무대 직전 — 어떻게 갈까?</p>
+    ov.innerHTML=`<div class="ev-card idol-moment stage-moment" style="text-align:center;max-width:330px">
+      <div class="idol-moment-photo" ${img?`style="background-image:url('${img}')"`:''}></div><div class="idol-moment-shade"></div><div class="idol-moment-body">
+      <div class="stage-fandom">LIVE · ${esc(fd.rally)} · 유대 ${bond}</div><div class="ev-title">${title}</div>
+      <p class="muted" style="margin:6px 3px 10px;font-size:13px">${esc(fd.name)}가 이름을 외친다. 마지막 무대, 어떻게 갈까?</p>
       ${hint}${foreChip}
       <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
         <button class="btn ghost" id="scSafe" style="text-align:left;padding:14px 16px">🧘 <b>침착하게</b><br><small class="muted" style="font-size:12px">안정 · 점수 +8% 확정</small></button>
-        <button class="btn" id="scAllin" style="text-align:left;padding:14px 16px;background:linear-gradient(135deg,#ff8a3d,#ff4d72)">🔥 <b>다 걸고!</b><br><small style="font-size:12px;opacity:.9">올인 · 대박(+38%) 아니면 긴장(−22%)</small></button>
-      </div></div>`;
+        <button class="btn" id="scAllin" style="text-align:left;padding:14px 16px;background:linear-gradient(135deg,#ff8a3d,#ff4d72)">🔥 <b>${esc(fd.name)}의 함성을 믿고 올인</b><br><small style="font-size:12px;opacity:.9">성공 ${allinPct}% · 대박(+38%) / 긴장(−22%)</small></button>
+      </div></div></div>`;
     document.getElementById("scSafe").onclick=()=>{ try{sfx('click');}catch(e){} this._stageResolve(1.08, "🧘 침착하게 — 흔들림 없이", onPick); };
-    document.getElementById("scAllin").onclick=()=>{ const win=Math.random()<0.55; const m=win?1.38:0.78;
+    document.getElementById("scAllin").onclick=()=>{ const win=Math.random()<(allinPct/100); const m=win?1.38:0.78;
       try{sfx(win?'great':'fail'); if(navigator.vibrate)navigator.vibrate(win?[30,40,60]:[60,40,60]);}catch(e){}
       this._stageResolve(m, win?"🔥 올인 대박! 관중이 뒤집혔다 (+38%)":"😬 올인… 손끝이 떨렸다 (−22%)", onPick); };
   },
   _stageResolve(mult, msg, onPick){
-    const ov=document.getElementById("ov");
-    ov.innerHTML=`<div class="ev-card" style="text-align:center;max-width:330px">
-      <div style="font-size:48px;line-height:1.1">${mult>=1.2?'💥':mult<1?'😰':'🌟'}</div>
+    const ov=document.getElementById("ov"), s=this.st, fd=fandomOf(s.idol), img=s.idol.img||'';
+    ov.innerHTML=`<div class="ev-card idol-moment resolve-moment" style="text-align:center;max-width:330px">
+      <div class="idol-moment-photo" ${img?`style="background-image:url('${img}')"`:''}></div><div class="idol-moment-shade"></div><div class="idol-moment-body">
+      <div class="stage-fandom">${mult>=1.2?esc(fd.rally)+'이 폭발했다':mult<1?'숨죽인 객석':'흔들림 없는 무대'}</div>
       <div class="ev-title" style="margin:8px 0 4px">${msg}</div>
-      <button class="btn" id="scGo" style="margin-top:12px">무대에 오른다 →</button></div>`;
+      <button class="btn" id="scGo" style="margin-top:12px">무대에 오른다 →</button></div></div>`;
     if(mult>=1.2){ try{ this.confetti(30,false); }catch(e){} }
     document.getElementById("scGo").onclick=()=>{ ov.className="ov"; ov.onclick=null; onPick(mult); };
   },
@@ -2272,12 +2331,13 @@ const Game = {
     const bonus = pass ? Math.round(1500+total*4) : Math.round(total*2);
     s.fans+=bonus;
     this.logWeek(pass?t("debut_pass_log"):t("debut_fail_log"));
-    const ov=document.getElementById("ov"); ov.className="ov on"; ov.onclick=null;
-    ov.innerHTML=`<div class="ev-card"><div class="ev-emoji">${pass?"🎊":"😅"}</div>
+    const ov=document.getElementById("ov"), fd=fandomOf(s.idol), img=s.idol.img||''; ov.className="ov on"; ov.onclick=null;
+    ov.innerHTML=`<div class="ev-card idol-moment debut-result ${pass?'pass':'fail'}"><div class="idol-moment-photo" ${img?`style="background-image:url('${img}')"`:''}></div><div class="idol-moment-shade"></div><div class="idol-moment-body">
+      <div class="stage-fandom">${pass?`${esc(fd.name)}가 첫 무대를 함께 열었다`:`${esc(fd.name)}의 응원은 끝나지 않았다`}</div>
       <div class="ev-title">${pass?t("debut_pass_title"):t("debut_fail_title")}</div>
       <div class="ev-text">${pass?t("debut_pass_text"):t("debut_fail_text")}<br>
       ${t("debut_body",{bonus:fmt(bonus)})}</div>
-      <button class="btn" onclick="Game.afterDebut()" data-i18n="debut_next">${t("debut_next")}</button></div>`;
+      <button class="btn" onclick="Game.afterDebut()" data-i18n="debut_next">${t("debut_next")}</button></div></div>`;
     if(pass){ sfx("win"); this.confetti(46,false); } else { sfx("fail"); }
   },
 
@@ -2348,6 +2408,7 @@ const Game = {
   showCompetBoard(c, board, myRank, head, sub, btnLabel, onCont){
     const st=document.getElementById("competStage");
     const win=myRank===1, podium=myRank<=3;
+    const idol=this.st.idol, fd=fandomOf(idol), idolImg=(idol&&idol.img)||'';
     const tier = c.final?3 : (c.gate?2:1);   // 스테이지<관문<대상 순으로 화려하게
     st.className="compstage on"+(tier===3?" t3":tier===2?" t2":"");
     const emojiCls = "comp-emoji"+(tier===3?" t3":"")+(win?" win":"");
@@ -2355,9 +2416,10 @@ const Game = {
     // 뼈대: 타이틀 + 발표중 문구 + 빈 보드(아래→위로 채움) + 헤드/서브/버튼
     const reqTxt = c.type==="stage" ? c.field.map(k=>(STATS.find(x=>x.k===k)||{}).n).join("·") : "종합력";
     const stampGrade = win?"S":(podium?"A":(myRank<=Math.ceil(N/2)?"B":"C"));
-    st.innerHTML=`<div class="comp-in">
+    st.innerHTML=`${idolImg?`<div class="comp-idol-bg" style="background-image:url('${idolImg}')"></div>`:''}<div class="comp-in">
         <div class="${emojiCls}">${c.emoji}</div>
         <div class="comp-title">${t(c.tk)}</div>
+        <div class="comp-fandom">💞 ${esc(fd.name)} 유대 ${Math.round(this.st.fanBond||0)} · 함께 만든 무대</div>
         <div class="comp-req">🎯 심사 기준 <b>${reqTxt}</b></div>
         <div class="comp-phase" id="compPhase">${t("cp_announcing")}</div>
         <div class="comp-stamp" id="compStamp" data-g="${stampGrade}">${stampGrade}</div>
@@ -2571,6 +2633,7 @@ const Game = {
   },
 
   finish(reachedWorld, finalRank, shared){
+    try{ if(window.Tut&&Tut.clear) Tut.clear(); }catch(e){}
     // 멱등 가드: 어떤 경로(버튼 연타·로딩 중 입력·안전망 재관문)로든 finish 중복 실행 시 로스터/카드/runs 중복 적립되던 버그 차단
     if(!shared){ if(this._finished){ show("s-end"); return; } this._finished=true; }
     if(!shared) this.clearSave();   // 게임 종료 — 이어하기 삭제
@@ -2587,6 +2650,7 @@ const Game = {
     const spStat=STATS.find(x=>x.k===s.idol.spec)||STATS[0];
     this.lastResult={name:idolName(s.idol),grp:idolGrp(s.idol),ending:end.name,emoji:end.emoji,
       tier:end.tier,fans:s.fans,reachedWorld,statVals,overall,finalRank:finalRank||null,
+      fandom:fandomOf(s.idol).name, fanBond:Math.round(s.fanBond||0), fanBondMoments:s.fanBondMoments||0,
       spec:s.idol.spec, specName:spStat.n, specIco:spStat.ico, specColor:spStat.c, img:s.idol.img||"",
       stage:reachedWorld?(finalRank?`파이널 오디션 ${finalRank}위`:"그룹 후보 자격 획득"):"오디션 탈락"};
     document.getElementById("endIdolBox").style.display="";
@@ -3062,6 +3126,8 @@ function roundRect(x,rx,ry,w,h,r){ x.beginPath();
 
 function show(id){
   const _ov=document.getElementById("ov"); if(_ov&&_ov.classList.contains("on")){ _ov.className="ov"; _ov.onclick=null; }  // 화면 전환 시 열린 오버레이(자리추가·상세 등) 정리 → 다음 화면 덮음 방지
+  // 코치마크는 현재 화면의 특정 타깃에만 유효하다. 화면 전환 뒤 남아 콘텐츠를 가리지 않게 정리한다.
+  try{ if(window.Tut&&Tut.clear) Tut.clear(); }catch(e){}
   document.querySelectorAll(".screen").forEach(s=>s.classList.remove("on"));
   document.getElementById(id).classList.add("on"); document.getElementById("app").scrollTop=0;
   const gm=document.getElementById('globalMenuBtn');
@@ -3157,10 +3223,19 @@ function bell(freq,t0,dur,gain,bus){ gain=gain==null?0.18:gain;
   tone(freq,t0,dur,{type:'sine',gain,bus,release:0.25});
   tone(freq*2.01,t0,dur*0.6,{type:'sine',gain:gain*0.34,bus,release:0.18}); }
 function sfxOn(){ return localStorage.getItem("idol_sfx")!=="off"; }   // 기본 켜짐
+const REAL_SFX={click:'click',rest:'rest',ok:'ok',sparkle:'ok',whoosh:'click',great:'great',perfect:'perfect',win:'win',fanfare:'win',fail:'fail',lose:'dbad',dbad:'dbad'};
+const REAL_SFX_CACHE={};
+function playRealSfx(k){
+  const id=REAL_SFX[k]; if(!id || typeof Audio==='undefined') return false;
+  try{ const base=REAL_SFX_CACHE[id]||(REAL_SFX_CACHE[id]=new Audio(`assets/sfx/${id}.m4a?v=${ASSET_VER}`));
+    const a=base.cloneNode(); a.volume=(k==='click'?0.28:0.52); const p=a.play(); if(p&&p.catch)p.catch(()=>{}); return true; }catch(e){ return false; }
+}
 function sfx(k){
   if(!sfxOn()) return;
+  if(playRealSfx(k)) return;
   const ac=ensureAudio(); if(!ac) return;
   maybeStartBgm();
+  // 실제 녹음 파일이 없는 큐는 절차형 Web Audio를 유지한다.
   const n=ac.currentTime+0.002, N=NOTE;
   switch(k){
     case 'click': tone(N.A5,n,0.05,{type:'triangle',gain:0.09,release:0.05}); break;
@@ -3753,6 +3828,12 @@ window.addEventListener("popstate", ()=>{
   .dg-res{margin:16px 0 4px;text-align:left}
   .dg-res-slot{background:var(--panel2);border-radius:12px;padding:12px;text-align:center;font-size:14px}
   .dg-res-cards{background:var(--panel2);border:1px solid #ffe6c2;border-radius:12px;padding:12px;margin-top:9px}
+  .res-bond{margin-top:9px;padding:11px 12px;border-radius:13px;background:linear-gradient(135deg,rgba(255,95,162,.13),rgba(255,211,92,.06));border:1px solid rgba(255,95,162,.3)}
+  .res-bond>div:first-child{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--sub)}
+  .res-bond b{color:#ff78ac}.res-bond-track{height:7px!important;margin:7px 0 5px;border-radius:9px;background:var(--panel);overflow:hidden}
+  .res-bond-track i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#ff5fa2,#ffd35c)}
+  .res-bond small{font-size:10.5px;color:var(--sub)}
+  .ic-bond{margin-top:3px;font-size:9.5px;color:#ffb4d0;font-weight:900;text-shadow:0 1px 4px #000}
   /* 전설의 연습생 칭호·신기록 */
   .dg-titles{display:flex;flex-wrap:wrap;gap:6px}
   .dg-title{display:inline-block;background:linear-gradient(90deg,#fff3d6,#ffe9c2);border:1.5px solid #ffcf6b;border-radius:999px;padding:5px 11px;font-size:12.5px;font-weight:700;color:#9a6b00;line-height:1.35}
@@ -3890,7 +3971,7 @@ window.addEventListener("popstate", ()=>{
   /* ===== 첫 실행 튜토리얼: 스포트라이트 코치마크 ===== */
   #tutRoot{position:fixed;inset:0;z-index:95;pointer-events:none}
   .tut-catch{position:absolute;inset:0;pointer-events:auto;background:transparent}
-  .tut-hole{position:absolute;border-radius:16px;pointer-events:none;box-shadow:0 0 0 9999px rgba(7,4,20,.80);transition:all .28s cubic-bezier(.3,1,.4,1)}
+  .tut-hole{position:absolute;border-radius:16px;pointer-events:none;box-shadow:0 0 0 9999px rgba(7,4,20,.58);transition:all .28s cubic-bezier(.3,1,.4,1)}
   .tut-ring{position:absolute;border-radius:16px;pointer-events:none;border:2.5px solid #ff5fa2;box-shadow:0 0 18px 3px rgba(255,95,162,.55);animation:tutRing 1.35s ease-in-out infinite;transition:all .28s cubic-bezier(.3,1,.4,1)}
   @keyframes tutRing{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:1;transform:scale(1.035)}}
   .tut-ring.nudge{animation:tutNudge .5s ease}
@@ -4605,8 +4686,9 @@ window.addEventListener("popstate", ()=>{
       if(!d.wear||typeof d.wear!=='object'||Array.isArray(d.wear)) d.wear={};
       // NEW 뱃지(수집형 국룰): 새로 얻고 아직 상세로 확인 안 한 카드 표시
       if(!d.newCards||typeof d.newCards!=='object'||Array.isArray(d.newCards)) d.newCards={};
-      // 애정⑥ 함께한 기록: 합류일 마이그레이션(구세이브=지금부터 카운트) + 최애 정합
-      d.roster.forEach(r=>{ if(!r.joinedAt) r.joinedAt=Date.now(); });
+      // 애정⑥ 함께한 기록 + 팬덤 유대: 구카드는 첫 약속 단계에서 이어지도록 마이그레이션
+      let bondMigrated=false;
+      d.roster.forEach(r=>{ if(!r.joinedAt) r.joinedAt=Date.now(); if(r.fanBond==null){r.fanBond=8;bondMigrated=true;} });
       if(d.favRid!=null && !d.roster.some(r=>r.rid===d.favRid)) delete d.favRid;   // 은퇴/소실된 최애 정리
       Object.keys(d.wear).forEach(k=>{ const p=k.split(':'), n=(d.cards[p[0]]&&d.cards[p[0]][p[1]])||0, w=d.wear[k];
         if(!n || typeof w!=='number' || w<1 || w>=3) delete d.wear[k]; });
@@ -4625,7 +4707,7 @@ window.addEventListener("popstate", ()=>{
       if(!d.groupAll){ d.groupAll={}; if(d.battleAll){ const rg=(d.groups||[]).some(g=>g.gid===d.repGid)?d.repGid:((d.groups||[])[0]||{}).gid; if(rg!=null) d.groupAll[rg]=d.battleAll; } }
       if(!d.groupLog){ d.groupLog={}; if(Array.isArray(d.battleLog)){ const rg=(d.groups||[]).some(g=>g.gid===d.repGid)?d.repGid:((d.groups||[])[0]||{}).gid; if(rg!=null) d.groupLog[rg]=d.battleLog; } }
       delete d.battleSeason; delete d.battleAll; delete d.battleLog;
-      this.data=d; return d;
+      this.data=d; if(bondMigrated) this.persist(); return d;
     },
     persist(){ try{ localStorage.setItem(KEY(), JSON.stringify(this.data)); this._persistError=false; return true; }
       catch(e){ if(!this._persistError){ this._persistError=true; try{toast('저장 공간이 부족해. 오래된 기록을 정리해줘');}catch(_){} } return false; } },
@@ -5116,10 +5198,10 @@ window.addEventListener("popstate", ()=>{
             this.data.memories.push({rid:old.rid,idkey:old.idkey,name:old.name,img:'',stats:Object.assign({},old.stats||{}),
               grade:old.grade,fans:old.fans||0,run:old.runs||1,adopted:true,savedAt:old.lastTrainedAt||old.joinedAt||Date.now()});
           this.data.memories.push({rid:old.rid,idkey,name:st.idol.name,img:'',stats:Object.assign({},stats),
-            grade:gr,fans:Math.round((st&&st.fans)||0),run:nextRun,adopted:adopt,savedAt:Date.now()});
+            grade:gr,fans:Math.round((st&&st.fans)||0),fanBond:Math.round((st&&st.fanBond)||0),run:nextRun,adopted:adopt,savedAt:Date.now()});
           if(adopt){
             Object.assign(old,{name:st.idol.name,img:st.idol.img||old.img||'',spec:st.idol.spec,cat:st.idol.cat||old.cat||'F',
-              stats,grade:gr,titles,grp:st.idol.grp||old.grp||'',fans:Math.round((st&&st.fans)||0),incomplete:false});
+              stats,grade:gr,titles,grp:st.idol.grp||old.grp||'',fans:Math.round((st&&st.fans)||0),fanBond:Math.max(old.fanBond||0,Math.round((st&&st.fanBond)||0)),incomplete:false});
             old.progressRuns=(old.progressRuns||old.runs||1)+1;
           }
           old.incomplete=false;
@@ -5127,7 +5209,7 @@ window.addEventListener("popstate", ()=>{
           joinMsg=`✨ <b>${esc(st.idol.name)} ${nextRun}회차 완료</b><br><span class="muted">${adopt?'최고 기록 갱신 · 대표 버전 교체':'이전 최고 기록 유지 · 이번 기록 보관'} · 종합 ${overallNow}</span>`;
         } else {
           newRid=++this.data.ridSeq;
-          this.data.roster.push({rid:newRid, idkey, name:st.idol.name, img:st.idol.img||'', spec:st.idol.spec, cat:st.idol.cat||'F', stats, grade:gr, titles, grp:st.idol.grp||'', fans:Math.round((st&&st.fans)||0), runs:1, progressRuns:1, joinedAt:Date.now()});   // grp=원조케미 재료 · fans=팬보정 · joinedAt=애정⑥ 함께한 기록
+          this.data.roster.push({rid:newRid, idkey, name:st.idol.name, img:st.idol.img||'', spec:st.idol.spec, cat:st.idol.cat||'F', stats, grade:gr, titles, grp:st.idol.grp||'', fans:Math.round((st&&st.fans)||0), fanBond:Math.round((st&&st.fanBond)||0), runs:1, progressRuns:1, joinedAt:Date.now()});   // 팬덤 유대는 영구 카드에 남고 다음 회차 일부 계승
           joinMsg=firstEver
             ? `✨ <b>${esc(st.idol.name)}</b> 프롤로그 수료! 첫 아이돌 카드 등록<br><span class="muted">종합 ${overallNow} 등급 · 다음 육성부터 오디션 조건 적용</span>`
             : `🎊 <b>${esc(st.idol.name)}</b> 오디션 통과! 아이돌 카드 등록<br><span class="muted">종합 ${overallNow} 등급 · 그룹 데뷔 후보 합류</span>`;
@@ -5138,14 +5220,14 @@ window.addEventListener("popstate", ()=>{
           newRid=old.rid; old.runs=(old.runs||1)+1; old.lastTrainedAt=Date.now();
           if(!this.data.memories)this.data.memories=[];
           this.data.memories.push({rid:old.rid,idkey,name:st.idol.name,img:'',stats:Object.assign({},stats),
-            grade:gr,fans:Math.round((st&&st.fans)||0),run:old.runs,adopted:false,failed:true,savedAt:Date.now()});
+            grade:gr,fans:Math.round((st&&st.fans)||0),fanBond:Math.round((st&&st.fanBond)||0),run:old.runs,adopted:false,failed:true,savedAt:Date.now()});
           joinMsg=old.incomplete
             ? `💤 <b>${esc(st.idol.name)}</b> 오디션 탈락 — 미완성 카드 유지<br><span class="muted">다시 육성해 부족한 기록을 넘으면 정식 등록</span>`
             : `📔 <b>${esc(st.idol.name)}</b> 오디션 탈락 — 기존 최고 카드 유지<br><span class="muted">이번 실패 기록은 버전 앨범에 보관</span>`;
         } else {
           newRid=++this.data.ridSeq;
           this.data.roster.push({rid:newRid,idkey,name:st.idol.name,img:st.idol.img||'',spec:st.idol.spec,cat:st.idol.cat||'F',
-            stats,grade:gr,titles:[],grp:st.idol.grp||'',fans:Math.round((st&&st.fans)||0),runs:1,progressRuns:1,incomplete:true,joinedAt:Date.now()});
+            stats,grade:gr,titles:[],grp:st.idol.grp||'',fans:Math.round((st&&st.fans)||0),fanBond:Math.round((st&&st.fanBond)||0),runs:1,progressRuns:1,incomplete:true,joinedAt:Date.now()});
           joinMsg=`💤 <b>${esc(st.idol.name)}</b> 오디션 탈락 — 미완성 카드 보관<br><span class="muted">다시 육성해 부족한 기록을 넘으면 정식 등록</span>`;
         }
         this.data.fails=(this.data.fails||0)+1;
@@ -5166,7 +5248,8 @@ window.addEventListener("popstate", ()=>{
       const dropInfo=drops.map(id=>{ const wasNew=!this.owned(id); this.add(id,1,1); if(wasNew) this.data.newCards[id]=1; return {id, isNew:wasNew}; });
       this.data.runs++; this.persist();
       if(newRid) (this.data.groups||[]).filter(g=>Object.values(g.lineup||{}).includes(newRid)).forEach(g=>this.submitGroup(g));
-      return {drops:dropInfo, joinMsg, debuted, newRid, titles, newRecord, fans:fansV, tier:(end&&end.tier)||''};
+      return {drops:dropInfo, joinMsg, debuted, newRid, titles, newRecord, fans:fansV, tier:(end&&end.tier)||'',
+        fandom:fandomOf(st&&st.idol).name, fanBond:Math.round((st&&st.fanBond)||0)};
     },
     // ⑳⑲ 드랍 재설계(재율애비 확정): 최다 훈련영역 1장 확정 + 랜덤 추가 최대 2장(안 나올 수도).
     //   랜덤은 레어도 차등확률(N>R>SR>SSR>UR, 상위등급도 뜸) + 육성 등급으로 약간 보정. ⚠️수치 임시(밸런싱 대기)
@@ -5257,6 +5340,7 @@ window.addEventListener("popstate", ()=>{
       const statNm=STATNM[topK]||'대표 능력', statV=Math.round(((r&&r.stats)||{})[topK]||0);
       const action=opt.onclick?` onclick="${opt.onclick}"`:'';
       const state=opt.state||(r&&r.incomplete?'incomplete':'complete');
+      const fd=fandomOf(r||{}), fb=Math.round((r&&r.fanBond)||opt.fanBond||0), fbl=bondLevel(fb);
       const stateLabel=state==='training'?'CARD IN PROGRESS':state==='new'?'NEW IDOL CARD':state==='incomplete'?'INCOMPLETE CARD':'IDOL CARD';
       const scoreLabel=state==='training'?'현재 기록':state==='incomplete'?'도전 기록':'최고 기록';
       return `<div class="rcard idol-card t${m.tier} ${opt.cls||''}"${action}>
@@ -5271,6 +5355,7 @@ window.addEventListener("popstate", ()=>{
         <div class="rinfo">
           <div class="rstar">${stars}</div><div class="rnm">${esc(name)}</div>
           <div class="rsub">${esc(statNm)} ${statV||'—'} · ${scoreLabel} ${m.best||'—'}</div>
+          <div class="ic-bond">💞 ${esc(fd.name)} · ${fb?`${fbl.n} ${fb}`:'첫 약속 대기'}</div>
           <div class="ic-next">${state==='training'?'완주 시 카드 저장':state==='incomplete'?'오디션 재도전':(m.star>=5?'MAX CARD':`다음 ★ · ${m.need?'신기록 '+m.need+'회 + ':''}최고 ${m.nextScore}`)}</div>
         </div>
       </div>`;
@@ -6031,6 +6116,9 @@ window.addEventListener("popstate", ()=>{
           ? ['"저 잘했죠? 칭찬해줘요! 😊"','"다 프로듀서님 덕분이에요… 진짜로요!"','"우리 여기서 더 올라가요!"']
           : ['"떨렸지만… 그래도 해냈어요!"','"프로듀서님 없었으면 여기까지 못 왔어요"','"다음엔 더 멋진 모습 보여드릴게요!"'];
       const thanks=`<div class="fb-sub" style="text-align:center;margin:2px 0 8px;font-size:13px;color:#ffd35c">💬 ${thanksPool[Math.floor(Math.random()*thanksPool.length)]}</div>`;
+      const _fb=Math.round(res.fanBond||0), _fd=res.fandom||'팬덤', _bl=bondLevel(_fb);
+      const bondResult=`<div class="res-bond"><div><span>💞 ${esc(_fd)}와의 인연</span><b>${_bl.n} · ${_fb}</b></div>
+        <div class="res-bond-track"><i style="width:${_fb}%"></i></div><small>${_fb>=80?'최고 유대 완성 · 다음 회차에서 더 강한 함성 계승':`다음 약속까지 ${Math.max(0,_bl.next-_fb)} · 유대가 올인 성공률을 높여`}</small></div>`;
       // ⭐한 명 더 육성 훅: 방금 완주로 진척된 다음 목표 노출 → 최고 몰입 순간에 다음 런 유도
       const ng=this.nextGoals(2);
       const goalPull = ng.length ? `<div class="res-goals"><div class="res-goals-h">🎯 다음 목표</div>
@@ -6047,7 +6135,7 @@ window.addEventListener("popstate", ()=>{
         ${this.idolCardHTML(idolR,{cls:'result-idol-card',state:idolR.incomplete?'incomplete':(keptAfterFail?'complete':'new'),onclick:`DG.showRosterDetail(${idolR.rid})`})}
         <div class="res-card-copy"><b>${esc(idolR.name)} ${idolR.incomplete?'미완성 카드가 남았어':keptAfterFail?'기존 최고 카드를 유지했어':'카드가 영구 보관됐어'}</b><span>${idolR.incomplete?'이 아이로 다시 도전하면 정식 카드 완성':keptAfterFail?'이번 실패 기록은 버전 앨범에 보관됨':(this.idolCardMeta(idolR).star>=5?'최고 단계 완성':`다음 ★ 조건 · ${this.idolCardMeta(idolR).need?this.idolCardMeta(idolR).need+'회 + ':''}최고 ${this.idolCardMeta(idolR).nextScore}`)}</span></div>
       </div>`:'';
-      box.innerHTML=`<div class="dg-res">${rec}<div class="dg-res-slot">${res.joinMsg}</div>${thanks}
+      box.innerHTML=`<div class="dg-res">${rec}<div class="dg-res-slot">${res.joinMsg}</div>${thanks}${bondResult}
         ${idolReveal}
         ${titleChips}
         <div class="dg-res-cards"><b>SUPPORT CARD · 다음 육성 장비</b><div class="dg-chips" style="margin-top:6px">${chips}</div></div>
@@ -7022,14 +7110,16 @@ window.addEventListener("popstate", ()=>{
       if(!this.s.done.welcome){ if(!document.getElementById('tutRoot')) this.begin(); return; }
       if(!this.on()) return;
       let d={}; try{ DG.load(); d=DG.data||{}; }catch(e){}
+      // 육성을 이미 시작한 사용자의 홈에는 첫 CTA 튜토리얼을 다시 덮지 않는다.
+      try{ if(Game.hasSave&&Game.hasSave() && (d.roster||[]).length===0) return; }catch(e){}
       const roster=d.roster||[], groups=d.groups||[];
       let gi={n:0}; try{ gi=DG.groupInfo(); }catch(e){}
       // 스텝2 시작: 첫 육성 유도
       if(roster.length===0 && groups.length===0 && !this.did('s2_cta')){
         return this.spot({ id:'s2_cta', mascot:'🐤', place:'auto',
           get:()=>document.querySelector('#s-office.on .hs3-primary'),
-          body:`먼저 <b>첫 연습생</b>부터 발굴해야 해요! 이 <b>✨ 첫 육성 시작</b> 버튼을 눌러봐요.`,
-          tap:'첫 육성 시작 누르기', step:'1/5' });
+          body:`먼저 <b>첫 연습생</b>부터 발굴해야 해요! 아래 <b>첫 최애 선택하기</b> 버튼을 눌러봐요.`,
+          tap:'첫 최애 선택하기', step:'1/5' });
       }
       // 스텝3: 완주 연습생 있고 아직 데뷔 그룹 없음 → 편성 안내(정보형)
       if(roster.length>0 && groups.length===0 && gi.n<3 && !this.did('s3_lineup')){
