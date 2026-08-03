@@ -37,7 +37,7 @@
     if(current.done) return {accepted:false,daily:input.daily||{},boosts:input.boosts||[],history:input.history||[],streak:current.streak};
     const streak=dayDiff(current.today,current.lastDay)===1?current.streak+1:1;
     const boosts=(Array.isArray(input.boosts)?input.boosts:[]).filter(x=>!x.usedAt);
-    boosts.push({id:`${current.today}:${input.rid}:${input.kind}`,rid:input.rid,kind:input.kind,day:current.today,...(input.boost||{})});
+    boosts.push({id:`${current.today}:${input.rid}:${input.kind}`,rid:input.rid,kind:input.kind,day:current.today,awaitingReply:true,...(input.boost||{})});
     const history=(Array.isArray(input.history)?input.history:[]).slice();
     history.push({rid:input.rid,day:current.today,kind:input.kind,text:input.text});
     return {
@@ -79,7 +79,7 @@
     const target=list.find(x=>String(x.rid)===String(echo.rid)&&x.day===echo.fromDay&&x.kind===echo.kind);
     if(target){
       for(const key of ['bond','climax','start']) if(boost&&boost[key]) target[key]=(target[key]||0)+boost[key];
-      target.reply=true;
+      target.reply=true; delete target.awaitingReply;
       return [target,...list.filter(x=>x!==target)].slice(0,7);
     }
     const reply={id:`reply:${echo.id}`,rid:echo.rid,kind:`reply-${echo.kind}`,day:today,...boost};
@@ -88,7 +88,7 @@
 
   function consume(boosts,rid,now){
     const list=Array.isArray(boosts)?boosts:[], at=now==null?Date.now():now;
-    const found=list.find(x=>!x.usedAt&&String(x.rid)===String(rid));
+    const found=list.find(x=>!x.usedAt&&!x.awaitingReply&&String(x.rid)===String(rid));
     if(!found) return {boost:null,boosts:list};
     found.usedAt=at;
     return {boost:found,boosts:list.filter(x=>!x.usedAt||at-x.usedAt<7*86400000).slice(-7)};

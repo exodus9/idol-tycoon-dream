@@ -10,6 +10,8 @@ const first=Daily.complete({daily:{},boosts:[],history:[],today:'2026-08-03',rid
 assert.equal(first.accepted,true);
 assert.equal(first.daily.streak,1);
 assert.equal(first.boosts[0].climax,8);
+assert.equal(first.boosts[0].awaitingReply,true,'today\'s project reward must stay locked until the next-day reply opens');
+assert.equal(Daily.consume(first.boosts,7,Date.UTC(2026,7,3)).boost,null,'same-day retraining must not consume tomorrow\'s promised reward');
 
 const duplicate=Daily.complete({daily:first.daily,boosts:first.boosts,history:first.history,today:'2026-08-03',rid:7,kind:'letter'});
 assert.equal(duplicate.accepted,false,'only one fandom project may be completed per KST day');
@@ -20,8 +22,9 @@ assert.equal(next.daily.streak,2);
 const missed=Daily.state(next.daily,'2026-08-06');
 assert.equal(missed.streak,0,'a missed day must reset the live streak');
 
-const consumed=Daily.consume(next.boosts,7,Date.UTC(2026,7,4));
-assert.equal(consumed.boost.kind,'chant','oldest pending boost must be consumed first');
+const legacyBoosts=next.boosts.map(x=>{const copy={...x};delete copy.awaitingReply;return copy;});
+const consumed=Daily.consume(legacyBoosts,7,Date.UTC(2026,7,4));
+assert.equal(consumed.boost.kind,'chant','legacy unlocked boosts must remain consumable and preserve oldest-first order');
 assert.equal(Daily.consume(consumed.boosts,999).boost,null,'another idol must not consume the boost');
 
 const echoes=Daily.queueEcho([],{today:'2026-08-03',rid:7,kind:'chant'});
@@ -43,6 +46,12 @@ const matchingBoost=[{id:'2026-08-03:7:chant',rid:7,kind:'chant',day:'2026-08-03
 const merged=Daily.mergeReplyBoost(matchingBoost,claimed.echo,{climax:4},'2026-08-04');
 assert.equal(merged.length,1,'the next-day reply must enhance the matching pending RUN boost, not delay into a second RUN');
 assert.equal(merged[0].climax,12);
+assert.equal(merged[0].awaitingReply,undefined);
+assert.equal(Daily.consume(merged.map(x=>({...x})),7,4).boost.climax,12,'opening the reply must unlock the combined reward for exactly one RUN');
+const lockedMatching=[{id:'2026-08-03:7:chant',rid:7,kind:'chant',day:'2026-08-03',climax:8,awaitingReply:true}];
+const unlocked=Daily.mergeReplyBoost(lockedMatching,claimed.echo,{climax:4},'2026-08-04');
+assert.equal(unlocked[0].awaitingReply,undefined,'reply opening must unlock newly-created locked boosts');
+assert.equal(Daily.consume(unlocked.map(x=>({...x})),7,5).boost.climax,12);
 const replyOnly=Daily.mergeReplyBoost([],claimed.echo,{climax:4},'2026-08-04');
 assert.equal(replyOnly[0].kind,'reply-chant','a reply still creates a next-RUN boost if yesterday\'s boost was already used');
 const older=[{id:'old',rid:7,kind:'letter',day:'2026-08-02',bond:6},...matchingBoost];

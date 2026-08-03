@@ -6196,9 +6196,9 @@ window.addEventListener("popstate", ()=>{
       idea:{img:'assets/emo/act-charm.png',kicker:'STAGE PICK',title:'팬들이 고른 장면이 열렸어요',text:`${subject} 고른 장면이 다음 콘셉트 보드에 올라왔어요. 새 RUN에서 달라진 시작을 확인해요.`,reward:'다음 RUN 선택 방향 +6',boost:{start:6}},
     })[kind]||null; },
     dailyChoices(fav){ const fd=fandomOf(fav||{}); return [
-      {id:'letter',img:'assets/emo/buddy.png',nm:'팬레터 모아 전하기',copy:`${fd.name}의 마음을 골라 오늘의 한마디를 전해요.`,effect:'유대 +8 · 다음 RUN 시작 유대 +6',bond:8,boost:{bond:6}},
-      {id:'chant',img:'assets/mascot.png',nm:'응원법 리허설',copy:`${fd.rally} 타이밍을 맞춰 다음 클라이맥스를 준비해요.`,effect:'유대 +5 · 다음 올인 성공 +8%p',bond:5,boost:{climax:8}},
-      {id:'idea',img:'assets/emo/act-charm.png',nm:'무대 아이디어 투표',copy:'팬들이 고른 한 장면을 다음 제작 방향의 시작점으로 남겨요.',effect:'유대 +5 · 다음 RUN 선택 방향 +12',bond:5,boost:{start:12}},
+      {id:'letter',img:'assets/emo/buddy.png',nm:'팬레터 모아 전하기',copy:`${fd.name}의 마음을 골라 오늘의 한마디를 전해요.`,effect:'유대 +8 · 내일 답장 후 시작 유대 +6',bond:8,boost:{bond:6}},
+      {id:'chant',img:'assets/mascot.png',nm:'응원법 리허설',copy:`${fd.rally} 타이밍을 맞춰 다음 클라이맥스를 준비해요.`,effect:'유대 +5 · 내일 답장 후 올인 +8%p',bond:5,boost:{climax:8}},
+      {id:'idea',img:'assets/emo/act-charm.png',nm:'무대 아이디어 투표',copy:'팬들이 고른 한 장면을 다음 제작 방향의 시작점으로 남겨요.',effect:'유대 +5 · 내일 답장 후 시작 방향 +12',bond:5,boost:{start:12}},
     ]; },
     goDaily(){ this.load(); this.renderDaily(); show('s-daily'); },
     renderDaily(){ const box=document.getElementById('dailyBody'), head=document.getElementById('dailyHead'); if(!box)return;
@@ -6213,15 +6213,15 @@ window.addEventListener("popstate", ()=>{
         <div class="daily-idol">${this.idolCardHTML(fav,{favorite:true})}</div>
         <div class="daily-streak"><b>연속 ${state.streak}일</b><span>3일 마이크 · 7일 팬 소통 카드</span><div class="daily-dots">${weekDots}</div></div></div>`;
       let replyOpen='';
-      if(revealed){ const rf=this.rosterById(revealed.rid)||{rid:revealed.rid,name:revealed.idolName||'이전 아이돌',_fandomName:revealed.fandomName||'팬덤'}, rm=this.dailyEchoCopy(revealed.kind,rf,!!revealed.archivedReward,revealed); if(rm) replyOpen=`<div class="daily-reply open"><div class="daily-reply-row"><img src="${rm.img}" alt=""><div><div class="daily-reply-kicker">${esc(rm.kicker)} · OPENED</div><h3>${esc(rm.title)}</h3></div></div><p>${esc(rm.text)}</p><div class="daily-reply-reward"><span>오늘 받은 추가 보정</span><b>${esc(rm.reward)}</b></div></div>${String(revealed.kind||'').startsWith('promise:')&&this.rosterById(revealed.rid)?`<button class="btn" style="margin:10px 0 2px;width:100%" onclick="DG.retrainFromPromiseReply(${revealed.rid},'${encodeURIComponent(revealed.runId||'')}','${encodeURIComponent(revealed.promiseId||'')}')">${revealed.promiseStatus==='failed'?'↻ 이 미완결 약속 다시 도전':'🎬 이 장면 이어서 재육성'}</button>`:''}`; }
+      if(revealed){ const rf=this.rosterById(revealed.rid)||{rid:revealed.rid,name:revealed.idolName||'이전 아이돌',_fandomName:revealed.fandomName||'팬덤'}, rm=this.dailyEchoCopy(revealed.kind,rf,!!revealed.archivedReward,revealed), promiseReply=String(revealed.kind||'').startsWith('promise:'); if(rm) replyOpen=`<div class="daily-reply open"><div class="daily-reply-row"><img src="${rm.img}" alt=""><div><div class="daily-reply-kicker">${esc(rm.kicker)} · OPENED</div><h3>${esc(rm.title)}</h3></div></div><p>${esc(rm.text)}${promiseReply?'':' 어제 선택 보정도 지금부터 다음 RUN에 사용할 수 있어요.'}</p><div class="daily-reply-reward"><span>${promiseReply?'오늘 받은 RUN 보정':'어제 선택 보정 잠금 해제 · 추가 보정'}</span><b>${esc(rm.reward)}</b></div></div>${promiseReply&&this.rosterById(revealed.rid)?`<button class="btn" style="margin:10px 0 2px;width:100%" onclick="DG.retrainFromPromiseReply(${revealed.rid},'${encodeURIComponent(revealed.runId||'')}','${encodeURIComponent(revealed.promiseId||'')}')">${revealed.promiseStatus==='failed'?'↻ 이 미완결 약속 다시 도전':'🎬 이 장면 이어서 재육성'}</button>`:''}`; }
       let action='';
       if(ready){ const rf=this.rosterById(ready.rid)||{rid:ready.rid,name:ready.idolName||'이전 아이돌',_fandomName:ready.fandomName||'팬덤'}, rm=this.dailyEchoCopy(ready.kind,rf,false,ready);
-        action=rm?`<div class="daily-reply"><div class="daily-reply-row"><img src="${rm.img}" alt=""><div><div class="daily-reply-kicker">${esc(rm.kicker)} · ARRIVED</div><h3>${esc(rf.name)}의 ${String(ready.kind).startsWith('promise:')?'지난 RUN 장면':'어제 선택'}에 답장이 왔어요</h3></div></div><p>열어보기 전까지 내용은 비밀이에요. 답장을 확인하면 오늘 프로젝트와 추가 RUN 보정이 열려요.</p><div class="daily-reply-reward"><span>수신일 ${esc(ready.revealDay)}</span><b>추가 보정 포함</b></div></div><button class="btn" style="margin-top:10px;width:100%" onclick="DG.claimDailyEcho()">팬덤 답장 열기</button>`:'';
-      } else if(state.done){ const picked=choices.find(x=>x.id===state.choice)||choices[0], pending=(this.data.dailyBoosts||[]).filter(x=>x.rid===fav.rid&&!x.usedAt).length;
+        action=rm?`<div class="daily-reply"><div class="daily-reply-row"><img src="${rm.img}" alt=""><div><div class="daily-reply-kicker">${esc(rm.kicker)} · ARRIVED</div><h3>${esc(rf.name)}의 ${String(ready.kind).startsWith('promise:')?'지난 RUN 장면':'어제 선택'}에 답장이 왔어요</h3></div></div><p>열어보기 전까지 내용은 비밀이에요. 답장을 확인하면 어제 선택 보정과 추가 보정이 합쳐져 다음 RUN에 열려요.</p><div class="daily-reply-reward"><span>수신일 ${esc(ready.revealDay)}</span><b>선택 보정 + 답장 보정</b></div></div><button class="btn" style="margin-top:10px;width:100%" onclick="DG.claimDailyEcho()">팬덤 답장 열기</button>`:'';
+      } else if(state.done){ const picked=choices.find(x=>x.id===state.choice)||choices[0], allPending=(this.data.dailyBoosts||[]).filter(x=>x.rid===fav.rid&&!x.usedAt), pending=allPending.filter(x=>!x.awaitingReply).length, awaiting=allPending.filter(x=>x.awaitingReply).length;
         const next=this.progressAction(fav);
         const banked=next.kind==='scout'||next.kind==='lineup'||next.kind==='debut'
-          ? `${esc(fav.name)} 다음 RUN 보정 ${pending}개는 보관 중 · 지금은 첫 그룹을 완성할 차례`
-          : `다음 RUN 보정 ${pending}개 대기 중`;
+          ? `${esc(fav.name)} 보정은 답장까지 보관 · 지금은 첫 그룹을 완성할 차례`
+          : `${awaiting?`답장 대기 ${awaiting}개`:''}${awaiting&&pending?' · ':''}${pending?`사용 가능 ${pending}개`:''}`;
         action=`<div class="daily-done"><b>오늘의 프로젝트 완료</b><p>${esc(picked.nm)} · ${esc(picked.effect)}<br>${banked} · 내일 00:00(KST) 팬덤 답장 도착</p></div>
           <button class="btn" style="margin-top:10px;width:100%" onclick="${next.on}">${next.label}</button>`;
       } else { action=`<div class="daily-section-title"><b>오늘 무엇을 함께할까?</b><span>하나만 선택</span></div><div class="daily-options">${choices.map(c=>
