@@ -3378,6 +3378,7 @@ function cardImgSrc(url){
 // ===== 오디오 엔진 (절차적 Web Audio — 애돌톤 효과음 + BGM. 바이너리 에셋·CORS 없음, 오프라인 OK) =====
 // 밝은 최애돌 앱톤에 맞춘 벨/아르페지오 신스. Kenney interface음(맥빠짐) 폐기.
 let AC=null, MASTER=null, SFXBUS=null, BGMBUS=null;
+const BGM_THEME_BUSES={};
 function ensureAudio(){
   if(AC){ if(AC.state==="suspended"){ try{AC.resume();}catch(e){} } return AC; }
   try{
@@ -3385,6 +3386,7 @@ function ensureAudio(){
     MASTER=AC.createGain(); MASTER.gain.value=0.9; MASTER.connect(AC.destination);
     SFXBUS=AC.createGain(); SFXBUS.gain.value=0.9; SFXBUS.connect(MASTER);
     BGMBUS=AC.createGain(); BGMBUS.gain.value=0.0001; BGMBUS.connect(MASTER);
+    ['home','train','battle'].forEach(name=>{ const bus=AC.createGain(); bus.gain.value=name==='home'?1:0.0001; bus.connect(BGMBUS); BGM_THEME_BUSES[name]=bus; });
   }catch(e){ AC=null; }
   return AC;
 }
@@ -3452,55 +3454,72 @@ function sfx(k){
     default: tone(N.C5,n,0.1,{gain:0.1});
   }
 }
-// ── ㉙ BGM: 곡 구조 확장(4마디 루프→32마디 약 69초 송폼) + 회차 변주. Web Audio 스케줄러 ──
-// 송폼: 전주(4) → 벌스(8) → 빌드(4) → 후렴(8) → 브릿지(4) → 후렴 아웃트로(4). 반복마다 아르페지오 패턴 랜덤 픽.
+// ── ㉙ BGM: 홈/육성/배틀이 서로 다른 화성·리듬·악기 정체성을 갖는 32마디 송폼 ──
 let BGM_ON=false, bgmTimer=null, bgmStep=0, bgmNextTime=0;
-const BGM_BPM=112, BGM_EIGHTH_BASE=60/BGM_BPM/2; let EIGHTH=BGM_EIGHTH_BASE;
-// ㉙-2 BGM 3종(재율애비): 홈=차분 · 육성=경쾌(빠름) · 배틀=강렬(더 빠름·큼). 템포·강도로 차별(피치변조 X=화음 유지)
-const BGM_THEMES={ home:{rate:1.0,gain:0.6}, train:{rate:1.13,gain:0.62}, battle:{rate:1.27,gain:0.72} };
+const BGM_BPM=112, BGM_EIGHTH_BASE=60/BGM_BPM/2; let EIGHTH=BGM_EIGHTH_BASE/.9;
+const BGM_THEMES={
+  home:{rate:.9,gain:.52,arp:'sine',pad:'sine'},
+  train:{rate:1.13,gain:.62,arp:'triangle',pad:'sine'},
+  battle:{rate:1.27,gain:.68,arp:'square',pad:'triangle'}
+};
 let BGM_THEME='home';
-function setBgmTheme(th){ if(!BGM_THEMES[th]||th===BGM_THEME) return; BGM_THEME=th; EIGHTH=BGM_EIGHTH_BASE/BGM_THEMES[th].rate;
-  if(BGM_ON&&AC){ bgmStep=0; bgmNextTime=AC.currentTime+0.05; try{ BGMBUS.gain.setTargetAtTime(BGM_THEMES[th].gain,AC.currentTime,0.35); }catch(e){} } }
+function bgmThemeBus(th){ return BGM_THEME_BUSES[th]||BGMBUS; }
+function setBgmTheme(th){ if(!BGM_THEMES[th]||th===BGM_THEME) return; const prev=BGM_THEME; BGM_THEME=th; EIGHTH=BGM_EIGHTH_BASE/BGM_THEMES[th].rate;
+  if(BGM_ON&&AC){ bgmStep=0; bgmNextTime=AC.currentTime+0.05; try{ const now=AC.currentTime, oldBus=bgmThemeBus(prev), newBus=bgmThemeBus(th);
+      oldBus.gain.cancelScheduledValues(now); oldBus.gain.setValueAtTime(Math.max(.0001,oldBus.gain.value),now); oldBus.gain.exponentialRampToValueAtTime(.0001,now+.16);
+      newBus.gain.cancelScheduledValues(now); newBus.gain.setValueAtTime(.0001,now); newBus.gain.exponentialRampToValueAtTime(1,now+.16);
+      BGMBUS.gain.setTargetAtTime(BGM_THEMES[th].gain,now,.2); }catch(e){} } }
 // 코드 팔레트 (C장조): 0=I 1=V 2=vi 3=IV 4=ii 5=iii
 const BGM_CH=[[NOTE.C4,NOTE.E4,NOTE.G4],[NOTE.G4,NOTE.B4,NOTE.D5],[NOTE.A4,NOTE.C5,NOTE.E5],[NOTE.F4,NOTE.A4,NOTE.C5],[NOTE.D4,NOTE.F4,NOTE.A4],[NOTE.E4,NOTE.G4,NOTE.B4]];
 const BGM_BS=[NOTE.C3,NOTE.G3,NOTE.A3,NOTE.F3,NOTE.D3,NOTE.E3];
-// 섹션 정의: prog=마디별 코드, mode=연출(intro/verse/build/chorus/bridge)
-const BGM_SONG=[
-  {prog:[0,0,3,3],             mode:'intro'},
-  {prog:[0,1,2,3,0,1,2,3],     mode:'verse'},
-  {prog:[4,3,4,1],             mode:'build'},
-  {prog:[0,1,2,3,0,1,2,3],     mode:'chorus'},
-  {prog:[2,3,0,1],             mode:'bridge'},
-  {prog:[0,1,2,3],             mode:'chorus'},
-];
-const BGM_BARS_TOTAL=BGM_SONG.reduce((a,s)=>a+s.prog.length,0);   // 32
-const BGM_LEN=BGM_BARS_TOTAL*8;
+// 홈=편안한 IV 왕복, 육성=밝은 I-V-vi-IV, 배틀=vi 중심 마이너 진행. 세 곡 모두 32마디.
+const BGM_SONGS={
+  home:[{prog:[0,3,0,3],mode:'intro'},{prog:[0,3,2,3,0,3,4,3],mode:'verse'},{prog:[2,3,0,3],mode:'build'},{prog:[0,3,2,3,0,3,4,3],mode:'chorus'},{prog:[4,2,3,3],mode:'bridge'},{prog:[0,3,0,3],mode:'chorus'}],
+  train:[{prog:[0,0,3,3],mode:'intro'},{prog:[0,1,2,3,0,1,2,3],mode:'verse'},{prog:[4,3,4,1],mode:'build'},{prog:[0,1,2,3,0,1,2,3],mode:'chorus'},{prog:[2,3,0,1],mode:'bridge'},{prog:[0,1,2,3],mode:'chorus'}],
+  battle:[{prog:[2,2,3,5],mode:'intro'},{prog:[2,3,0,1,2,3,5,1],mode:'verse'},{prog:[4,5,4,5],mode:'build'},{prog:[2,3,0,1,2,3,5,1],mode:'chorus'},{prog:[4,3,5,5],mode:'bridge'},{prog:[2,3,5,1],mode:'chorus'}]
+};
+const BGM_LEN=32*8;
 // 아르페지오 변주 풀(회차마다 랜덤 픽) + 후렴 멜로디 2종(교대)
 const ARPS=[[0,1,2,1,0,2,1,2],[0,2,1,2,0,1,2,1],[2,1,0,1,2,0,1,0],[0,1,0,2,1,2,0,1]];
 const MELS=[[8,-1,7,-1,5,4,5,-1, 3,-1,4,5,7,-1,8,-1],[5,-1,7,8,7,-1,5,-1, 4,-1,3,-1,4,5,4,-1]];   // C장조 스케일 도수(-1=쉼표), 2마디 프레이즈
 const SCALE=[NOTE.C4,NOTE.D4,NOTE.E4,NOTE.F4,NOTE.G4,NOTE.A4,NOTE.B4,NOTE.C5,NOTE.D5];
 let bgmArp=ARPS[0], bgmMel=0;
 function bgmOn(){ return localStorage.getItem("idol_bgm")!=="off"; }   // 기본 켜짐
-function bgmSection(bar){ let b=bar; for(const s of BGM_SONG){ if(b<s.prog.length) return {s, bar:b}; b-=s.prog.length; } return {s:BGM_SONG[0], bar:0}; }
+function bgmSection(bar,theme){ const song=BGM_SONGS[theme]||BGM_SONGS.home; let b=bar; for(const s of song){ if(b<s.prog.length) return {s,bar:b}; b-=s.prog.length; } return {s:song[0],bar:0}; }
 function bgmStepPlay(step,t){
   const bar=Math.floor(step/8), beat=step%8;
   if(step===0){ bgmArp=ARPS[Math.floor(Math.random()*ARPS.length)]; bgmMel=(bgmMel+1)%MELS.length; }   // 회차 변주
-  const {s,bar:sb}=bgmSection(bar), ci=s.prog[sb], ch=BGM_CH[ci], m=s.mode;
+  const theme=BGM_THEME, profile=BGM_THEMES[theme], bus=bgmThemeBus(theme), {s,bar:sb}=bgmSection(bar,theme), ci=s.prog[sb], ch=BGM_CH[ci], m=s.mode;
+  if(theme==='home'){
+    // 홈: 넓은 패드와 두 박마다 울리는 낮은 벨. 메뉴를 오래 봐도 피로하지 않는 여백.
+    if(beat===0) ch.forEach(f=>tone(f*.75,t,EIGHTH*7.7,{type:profile.pad,gain:.033,bus,attack:.16,release:.65}));
+    if(beat===0||beat===4){ const f=ch[bgmArp[beat]]*1.5; bell(f,t,EIGHTH*2.2,.033,bus); }
+    if(m==='chorus'&&beat===6) bell((sb%2?NOTE.G5:NOTE.E5),t,EIGHTH*1.7,.026,bus);
+    return;
+  }
+  if(theme==='battle'){
+    // 배틀: A마이너 중심의 짧은 코드 스탭, 4분음표 베이스, 긴장 상승 신호.
+    if(beat%2===0) tone(BGM_BS[ci]*(beat===6?2:1),t,EIGHTH*1.35,{type:'sawtooth',gain:.045,bus,release:.08});
+    if(beat===0||beat===4) ch.forEach(f=>tone(f*(m==='chorus'?1.5:1),t,EIGHTH*1.15,{type:profile.pad,gain:m==='chorus'?.032:.026,bus,attack:.01,release:.12}));
+    if(m==='build') tone(240+beat*55,t,EIGHTH*.55,{type:'square',gain:.018,bus,release:.04});
+    if(m==='chorus'&&(beat===3||beat===7)) tone(ch[2]*2,t,EIGHTH*.7,{type:profile.arp,gain:.018,bus,release:.05});
+    return;
+  }
   // 아르페지오: 인트로/브릿지=성기게(짝수 박만), 벌스=기본, 빌드/후렴=꽉 채움+한 옥타브 위
   const sparse=(m==='intro'||m==='bridge');
   if(!sparse || beat%2===0){
     const oct=(m==='chorus'||m==='build')?2:1.5;   // 후렴은 더 밝게
-    tone(ch[bgmArp[beat]]*oct,t,EIGHTH*0.9,{type:'triangle',gain:m==='chorus'?0.055:0.045,bus:BGMBUS,release:0.14});
+    tone(ch[bgmArp[beat]]*oct,t,EIGHTH*0.9,{type:profile.arp,gain:m==='chorus'?0.055:0.045,bus,release:0.14});
   }
   // 후렴 멜로디(2마디 프레이즈 반복, 종지 마디는 쉼)
   if(m==='chorus'){ const mi=(sb%2)*8+beat, d=MELS[bgmMel][mi];
-    if(d>=0 && SCALE[d]!=null) bell(SCALE[d]*2,t,EIGHTH*1.6,0.05,BGMBUS); }
+    if(d>=0 && SCALE[d]!=null) bell(SCALE[d]*2,t,EIGHTH*1.6,0.05,bus); }
   if(beat===0){   // 마디 시작: 패드 화음 + 베이스 (인트로는 패드만)
-    ch.forEach(f=>tone(f,t,EIGHTH*7.5,{type:'sine',gain:m==='bridge'?0.045:0.035,bus:BGMBUS,attack:0.08,release:0.4}));
-    if(m!=='intro') tone(BGM_BS[ci],t,EIGHTH*3.6,{type:'triangle',gain:0.06,bus:BGMBUS,release:0.2});
-  } else if(beat===4 && m!=='intro' && m!=='bridge'){ tone(BGM_BS[ci],t,EIGHTH*3.2,{type:'triangle',gain:0.05,bus:BGMBUS,release:0.2}); }
+    ch.forEach(f=>tone(f,t,EIGHTH*7.5,{type:'sine',gain:m==='bridge'?0.045:0.035,bus,attack:0.08,release:0.4}));
+    if(m!=='intro') tone(BGM_BS[ci],t,EIGHTH*3.6,{type:'triangle',gain:0.06,bus,release:0.2});
+  } else if(beat===4 && m!=='intro' && m!=='bridge'){ tone(BGM_BS[ci],t,EIGHTH*3.2,{type:'triangle',gain:0.05,bus,release:0.2}); }
   // 빌드 섹션 마지막 마디: 상승 스윕(후렴 진입 신호)
-  if(m==='build' && sb===s.prog.length-1 && beat===6) tone(500,t,EIGHTH*2,{type:'sine',gain:0.04,glideTo:1400,bus:BGMBUS,release:0.2});
+  if(m==='build' && sb===s.prog.length-1 && beat===6) tone(500,t,EIGHTH*2,{type:'sine',gain:0.04,glideTo:1400,bus,release:0.2});
 }
 function bgmSchedule(){
   if(!BGM_ON||!AC){ return; }
@@ -3510,7 +3529,8 @@ function bgmSchedule(){
 function startBgm(){
   const ac=ensureAudio(); if(!ac||BGM_ON) return;
   BGM_ON=true; bgmStep=0; bgmNextTime=ac.currentTime+0.1;
-  try{ BGMBUS.gain.cancelScheduledValues(ac.currentTime);
+  try{ Object.entries(BGM_THEME_BUSES).forEach(([name,bus])=>{bus.gain.cancelScheduledValues(ac.currentTime);bus.gain.setValueAtTime(name===BGM_THEME?1:.0001,ac.currentTime);});
+       BGMBUS.gain.cancelScheduledValues(ac.currentTime);
        BGMBUS.gain.setValueAtTime(Math.max(0.0001,BGMBUS.gain.value),ac.currentTime);
        BGMBUS.gain.exponentialRampToValueAtTime(BGM_THEMES[BGM_THEME].gain,ac.currentTime+1.2); }catch(e){}
   bgmSchedule();
