@@ -5,7 +5,7 @@
   let lastScreen='';
   let lastContextKey='';
   const EVENT_FIELDS={
-    app_open:['standalone'],screen_view:['screen'],context_received:['has_favorite'],
+    app_open:['standalone'],screen_view:['screen'],context_received:['has_favorite'],app_locale_applied:['locale'],
     favorite_context_applied:['favorite_id'],favorite_context_change:['source'],favorite_context_unmatched:[],
     fandom_first_contact:['run_id','choice','bond_after'],
     run_start:['run_id','prev_run_id','reply_run_id','reply_promise_id','source','mode','run_no','retrain','direction','season_edition_target','started_season','promise_id','promise_retry','daily_boost','mentor','mentor_rid'],

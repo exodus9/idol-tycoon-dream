@@ -36,7 +36,7 @@ for (const phrase of ['타고난 재능','종합 등급','약점이 없어','실
   need(!ko.includes(phrase), `reviewed Korean surface still contains: ${phrase}`);
 }
 need(html.includes("dgT('run.average',{score:m.best})"), 'card must expose localized aggregate RUN result without raw six-area stats');
-need(html.includes('역할 기여 +${c.val.toLocaleString()}'), 'battle must expose numeric role contribution');
+need(html.includes("dgT('league.contribution',{value:c.val.toLocaleString()})"), 'battle must expose localized numeric role contribution');
 need(html.includes("langs.length>1?`<div class=\"sheet-lang\">${langBtns}</div>`:''"), 'language choices must only render when reviewed alternatives exist');
 need(!html.includes('시너지 상한 +40%'), 'synergy help must not claim the removed +40% cap');
 need(html.includes('시너지는 조합한 만큼 누적'), 'synergy help must explain the uncapped model');

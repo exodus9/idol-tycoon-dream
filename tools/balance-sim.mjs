@@ -28,7 +28,7 @@ const REQUIRED_SOURCE = [
   'debutCut:{total:340, peak:150, min:100}',
   'debutCut:{total:170, peak:80, min:55}',
   'const RUN_DIFFICULTY = [1, 1, 1.18, 1.27, 1.35]',
-  "mode==='quick'&&n>1 ? 1.15 : 1",
+  "n>1 ? (mode==='quick'?1.15:(n>=4?1.24:1.18)) : 1",
   'RunBalanceRules.trendMultiplier(stat,trendStat)',
   'RunBalanceRules.protectsFirstGate(s.runNo,c.gate,win)',
   'BeginnerFlow.productiveHand(s.hand,TRAIN_CARDS.concat([RARE_CARD])',
@@ -140,7 +140,7 @@ const STRATEGIES = {
 // 이 값은 index.html의 RUN_DIFFICULTY와 반드시 함께 바꾼다.
 const RUN_DIFFICULTY = [1, 1, 1.18, 1.27, 1.35];
 function runDifficulty(runNo) { return RUN_DIFFICULTY[Math.min(RUN_DIFFICULTY.length - 1, Math.max(1, runNo))]; }
-function modeDifficulty(mode, runNo) { return runDifficulty(runNo) * (mode === 'quick' && runNo > 1 ? 1.15 : 1); }
+function modeDifficulty(mode, runNo) { return runDifficulty(runNo) * (runNo > 1 ? (mode === 'quick' ? 1.15 : (runNo >= 4 ? 1.24 : 1.18)) : 1); }
 
 function rng(seed) {
   let x = seed >>> 0;

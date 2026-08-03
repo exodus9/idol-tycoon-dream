@@ -29,4 +29,8 @@ assert.deepEqual(Telemetry.getContext(),{favorite_id:7,favorite_name:'예준'});
 assert.equal(Telemetry._receiveForTest({source:globalThis,origin:'https://game.local',data:{type:'DREAM_GROUP_CONTEXT',data:{favorite_id:7,favorite_name:'예준'}}}),false,'duplicate normalized context must be ignored');
 assert.equal(global.dataLayer.filter(x=>x.event==='dream_group_context_received').length,1,'duplicate context must not duplicate telemetry');
 
+const localeEvent=Telemetry.track('app_locale_applied',{locale:'ja',secret:'must-not-pass'});
+assert.equal(localeEvent.locale,'ja');
+assert.equal('secret' in localeEvent,false,'locale telemetry must keep the event allowlist');
+
 console.log('product telemetry: OK');

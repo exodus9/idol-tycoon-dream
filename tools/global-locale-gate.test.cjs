@@ -5,6 +5,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'i18n.js'), 'utf8');
+const dgSource = fs.readFileSync(path.join(__dirname, '..', 'dg-i18n.js'), 'utf8');
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 
 function boot(language,search=''){
@@ -39,6 +40,44 @@ test('an explicit URL locale stays authoritative after restored page state write
   assert.equal(w.LANG,'ja');
   w.setLang('en',{user:true});
   assert.equal(w.LANG,'en','an explicit in-game language choice may replace the deep-link default');
+});
+
+test('app context applies a locale without a favorite while an explicit URL locale stays authoritative',()=>{
+  const helper=html.slice(html.indexOf('  const applyDreamGroupLocale='),html.indexOf('  const applyDreamGroupContext='));
+  function context(search){
+    const events=[];
+    const c=vm.createContext({
+      console,location:{search},URLSearchParams,window:null,LANG:'ko',
+      setLang:l=>{c.LANG=l;},applyI18n:()=>events.push('apply'),initLangSwitch:()=>events.push('switch'),
+      Game:{refreshLang:()=>events.push('refresh')},ProductTelemetry:{track:(name,data)=>events.push([name,data])}
+    });
+    c.window=c;
+    vm.runInContext(dgSource,c,{filename:'dg-i18n.js'});
+    vm.runInContext(`${helper}\nglobalThis.applyDreamGroupLocale=applyDreamGroupLocale;`,c,{filename:'app-locale-helper.js'});
+    return {c,events};
+  }
+  const localeOnly=context('');
+  assert.equal(localeOnly.c.applyDreamGroupLocale({locale:'ja-JP'}),true);
+  assert.equal(localeOnly.c.LANG,'ja');
+  assert.deepEqual(localeOnly.events.slice(0,3),['apply','switch','refresh']);
+
+  const forced=context('?lang=id');
+  assert.equal(forced.c.applyDreamGroupLocale({locale:'en-US'}),false);
+  assert.equal(forced.c.LANG,'ko');
+  assert.deepEqual(forced.events,[]);
+});
+
+test('critical group, debut and league renderers contain no Korean display literals',()=>{
+  const slices=[
+    html.slice(html.indexOf('    showBattleLobby(){'),html.indexOf('    setRep(gid)')),
+    html.slice(html.indexOf('    setRep(gid)'),html.indexOf('    disbandGroup(')),
+    html.slice(html.indexOf('    doDebut(){'),html.indexOf('    renderResult(box, res)')),
+    html.slice(html.indexOf('    renderLeagueBattle(){'),html.indexOf('    setRankTab(tab)'))
+  ];
+  for(const sourceSlice of slices){
+    const code=sourceSlice.replace(/\/\/.*$/gm,'').replace(/\/\*[\s\S]*?\*\//g,'');
+    assert.equal(/["'`](?:[^"'`\\]|\\.)*[가-힣](?:[^"'`\\]|\\.)*["'`]/.test(code),false);
+  }
 });
 
 test('active global result copy evaluates the RUN production, not a real idol',()=>{
