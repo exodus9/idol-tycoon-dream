@@ -121,8 +121,22 @@ test('result explains the final fan jump and shows collection rewards before dia
   assert.ok(endSection.indexOf('id="dgResult"')<endSection.indexOf('id="radarWrap"'),'card rewards must appear before the detailed radar');
   const resultRenderer=html.slice(html.indexOf('renderResult(box, res)'),html.indexOf('runPromiseView(p,ctx)'));
   assert.ok(resultRenderer.indexOf('${idolReveal}')<resultRenderer.indexOf('${seasonResult}'),'idol card must precede detailed season copy');
+  assert.ok(resultRenderer.indexOf('${returnHook}')<resultRenderer.indexOf("dgT('result.supportTitle')"),'the next-day fandom hook must not be buried below secondary rewards');
   assert.ok(resultRenderer.indexOf("dgT('result.supportTitle')")<resultRenderer.indexOf('${seasonResult}'),'support rewards must precede detailed season copy');
   assert.equal(resultRenderer.includes("dgT('result.joinBalance'"),false,'the primary reward summary must not compete with a second letter grade');
+});
+
+test('RUN grade is not appended directly to a real idol name',()=>{
+  const cardRenderer=html.slice(html.indexOf('idolCardHTML(r,opt)'),html.indexOf('// 홈 히어로'));
+  assert.ok(cardRenderer.includes("dgT('card.completion')"),'the RUN completion badge must keep the grade context');
+  assert.ok(cardRenderer.includes('<div class="rnm">${esc(name)}</div>'));
+  assert.equal(cardRenderer.includes('<div class="rnm">${esc(name)} ${isLegacy?'),false);
+});
+
+test('Korean fandom copy resolves subject and companion particles',()=>{
+  const translator=html.slice(html.indexOf('function dgT(key,params)'),html.indexOf('function dgTOr'));
+  assert.ok(translator.includes("replaceAll(`${word}과`,koWith(word,'과','와'))"));
+  assert.ok(translator.includes("replaceAll(`${word}이`,koWith(word,'이','가'))"));
 });
 
 test('finishing below first place never claims that a debut spot was secured',()=>{

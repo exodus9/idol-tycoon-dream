@@ -228,6 +228,10 @@
   Object.assign(PACKS.en, {'result.editionCollectedCopy':'{name} is now permanently in the season collection'});
   Object.assign(PACKS.ja, {'result.editionCollectedCopy':'{name}をシーズンコレクションに永久登録'});
   Object.assign(PACKS.id, {'result.editionCollectedCopy':'{name} tersimpan permanen di koleksi musim'});
+  Object.assign(PACKS.ko, {'run.expectedGain':'{stat} 기본 성장 +{amount} · 결과에 따라 변동'});
+  Object.assign(PACKS.en, {'run.expectedGain':'{stat} base growth +{amount} · outcome varies'});
+  Object.assign(PACKS.ja, {'run.expectedGain':'{stat} 基準成長+{amount}・結果で変動'});
+  Object.assign(PACKS.id, {'run.expectedGain':'Pertumbuhan dasar {stat} +{amount} · hasil dapat berubah'});
 
   function normalizeLocale(locale) {
     var value = String(locale || '').trim().toLowerCase().replace(/_/g, '-');

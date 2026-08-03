@@ -60,9 +60,11 @@
     return ids;
   }
 
-  function actionableStats(hand,cards){
+  function actionableStats(hand,cards,stamina){
     const byId=new Map((cards||[]).filter(Boolean).map(card=>[card.id,card]));
-    return [...new Set((hand||[]).map(id=>byId.get(id)).filter(card=>card&&card.stat).map(card=>card.stat))];
+    const hasStamina=stamina!=null&&Number.isFinite(Number(stamina));
+    const current=Math.max(0,Number(stamina)||0);
+    return [...new Set((hand||[]).map(id=>byId.get(id)).filter(card=>card&&card.stat&&(!hasStamina||Number(card.cost)<=current)).map(card=>card.stat))];
   }
 
   function recommendedTrainableStat(input){

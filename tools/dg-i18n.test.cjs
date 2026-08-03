@@ -63,3 +63,12 @@ test('generic season-edition copy does not duplicate the word edition', () => {
     assert.equal(/Edition Edition|エディションエディション|Edisi Edisi/i.test(rendered), false, `${locale}: ${rendered}`);
   }
 });
+
+test('growth preview is labeled as a variable baseline in every release locale', () => {
+  const copies=['ko','en','ja','id'].map(locale=>i18n.t(locale,'run.expectedGain',{stat:'X',amount:52}));
+  for(const copy of copies) assert.match(copy,/52/);
+  assert.match(copies[0],/기본 성장.*결과에 따라 변동/);
+  assert.match(copies[1],/base growth.*outcome varies/i);
+  assert.match(copies[2],/基準成長.*結果で変動/);
+  assert.match(copies[3],/dasar.*berubah/i);
+});

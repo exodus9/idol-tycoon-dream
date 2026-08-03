@@ -37,6 +37,12 @@ test('gate advice can only recommend stats actionable from the current hand',()=
   assert.deepEqual(BeginnerFlow.actionableStats(['g_vocal','rest','l_dance'],cards),['vocal','dance']);
 });
 
+test('gate advice never recommends a card the current stamina cannot play',()=>{
+  const cards=[{id:'g_vocal',stat:'vocal',cost:13},{id:'l_dance',stat:'dance',cost:27},{id:'rest',stat:null,cost:-44}];
+  assert.deepEqual(BeginnerFlow.actionableStats(['g_vocal','l_dance','rest'],cards,18),['vocal']);
+  assert.deepEqual(BeginnerFlow.actionableStats(['g_vocal','l_dance','rest'],cards,5),[]);
+});
+
 test('gate advice never recommends an actionable stat that is already capped',()=>{
   const values={vocal:800,dance:120,visual:300};
   assert.equal(BeginnerFlow.recommendedTrainableStat({
@@ -50,7 +56,7 @@ test('gate advice never recommends an actionable stat that is already capped',()
 test('award-gate advice also filters recommendations through the current hand',()=>{
   const html=require('node:fs').readFileSync(require('node:path').join(__dirname,'..','index.html'),'utf8');
   const advice=html.slice(html.indexOf('  gateAdvice(s,nxw)'),html.indexOf('  // 상황 반응형 코치'));
-  assert.ok(advice.includes("const actionable=BeginnerFlow.actionableStats(s.hand,TRAIN_CARDS.concat([RARE_CARD]))"));
+  assert.ok(advice.includes("const actionable=BeginnerFlow.actionableStats(s.hand,TRAIN_CARDS.concat([RARE_CARD]),s.stam)"));
   assert.ok(advice.includes('BeginnerFlow.recommendedTrainableStat'));
   assert.ok(advice.includes("preferred:direction.k"));
   assert.ok(advice.includes("if(!recommend)return"));

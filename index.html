@@ -1060,12 +1060,12 @@
 <script src="run-memory.js?v=be63959df4"></script>
 <script src="fandom-onboarding.js?v=b79c701b69"></script>
 <script src="season-edition.js?v=5b6e84402d"></script>
-<script src="beginner-flow.js?v=7d7eea7788"></script>
+<script src="beginner-flow.js?v=f88e20c8e6"></script>
 <script src="run-balance-rules.js?v=7e1af59983"></script>
 <script src="stage-criteria.js?v=6d23aaaa14"></script>
 <script src="completion-transaction.js?v=8c3a470bcb"></script>
 <script src="product-telemetry.js?v=36d3c57a97"></script>
-<script src="dg-i18n.js?v=8f3c55cfc1"></script>
+<script src="dg-i18n.js?v=ebc4f5b2e5"></script>
 <script src="i18n.js?v=1d3ac651ea"></script>
 <script src="idols.js?v=8bb60ae14f"></script>
 <script>
@@ -1921,7 +1921,7 @@ const Game = {
     const c=sc.compets[nxw]; if(!c)return null;
     let mine=0, recommend=null;
     const statValues=Object.fromEntries(STATS.map(x=>[x.k,Number(s[x.k])||0]));
-    const actionable=BeginnerFlow.actionableStats(s.hand,TRAIN_CARDS.concat([RARE_CARD]));
+    const actionable=BeginnerFlow.actionableStats(s.hand,TRAIN_CARDS.concat([RARE_CARD]),s.stam);
     if(c.type==='stage'){
       const fields=this.stageFields(c,s);
       mine=fields.reduce((a,k)=>a+(Number(s[k])||0),0)/fields.length*(0.55+0.45*(Number(s.cond)||0)/100);
@@ -3683,7 +3683,12 @@ function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t
 
 // ===== 다국어 적용 =====
 function dgT(key,params){
-  return window.DGI18n?DGI18n.t(window.LANG||'ko',key,params):key;
+  let value=window.DGI18n?DGI18n.t(window.LANG||'ko',key,params):key;
+  if((window.LANG||'ko')==='ko'&&params){
+    for(const field of ['fandom','rally']){ const word=params[field]; if(word==null)continue;
+      value=value.replaceAll(`${word}과`,koWith(word,'과','와')).replaceAll(`${word}이`,koWith(word,'이','가')); }
+  }
+  return value;
 }
 function dgTOr(key,fallback,params){
   const value=dgT(key,params);
@@ -5914,7 +5919,7 @@ window.addEventListener("popstate", ()=>{
         ${opt.favorite?'<span class="rfav">♥</span>':''}
         ${opt.progress!=null?`<div class="ic-progress"><i style="width:${Math.max(5,Math.min(100,opt.progress))}%"></i></div>`:''}
         <div class="rinfo">
-          <div class="rstar">${stars}</div><div class="rnm">${esc(name)} ${isLegacy?'':`<span style="font-size:.72em;color:var(--gold)">${esc(runGrade)}</span>`}</div>
+          <div class="rstar">${stars}</div><div class="rnm">${esc(name)}</div>
           <div class="rsub">${isLegacy?'ARCHIVE':esc(directionNm)+' · '+scoreLabel+' · '+dgT('run.average',{score:m.best})}</div>
           <div class="ic-bond">💞 ${esc(fd.name)} · ${fb?`${fbl.n} ${fb}`:dgT('run.firstPromise')}</div>
           <div class="ic-next">${state==='training'?dgT('run.completeToSave'):state==='incomplete'?dgT('card.tryAgain'):(m.star>=5?dgT('card.max'):`${dgT('result.nextGoal')} ★ · ${this.idolNextGoal(m)}`)}</div>
@@ -6876,8 +6881,9 @@ window.addEventListener("popstate", ()=>{
       </div>`:'';
       box.innerHTML=`<div class="dg-res">${rec}<div class="dg-res-slot">${completionSummary}</div>${thanks}
         ${idolReveal}
+        ${returnHook}
         <div class="dg-res-cards"><b>${dgT('result.supportTitle')}</b><div class="dg-chips" style="margin-top:6px">${chips}</div></div>
-        ${seasonResult}${memoryResult}${bondResult}${returnHook}
+        ${seasonResult}${memoryResult}${bondResult}
         ${titleChips}
         ${goalPull}
         <button class="btn" onclick="${nextAction.on}" style="margin-top:10px">${actionLabel}</button>
