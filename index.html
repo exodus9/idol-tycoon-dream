@@ -395,6 +395,8 @@
   .ev-title{font-size:19px;font-weight:800;margin:8px 0 6px}
   .ev-text{font-size:14px;color:var(--sub);line-height:1.6;margin-bottom:16px}
   .ev-choices{display:grid;gap:9px}
+  .risk-preview{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:7px;font-size:9.5px;line-height:1.3;text-align:left;font-weight:700}
+  .risk-preview .win{color:#76dfb0}.risk-preview .lose{color:#ff91a6}
   /* 오클릭 방지: 선택지는 살짝 뒤에 등장 + 그 전엔 클릭 무효 */
   .ev-choices.locked{pointer-events:none}
   .ev-choices .btn{opacity:0;transform:translateY(10px);transition:opacity .3s ease,transform .32s cubic-bezier(.3,1.2,.5,1)}
@@ -1052,7 +1054,7 @@
 <!-- 콘텐츠(다국어·아이돌DB) 갱신 시 v= 날짜를 올려 캐시 무효화 → 재방문 유저에게도 반영 -->
 <script src="storage-journal.js?v=4e2dec8a4b"></script>
 <script src="run-migration.js?v=2160e1c632"></script>
-<script src="daily-retention.js?v=7f77750720"></script>
+<script src="daily-retention.js?v=44d95380a9"></script>
 <script src="progress-action.js?v=a280a2c299"></script>
 <script src="mentor-inheritance.js?v=9b37b72298"></script>
 <script src="run-memory.js?v=be63959df4"></script>
@@ -1064,7 +1066,7 @@
 <script src="completion-transaction.js?v=8c3a470bcb"></script>
 <script src="product-telemetry.js?v=36d3c57a97"></script>
 <script src="dg-i18n.js?v=c52324efde"></script>
-<script src="i18n.js?v=184798ad3d"></script>
+<script src="i18n.js?v=8cdd37ab01"></script>
 <script src="idols.js?v=8bb60ae14f"></script>
 <script>
 // 검색용 아이돌: idols.js의 window.IDOL_DB (최애돌 실데이터 = 활성 아이돌만, 전일 하트투표 순위로 정렬됨). 로드 실패 시 빈 배열.
@@ -2407,7 +2409,8 @@ const Game = {
       // 분기형은 예상 성공확률을 미리 보여줌(우마무스메식 리스크 판단)
       if(ch.odds){
         const pct=Math.round(Math.min(0.92,ch.odds(s))*100);
-        b.innerHTML=`${clabel} <span style="opacity:.55;font-size:12px;font-weight:600">${t("ev_odds",{pct})}</span>`;
+        b.innerHTML=`${clabel} <span style="opacity:.7;font-size:12px;font-weight:700">${t("ev_odds",{pct})}</span>
+          <small class="risk-preview"><span class="win">✓ ${t("ev_"+eid+"_w_d")}</span><span class="lose">✕ ${t("ev_"+eid+"_lo_d")}</span></small>`;
       } else b.textContent=clabel;
       b.onclick=()=>{
         if(ch.odds){
@@ -2459,14 +2462,17 @@ const Game = {
     ev.replies.forEach((ch,i)=>{
       const b=document.createElement("button");
       b.className="btn ghost";
-      const gain=10+i*3;
-      b.innerHTML=`${esc(ch.t)} <small>${dgT('bondTalk.gain',{amount:gain})}</small>`;
+      const gain=10+i*3, fanGain=i===0?0:(120+i*80);
+      const effect=i===0
+        ? `${dgT('bondTalk.gain',{amount:gain})} · 🧠 ${dgT('run.mental')} +4`
+        : `${dgT('bondTalk.gain',{amount:gain})} · ${dgT('run.fans')} +${fmt(fanGain)}`;
+      b.innerHTML=`${esc(ch.t)} <small>${esc(effect)}</small>`;
       b.onclick=()=>{
         ov.className="ov";
         try{ if(navigator.vibrate) navigator.vibrate(12); }catch(e){}
         try{ sfx("sparkle"); }catch(e){}
         s.fanBond=Math.min(100,(s.fanBond||0)+gain); s.fanBondMoments=(s.fanBondMoments||0)+1;
-        if(i===0) s.mental=Math.min(100,(s.mental||0)+4); else s.fans+=(120+i*80);
+        if(i===0) s.mental=Math.min(100,(s.mental||0)+4); else s.fans+=fanGain;
         clampState(s); this.save();
         if(forcedId==='predebut'){ try{ProductTelemetry.track('fandom_first_contact',{run_id:s.runId||'',choice:i+1,bond_after:Math.round(s.fanBond||0)});}catch(e){} }
         this.showRoll({cls:"dg", emoji:ch.e||"💗", label:dgT('bondTalk.result',{fandom:fd.name,amount:gain})},
@@ -2480,6 +2486,7 @@ const Game = {
 
   promiseMoment(done){
     const s=this.st, p=s&&s.runPromise; if(!s||!p){ if(done)done(); return; }
+    const pv=DG.runPromiseView(p,{idol:s.idol,direction:s.runDirection});
     try{ if(window.Tut&&Tut.clear) Tut.clear(); }catch(e){}
     const ov=document.getElementById('ov'), img=s.idol.img||'', before=RunMemory.progress(s), atRisk=before&&!before.met;
     ov.className='ov on'; ov.onclick=null;
@@ -2488,7 +2495,7 @@ const Game = {
       <div class="idol-moment-photo" ${img?`style="background-image:url('${esc(img)}')"`:''}></div>
       <div class="idol-moment-shade"></div><div class="idol-moment-body">
       <div class="ev-banner">🎬 ${dgT('checkpoint.banner')}</div>
-      <div class="ev-title">${esc(p.title)}</div>
+      <div class="ev-title">${esc(pv.title)}</div>
       <div class="ev-text">${esc(progressLabel)} · ${dgT(atRisk?'checkpoint.pending':'checkpoint.met')}</div>
       <div class="bond-now">${dgT('checkpoint.persists')}</div>
       <div class="ev-choices locked" id="evc"></div></div></div>`;
@@ -2497,7 +2504,7 @@ const Game = {
      {id:'adapt',label:dgT('checkpoint.adapt'),sub:dgT('checkpoint.adaptSub')}].forEach(ch=>{
       const b=document.createElement('button'); b.className='btn ghost'; b.innerHTML=`${ch.label} <small>${ch.sub}</small>`;
       b.onclick=()=>{ const got=RunMemory.resolveCheckpoint(s,ch.id); if(!got)return; ov.className='ov';
-        this.logWeek(`🎬 ${esc(p.title)} · ${ch.id==='commit'?'끝까지 밀어붙임':'우리 방식으로 재해석'} · ${esc(got.label)}`);
+        this.logWeek(`🎬 ${esc(pv.title)} · ${ch.id==='commit'?'끝까지 밀어붙임':'우리 방식으로 재해석'} · ${esc(got.label)}`);
         this.save(); try{ ProductTelemetry.track('promise_checkpoint',{run_id:s.runId||'',promise_id:p.id,choice:ch.id,progress:got.value,target:got.target,on_track:!!got.met}); }catch(e){}
         this.showRoll({cls:got.met?'dg':'dc',emoji:got.met?'🎬':'↻',label:dgT(got.met?'checkpoint.onTrack':'checkpoint.stillPending')},`${esc(dgT(`checkpoint.${got.type}`,{value:got.value,target:got.target}))}<br><b>${dgT(ch.id==='commit'?'checkpoint.keepGoal':'checkpoint.lowerGoal')}</b>`,()=>{this.render();done();}); };
       box.appendChild(b);
@@ -3687,7 +3694,7 @@ function initLangSwitch(){
   const sel=document.getElementById("langSel"); if(!sel) return;
   sel.innerHTML=langList().map(l=>`<option value="${l.code}"${l.code===window.LANG?" selected":""}>${l.name}</option>`).join("");
 }
-Game.changeLang=function(l){ setLang(l); applyI18n(); initLangSwitch();
+Game.changeLang=function(l){ setLang(l,{user:true}); applyI18n(); initLangSwitch();
   document.getElementById("customName")&&(document.getElementById("customName").placeholder=t("sel_name_ph"));
   if(window.DG&&DG.data&&DG.data.agency&&DG.data.agency._auto){ DG.data.agency.name=dgT('agency.default',{name:l==='ko'?'샤이닝':'Dream'}); try{DG.persist();}catch(e){} }
   if(this.refreshTitle) this.refreshTitle();
@@ -5758,7 +5765,7 @@ window.addEventListener("popstate", ()=>{
         }
         if(record.runMemory){
           const today=DailyRetention.kstDay();
-          this.data.dailyEchoes=DailyRetention.queueEcho(this.data.dailyEchoes,{today,rid:newRid,kind:`promise:${record.runId}`,idolName:st.idol.name,fandomName:fandomOf(st.idol).name,runId:record.runId,promiseId:record.runMemory.promiseId,promiseTitle:record.runMemory.title,promiseStatus:record.runMemory.status});
+          this.data.dailyEchoes=DailyRetention.queueEcho(this.data.dailyEchoes,{today,rid:newRid,kind:`promise:${record.runId}`,idolName:st.idol.name,fandomName:fandomOf(st.idol).name,runId:record.runId,promiseId:record.runMemory.promiseId,promiseType:record.runMemory.baseType,promiseDirection:st.runDirection,promiseTitle:record.runMemory.title,promiseStatus:record.runMemory.status});
         }
       }
       // 장기 세이브 용량 보호: 아이돌별 최신 20회만 보관하고 원본 이미지는 roster 한 곳에서만 유지한다.
@@ -6310,7 +6317,8 @@ window.addEventListener("popstate", ()=>{
     dailyEchoState(rid){ return DailyRetention.echoState((this.data&&this.data.dailyEchoes)||[],this.kstDay(),rid); },
     dailyEchoCopy(kind,fav,archived,echo){ const fd=fav&&fav._fandomName?{name:fav._fandomName}:fandomOf(fav||{}), fandomName=fd.name||dgT('daily.genericFandom');
       if(archived) return {img:'assets/emo/buddy.png',kicker:'MEMORY ARCHIVE',title:dgT('daily.archivedTitle',{name:(fav&&fav.name)||dgT('daily.previousIdol')}),text:dgT('daily.archivedText'),reward:dgT('daily.planReward')};
-      if(String(kind||'').startsWith('promise:')){ const success=echo&&echo.promiseStatus==='success', title=echo&&echo.promiseTitle||dgT('daily.promiseDefault');
+      if(String(kind||'').startsWith('promise:')){ const success=echo&&echo.promiseStatus==='success', rawType=String(echo&&(echo.promiseType||echo.promiseId)||'').replace(/^retry:/,''), promiseType=['signature','fandom','resilience'].includes(rawType)?rawType:'',
+        title=promiseType?dgT(`promise.${promiseType}Title`,{idol:echo&&echo.idolName||(fav&&fav.name)||'IDOL',fandom:echo&&echo.fandomName||fandomName,direction:t('st_'+(echo&&echo.promiseDirection||(fav&&fav.runDirection)||'vocal'))}):echo&&echo.promiseTitle||dgT('daily.promiseDefault');
         return {img:success?'assets/emo/buddy.png':'assets/emo/act-charm.png',kicker:success?'OUR SCENE REPLY':'UNFINISHED SCENE',title:dgT(success?'daily.promiseSuccessTitle':'daily.promiseFailedTitle',{title}),
           text:dgT(success?'daily.promiseSuccessText':'daily.promiseFailedText',{fandom:fandomName}),
           reward:dgT(success?'daily.promiseSuccessReward':'daily.promiseFailedReward'),boost:success?{bond:4}:{start:6}}; }
@@ -6867,9 +6875,10 @@ window.addEventListener("popstate", ()=>{
       if(res.debuted) setTimeout(()=>{ try{toast(dgT('result.rosterToast'));}catch(e){} }, 450);
       setTimeout(()=>{ try{ this.checkAchv(); }catch(e){} }, 1400);   // #7 완주 직후 업적 토스트
     },
-    runPromiseView(p){
+    runPromiseView(p,ctx){
       if(!p)return p;
-      const type=p.baseType||p.id||'signature', idol=Game.selIdol||{}, direction=t('st_'+(Game.runDirection||'vocal'));
+      ctx=ctx||{};
+      const type=p.baseType||p.id||'signature', idol=ctx.idol||Game.selIdol||(Game.st&&Game.st.idol)||{}, direction=t('st_'+(ctx.direction||Game.runDirection||(Game.st&&Game.st.runDirection)||'vocal'));
       const params={idol:idolName(idol)||'IDOL',fandom:fandomOf(idol).name,direction,target:p.target||0};
       return {...p,title:dgT(`promise.${type}Title`,params),copy:dgT(`promise.${type}Copy`,params),goal:dgT(`promise.${type}Goal`,params),tradeoff:dgT(`promise.${type}Tradeoff`,params)};
     },

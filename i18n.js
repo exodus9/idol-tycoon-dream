@@ -1504,8 +1504,11 @@ window.I18N = {
   const DECLARED=["ko","en","ja","id"];
   const has=l=>DECLARED.includes(l)&&!!I18N[l];
   const SUPPORTED=DECLARED.filter(has);
+  function urlLang(){
+    try{ const q=new URLSearchParams(location.search||'').get('lang'); return q&&has(q)?q:null; }catch(e){ return null; }
+  }
   function detect(){
-    try{ const q=new URLSearchParams(location.search||'').get('lang'); if(q&&has(q)) return q; }catch(e){}
+    const q=urlLang(); if(q) return q;
     try{ const s=localStorage.getItem("idol_lang"); if(s&&has(s)) return s; }catch(e){}
     const n=(navigator.language||"ko").toLowerCase();
     let want="en";
@@ -1516,8 +1519,18 @@ window.I18N = {
     else if(n.startsWith("zh")) want=(n.includes("tw")||n.includes("hk")||n.includes("hant"))?"zh-tw":"zh-cn";
     return has(want)?want:"ko";
   }
-  window.LANG = detect();
-  window.setLang = function(l){ if(!has(l)) return; window.LANG=l;
+  // A locale deep link is a release/QA contract, not a one-time boot hint. Some
+  // embedded browsers restore a previous page state after scripts initialize;
+  // keep the explicit URL locale authoritative for the whole document lifetime.
+  let selectedLang=detect();
+  let forcedLang=urlLang();
+  Object.defineProperty(window,"LANG",{
+    configurable:true,
+    get(){ return forcedLang||selectedLang; },
+    set(l){ if(has(l)) selectedLang=l; }
+  });
+  window.setLang = function(l,opt){ if(!has(l)) return; selectedLang=l;
+    if(opt&&opt.user===true) forcedLang=null;
     try{ localStorage.setItem("idol_lang", l); }catch(e){} };
   window.langList = function(){ return SUPPORTED.map(l=>({code:l, name:(I18N[l]&&I18N[l].lang_name)||l})); };
   // t(key, params) — 폴백: 현재언어 → ko → key

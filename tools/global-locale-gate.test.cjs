@@ -30,6 +30,17 @@ test('launch locale detection covers Korean, English, Japanese and Indonesian',(
   assert.ok(html.includes('src="dg-i18n.js'));
 });
 
+test('an explicit URL locale stays authoritative after restored page state writes',()=>{
+  const w=boot('ko-KR','?lang=ja');
+  assert.equal(w.LANG,'ja');
+  w.LANG='ko';
+  assert.equal(w.LANG,'ja');
+  w.setLang('en');
+  assert.equal(w.LANG,'ja');
+  w.setLang('en',{user:true});
+  assert.equal(w.LANG,'en','an explicit in-game language choice may replace the deep-link default');
+});
+
 test('active global result copy evaluates the RUN production, not a real idol',()=>{
   const banned=[/raw talent/i,/six talents/i,/no weakness/i,/unbeatable/i,/innate/i,/才能すべて/,/弱点がない/,/無敵/,/完成型素材/,/実力ステータス/];
   for(const locale of ['en','ja','id']){
@@ -47,4 +58,19 @@ test('core RUN recovery and fandom talk never render untranslated meta keys',()=
   assert.ok(html.includes('t:dgTOr(`bondTalk.${raw.id}.r${i+1}`,ch.t)'));
   assert.ok(html.includes('react:dgTOr(`bondTalk.${raw.id}.a${i+1}`,ch.react)'));
   assert.equal(/toast\(["']기력이 부족해/.test(html),false);
+});
+
+test('fandom and chance choices disclose their real tradeoffs before commitment',()=>{
+  assert.ok(html.includes("dgT('run.mental')} +4"),'the care reply must disclose its mental reward');
+  assert.ok(html.includes("dgT('run.fans')} +${fmt(fanGain)}"),'the rally reply must disclose its fan reward');
+  assert.ok(html.includes('class="risk-preview"'),'chance choices must preview both outcomes');
+  assert.ok(html.includes('t("ev_"+eid+"_w_d")'));
+  assert.ok(html.includes('t("ev_"+eid+"_lo_d")'));
+});
+
+test('saved RUN promises are re-localized from identity instead of stale display copy',()=>{
+  assert.ok(html.includes('DG.runPromiseView(p,{idol:s.idol,direction:s.runDirection})'));
+  assert.ok(html.includes("promiseType:record.runMemory.baseType"));
+  assert.ok(html.includes("promiseDirection:st.runDirection"));
+  assert.ok(html.includes("dgT(`promise.${promiseType}Title`"));
 });
