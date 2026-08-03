@@ -61,10 +61,29 @@ test('app context applies a locale without a favorite while an explicit URL loca
   assert.equal(localeOnly.c.LANG,'ja');
   assert.deepEqual(localeOnly.events.slice(0,3),['apply','switch','refresh']);
 
+  const legacyJapanese=context('');
+  assert.equal(legacyJapanese.c.applyDreamGroupLocale({locale:'jp'}),true,'the current native game WebView locale must map to Japanese');
+  assert.equal(legacyJapanese.c.LANG,'ja');
+
   const forced=context('?lang=id');
   assert.equal(forced.c.applyDreamGroupLocale({locale:'en-US'}),false);
   assert.equal(forced.c.LANG,'ko');
   assert.deepEqual(forced.events,[]);
+});
+
+test('current native game WebView locale query is applied before bridge context arrives',()=>{
+  const bridge=html.slice(html.indexOf('  const applyDreamGroupLocale='),html.indexOf('  const applyDreamGroupContext='));
+  const events=[];
+  const c=vm.createContext({
+    console,location:{search:'?locale=jp'},URLSearchParams,window:null,LANG:'ko',
+    setLang:l=>{c.LANG=l;},applyI18n:()=>events.push('apply'),initLangSwitch:()=>events.push('switch'),
+    Game:{refreshLang:()=>events.push('refresh')},ProductTelemetry:{track:(name,data)=>events.push([name,data])}
+  });
+  c.window=c;
+  vm.runInContext(dgSource,c,{filename:'dg-i18n.js'});
+  vm.runInContext(bridge,c,{filename:'native-locale-query.js'});
+  assert.equal(c.LANG,'ja');
+  assert.deepEqual(events.slice(0,3),['apply','switch','refresh']);
 });
 
 test('critical group, debut and league renderers contain no Korean display literals',()=>{

@@ -7979,12 +7979,13 @@ window.addEventListener("popstate", ()=>{
   const applyDreamGroupLocale=ctx=>{
     const raw=String((ctx&&ctx.locale)||'').trim().toLowerCase().replace(/_/g,'-');
     if(!raw || new URLSearchParams(location.search||'').has('lang') || !window.DGI18n) return false;
-    let code=raw.split('-')[0]; if(code==='in')code='id';
+    let code=raw.split('-')[0]; if(code==='in')code='id'; if(code==='jp')code='ja';
     if(!Object.prototype.hasOwnProperty.call(DGI18n.packs,code) || code===window.LANG) return false;
     setLang(code); applyI18n(); initLangSwitch(); if(window.Game&&Game.refreshLang)Game.refreshLang();
     try{ ProductTelemetry.track('app_locale_applied',{locale:code}); }catch(e){}
     return true;
   };
+  try{ const appQueryLocale=new URLSearchParams(location.search||'').get('locale'); if(appQueryLocale)applyDreamGroupLocale({locale:appQueryLocale}); }catch(e){}
   const applyDreamGroupContext=ctx=>{ applyDreamGroupLocale(ctx); const id=ctx&&ctx.favorite_id; if(id==null)return; const idol=IDOLS.find(i=>String(i.id)===String(id)); if(!idol){try{ProductTelemetry.track('favorite_context_unmatched',{});}catch(e){}return;}
     const changed=Game.appFavoriteId==null||String(Game.appFavoriteId)!==String(id); Game.appFavoriteId=id; if(changed&&!Game.userIdolOverride)Game.appFavoriteDismissed=false; const select=document.getElementById('s-select'); if(select&&select.classList.contains('on')){ try{ DG.load(); if(!(DG.data.roster||[]).length&&Game.curMode==='search'&&!Game.selIdol&&!Game.appFavoriteDismissed&&!Game.userIdolOverride){
       const input=document.getElementById('idolSearch'); if(input&&!(input.value||'').trim()){ input.value=idol.name||''; Game.search(); Game.pick(idol.id,'app'); Game.renderAppFavoriteHint(idol); const h=document.querySelector('#s-select .sub-head h2'); if(h)h.textContent=dgT('context.firstRun',{name:idolName(idol)}); try{ProductTelemetry.track('favorite_context_applied',{favorite_id:id});}catch(e){} } } }catch(e){} } };
