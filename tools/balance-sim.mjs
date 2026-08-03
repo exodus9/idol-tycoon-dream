@@ -11,6 +11,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
+import StageCriteria from '../stage-criteria.js';
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const source = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
@@ -182,7 +183,7 @@ function nextGate(schedule, week) {
 
 function desiredStats(gate, state) {
   if (!gate || gate.type === 'debut' || gate.type === 'award') return STATS.slice().sort((a, b) => state[a] - state[b]);
-  return gate.field.slice().sort((a, b) => state[a] - state[b]);
+  return StageCriteria.effectiveFields(gate.field, state.spec).sort((a, b) => state[a] - state[b]);
 }
 
 function chooseCard(hand, state, strategy, schedule) {
@@ -266,7 +267,8 @@ function stageMultiplier(state, random, strategy, expectedRatio) {
 function powerAtGate(state, gate, random, mult) {
   let mine;
   if (gate.type === 'stage') {
-    const avg = gate.field.reduce((sum, stat) => sum + state[stat], 0) / gate.field.length;
+    const fields = StageCriteria.effectiveFields(gate.field, state.spec);
+    const avg = fields.reduce((sum, stat) => sum + state[stat], 0) / fields.length;
     mine = avg * (0.55 + 0.45 * state.cond / 100) * (0.9 + random() * 0.2);
   } else {
     const avg = STATS.reduce((sum, stat) => sum + state[stat], 0) / STATS.length;
