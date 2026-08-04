@@ -168,6 +168,11 @@
   .res-return-hook{margin:10px 0;padding:12px 13px;border:1px solid rgba(255,211,92,.36);border-radius:14px;background:linear-gradient(135deg,rgba(255,211,92,.1),rgba(255,95,146,.1));text-align:left}
   .res-return-hook b{display:block;font-size:12px;color:#ffe69a}.res-return-hook span{display:block;margin-top:4px;font-size:10px;line-height:1.45;color:#c7bdd3}
   .res-return-hook button{margin-top:8px;padding:7px 10px;border:1px solid rgba(255,211,92,.38);border-radius:9px;background:rgba(12,14,28,.54);color:#fff;font:inherit;font-size:10px;font-weight:900}
+  .first-group-journey{margin:10px 0 12px;padding:13px;border:1px solid rgba(95,201,255,.5);border-radius:15px;background:radial-gradient(circle at 92% 8%,rgba(95,201,255,.18),transparent 35%),linear-gradient(135deg,rgba(43,74,132,.28),rgba(18,25,43,.96));text-align:left}
+  .first-group-journey .fgj-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;font-weight:1000;letter-spacing:1px;color:#8ddcff}.first-group-journey .fgj-head b{font-size:11px;color:#fff;letter-spacing:0}
+  .first-group-journey .fgj-cast{display:grid;grid-template-columns:38px 1fr;align-items:center;gap:9px;margin-top:9px}.first-group-journey .fgj-cast img,.first-group-journey .fgj-cast span{width:38px;height:46px;border-radius:9px;object-fit:cover;background:#24334d;display:flex;align-items:center;justify-content:center}
+  .first-group-journey .fgj-cast strong,.first-group-journey .fgj-cast small{display:block}.first-group-journey .fgj-cast strong{font-size:13px}.first-group-journey .fgj-cast small{margin-top:3px;color:#aebbd0;font-size:10px;line-height:1.4}.first-group-journey button{width:100%;margin-top:10px;padding:10px;border:1px solid rgba(95,201,255,.5);border-radius:10px;background:linear-gradient(135deg,#285dff,#7344d8);color:#fff;font:inherit;font-size:12px;font-weight:900}
+  .debut-checks{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}.debut-checks span{padding:4px 7px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid #2d3a51;color:#8592a8;font-size:9.5px;font-weight:900}.debut-checks span.ok{border-color:rgba(79,214,160,.4);background:rgba(79,214,160,.1);color:#7de0b8}
   .res-grade-explain{display:block;margin-top:5px;font-size:9px;line-height:1.35;color:#c3b7ce}
   .season-edition-preview{display:flex;align-items:center;gap:8px;margin-top:7px;padding:8px 9px;border-radius:10px;background:linear-gradient(90deg,rgba(35,96,255,.2),rgba(197,51,198,.16));border:1px solid rgba(111,139,255,.35);color:#dce7ff}
   .season-edition-preview b{flex:0 0 auto;font-size:10px;white-space:nowrap}.season-edition-preview span{font-size:9.5px;line-height:1.3;color:#b7c8ed}
@@ -1072,6 +1077,7 @@
 <script src="run-migration.js?v=2160e1c632"></script>
 <script src="daily-retention.js?v=07088d420d"></script>
 <script src="progress-action.js?v=a280a2c299"></script>
+<script src="first-group-journey.js?v=d24f63065d"></script>
 <script src="mentor-inheritance.js?v=9b37b72298"></script>
 <script src="run-memory.js?v=4e9d4557c3"></script>
 <script src="fandom-onboarding.js?v=b79c701b69"></script>
@@ -1080,9 +1086,9 @@
 <script src="run-balance-rules.js?v=7e1af59983"></script>
 <script src="stage-criteria.js?v=6d23aaaa14"></script>
 <script src="completion-transaction.js?v=8c3a470bcb"></script>
-<script src="product-telemetry.js?v=23e1d8566d"></script>
+<script src="product-telemetry.js?v=cb4ba96a19"></script>
 <script src="run-adoption.js?v=f5ce39d47f"></script>
-<script src="dg-i18n.js?v=39cacf3982"></script>
+<script src="dg-i18n.js?v=bcc9dc869a"></script>
 <script src="i18n.js?v=b295633ad5"></script>
 <script src="idols.js?v=sync202608040520"></script>
 <script>
@@ -5321,6 +5327,11 @@ window.addEventListener("popstate", ()=>{
       return (idx<PRE.length? PRE[idx] : (idx+1)+'번')+base; },   // 메인보컬·리드보컬·서브보컬·4번보컬…
     filledCount(){ let n=0; this.slots().forEach(s=>{ if(this.isEligibleRosterMember(this.rosterById(this.data.lineup[s.sid]))) n++; }); return n; },
     groupInfo(){ let sum=0,n=0; this.slots().forEach(s=>{ const r=this.rosterById(this.data.lineup[s.sid]); if(this.isEligibleRosterMember(r)){ sum+=this.posScore(r.stats,s.type); n++; } }); return {sum,n,grade:n?grade(Math.round(sum/n)):'–'}; },
+    groupReadiness(lineup){
+      const source=lineup||this.data.lineup||{}, members=this.slots().map(s=>({type:s.type,r:this.rosterById(source[s.sid])})).filter(m=>this.isEligibleRosterMember(m.r));
+      const sum=members.reduce((total,m)=>total+this.posScore(m.r.stats,m.type),0), synergy=this.groupSynergy(members);
+      return FirstGroupJourney.debutReadiness({memberCount:members.length,roles:members.map(m=>m.type),averageRolePower:members.length?sum/members.length:0,synergyPct:synergy.pct});
+    },
     // 홈·일일·완주 결과가 서로 다른 행동을 시키지 않도록 한 곳에서 다음 목표를 결정한다.
     progressAction(focus,opts){
       opts=opts||{}; const readyCount=(this.data.roster||[]).filter(r=>this.isEligibleRosterMember(r)).length;
@@ -5338,12 +5349,12 @@ window.addEventListener("popstate", ()=>{
     },
     // 역할 파워는 실존 인물 평가가 아니라 '이번 RUN 카드 × 현재 무대 역할'의 조합 결과다.
     roleFitInfo(val){ const g=grade(val), lv=levelOf(val);
-      if(lv>=6)return {grade:g,label:'시그니처 역할',color:'#ffd35c'};
-      if(lv>=4)return {grade:g,label:'강점 발휘',color:'#5fc9ff'};
-      if(lv>=2)return {grade:g,label:'성장 중',color:'#9fd9c0'};
-      return {grade:g,label:'재배치 후보',color:'#c3b6dd'}; },
-    fitLabel(val,roleName){ const f=this.roleFitInfo(val), role=roleName?`${esc(roleName)} 슬롯`:'현재 슬롯';
-      return `<b style="color:${f.color}">${role}</b><span style="display:block;color:var(--sub);font-weight:700">${f.label==='재배치 후보'?'RUN 버전 재매칭':f.label}</span>`; },
+      if(lv>=6)return {grade:g,label:dgT('lineup.fitSignature'),color:'#ffd35c'};
+      if(lv>=4)return {grade:g,label:dgT('lineup.fitStrong'),color:'#5fc9ff'};
+      if(lv>=2)return {grade:g,label:dgT('lineup.fitGrowing'),color:'#9fd9c0'};
+      return {grade:g,label:dgT('lineup.fitRematch'),color:'#c3b6dd'}; },
+    fitLabel(val,roleName){ const f=this.roleFitInfo(val), role=dgT('lineup.slotLabel',{role:esc(roleName||'')});
+      return `<b style="color:${f.color}">${role}</b><span style="display:block;color:var(--sub);font-weight:700">${f.label}</span>`; },
     // ===== 트렌드 (경쟁전③) = 2주 시즌 '대세' =====
     seasonNo(){ return Math.max(0, Math.floor((Date.now()-SEASON_EPOCH)/SEASON_MS)); },
     currentTrend(){ return TRENDS[this.seasonNo()%TRENDS.length]; },
@@ -5432,31 +5443,31 @@ window.addEventListener("popstate", ()=>{
       const pc={}; members.forEach(m=>pc[m.type]=(pc[m.type]||0)+1);
       const titles=new Set(); members.forEach(m=>(m.r.titles||[]).forEach(t=>titles.add(t)));
       // ① 콘셉트 몰이(같은 포지션 N명): 트렌드 포지션 일치 시 ×1.5(🔥)
-      const CM={vocal:'보컬 몰이', rapper:'힙합 몰이', dancer:'퍼포먼스 몰이'};
+      const CM={vocal:dgT('synergy.vocalDrive'), rapper:dgT('synergy.hiphopDrive'), dancer:dgT('synergy.performanceDrive')};
       const hotPos=(trend&&trend.pos)||null;
       ['vocal','rapper','dancer'].forEach(t=>{ const c=pc[t]||0; if(c>=2){ let b=(c>=4?9:c>=3?6:3); const hot=(hotPos===t); if(hot)b=Math.round(b*1.5); list.push({nm:CM[t]+(hot?' 🔥':''), pct:b, k:'concept'}); } });
-      if((pc.producer||0)>=2){ let b=(pc.producer>=3?8:4); const hot=(hotPos==='producer'); if(hot)b=Math.round(b*1.5); list.push({nm:'크리에이터 몰이'+(hot?' 🔥':''), pct:b, k:'concept'}); }
+      if((pc.producer||0)>=2){ let b=(pc.producer>=3?8:4); const hot=(hotPos==='producer'); if(hot)b=Math.round(b*1.5); list.push({nm:dgT('synergy.creatorDrive')+(hot?' 🔥':''), pct:b, k:'concept'}); }
       // ② 케미 조합(트렌드 무관)
       const has=t=>(pc[t]||0)>0;
-      if(has('vocal')&&has('rapper')&&has('dancer')) list.push({nm:'삼각편대', pct:6, k:'chemi'});
-      else if(has('vocal')&&has('rapper')) list.push({nm:'멜로디&플로우', pct:4, k:'chemi'});
-      if(has('leader')&&has('center')) list.push({nm:'완벽한 프론트', pct:3, k:'chemi'});
-      if(Object.keys(pc).length>=6) list.push({nm:'육각 완전체', pct:10, k:'chemi'});
+      if(has('vocal')&&has('rapper')&&has('dancer')) list.push({nm:dgT('synergy.triangle'), pct:6, k:'chemi'});
+      else if(has('vocal')&&has('rapper')) list.push({nm:dgT('synergy.melodyFlow'), pct:4, k:'chemi'});
+      if(has('leader')&&has('center')) list.push({nm:dgT('synergy.perfectFront'), pct:3, k:'chemi'});
+      if(Object.keys(pc).length>=6) list.push({nm:dgT('synergy.fullSpectrum'), pct:10, k:'chemi'});
       // ③ 등급 보유(칭호): 전설>스타성 택1 + 에이스
-      if(titles.has('legend')) list.push({nm:'전설 보유', pct:6, k:'grade'});
-      else if(titles.has('star')) list.push({nm:'스타성 보유', pct:4, k:'grade'});
-      if(titles.has('ace')) list.push({nm:'에이스 보유', pct:3, k:'grade'});
+      if(titles.has('legend')) list.push({nm:dgT('synergy.legend'), pct:6, k:'grade'});
+      else if(titles.has('star')) list.push({nm:dgT('synergy.star'), pct:4, k:'grade'});
+      if(titles.has('ace')) list.push({nm:dgT('synergy.ace'), pct:3, k:'grade'});
       // ④ 원조 케미(원본그룹) — 편성당 최고 1등급만(오버스펙 차단). 커스텀(grp='')은 순혈/완전체 깨뜨림
       const grps=members.map(m=>m.r.grp||''), allOrigin=grps.every(g=>g);
       const gc={}; grps.forEach(g=>{ if(g) gc[g]=(gc[g]||0)+1; });
       const names=Object.keys(gc), big3=names.filter(g=>gc[g]>=3);
       let ob=0, on='';
-      if(allOrigin && names.length===1 && n===9){ ob=18; on='완전체'; }
-      else if(allOrigin && names.length===1 && n>=3){ ob=13; on='순혈'; }
-      else if(allOrigin && n===9 && names.length>=2){ ob=13; on='풀 콜라보'; }
-      else if(allOrigin && big3.length>=2){ ob=9; on='콜라보'; }
-      else if(names.some(g=>gc[g]>=2)){ ob=4; on='실친'; }
-      if(ob>0) list.push({nm:on+' 케미', pct:ob, k:'origin'});
+      if(allOrigin && names.length===1 && n===9){ ob=18; on=dgT('synergy.complete'); }
+      else if(allOrigin && names.length===1 && n>=3){ ob=13; on=dgT('synergy.pure'); }
+      else if(allOrigin && n===9 && names.length>=2){ ob=13; on=dgT('synergy.fullCollab'); }
+      else if(allOrigin && big3.length>=2){ ob=9; on=dgT('synergy.collab'); }
+      else if(names.some(g=>gc[g]>=2)){ ob=4; on=dgT('synergy.friends'); }
+      if(ob>0) list.push({nm:on, pct:ob, k:'origin'});
       const raw=list.reduce((a,x)=>a+x.pct,0);
       return {pct:raw, raw, capped:false, list};   // 재율애비: 시너지 한도 삭제(다양한 시너지 조합 유도, base가 더 지배적)
     },
@@ -5725,7 +5736,7 @@ window.addEventListener("popstate", ()=>{
       return {ok:true, cardType, card:this.nmOf(cardType), cnt, img:r.img, name:r.name}; },
 
     // ===== 그룹 데뷔(저장) = 프리셋 스냅샷. 멤버는 전속 확정, 현 편성버퍼는 비워 새 데뷔조 시작 =====
-    debutGroup(name, logo){ this.load(); const gi=this.groupInfo(); if(gi.n<3) return {err:'few'};
+    debutGroup(name, logo){ this.load(); const gi=this.groupInfo(); if(gi.n<3) return {err:'few'}; if(!this.groupReadiness().pass)return {err:'notready'};
       const lineup={}, slots=[]; this.slots().forEach(s=>{ const r=this.rosterById(this.data.lineup[s.sid]); if(this.isEligibleRosterMember(r)){ lineup[s.sid]=r.rid; slots.push({sid:s.sid,type:s.type}); } });
       const g={gid:++this.data.groupSeq, name:(name||this.groupName()).slice(0,14), logo:logo||this.agency().logo,
                lineup, slots, grade:gi.grade, sum:gi.sum, n:gi.n, savedAt:Date.now()};
@@ -5908,7 +5919,9 @@ window.addEventListener("popstate", ()=>{
         this.data.agency={name:dgT('agency.default',{name:base}), logo:'🌟', _auto:1}; this.persist();
       }
       this.renderOffice(); show('s-office'); },
-    editLineup(){ this._showGrid=true; this.renderOffice(); try{ setTimeout(()=>{ const g=document.querySelector('#dgGroup .dg-grid'); if(g) g.scrollIntoView({block:'center',behavior:'smooth'}); },50); }catch(e){} },
+    editLineup(source){ this.load(); const readyCount=(this.data.roster||[]).filter(r=>this.isEligibleRosterMember(r)).length;
+      if(!(this.data.groups||[]).length&&readyCount>=3){ try{ ProductTelemetry.track('first_group_continue',{step:'lineup',source:source||'lineup',ready_count:readyCount}); }catch(e){} }
+      this._showGrid=true; this.renderOffice(); try{ setTimeout(()=>{ const g=document.querySelector('#dgGroup .dg-grid'); if(g) g.scrollIntoView({block:'center',behavior:'smooth'}); },50); }catch(e){} },
     closeLineup(){ this._showGrid=false; this.renderOffice(); },
     // ⭐실제 순위 위협: 리더보드에서 나보다 위(pts 높은) 라이벌이 있으면 그 팀명으로 히어로 버블 갱신(거짓 위협 X)
     _checkRivalThreat(rep){ try{
@@ -6062,7 +6075,7 @@ window.addEventListener("popstate", ()=>{
       // 육성 중단 세이브 있으면 이어하기 최우선(복귀 동선 — 기존엔 접근성 낮았음)
       let _resume=null; try{ if(Game.hasSave()){ const sv=JSON.parse(localStorage.getItem('idol_save')); if(sv&&sv.idol) _resume={name:sv.idol.name, week:sv.week||1, total:(sv.mode==='quick'?12:24), img:sv.idol.img||'',rid:sv.retrainRid||0,stats:sv}; } }catch(e){}
       const _mentorOffer=!_resume?this.mentorHomeOffer():null;
-      const _mentorBtn=_mentorOffer?`<button class="btn ghost" onclick="DG.startMentorRun(${_mentorOffer.mentor.rid},${_mentorOffer.target.id})">🫶 ${dgT('home.mentorRun',{mentor:esc(_mentorOffer.mentor.name),target:esc(idolName(_mentorOffer.target))})}</button>`:'';
+      const _mentorBtn=_mentorOffer?`<button class="btn ghost" onclick="DG.startMentorRun(${_mentorOffer.mentor.rid},${_mentorOffer.target.id},'${_mentorOffer.direction}','home')">🫶 ${dgT('home.mentorRun',{mentor:esc(_mentorOffer.mentor.name),target:esc(idolName(_mentorOffer.target))})}</button>`:'';
       const _seasonResult=this.data.lastSeasonResult;
       const _homeSeasonPlan=_seasonResult&&_seasonResult.no<this.seasonNo()?this.seasonRunProposal(_trend,rep):null;
       const _seasonHeroBtn=_homeSeasonPlan?`<button class="btn ghost" style="flex:1" onclick="DG.seasonRunAction(${_homeSeasonPlan.rid==null?'null':_homeSeasonPlan.rid},'${_homeSeasonPlan.direction}')">${dgT(_homeSeasonPlan.name?'home.seasonMemberButton':'home.seasonGroupButton',{name:esc(_homeSeasonPlan.name),trend:esc(this.trendName(_trend))})}</button>`:'';
@@ -6159,11 +6172,11 @@ window.addEventListener("popstate", ()=>{
       let cardHook='';
       let mentorHook='';
       if(_mentorOffer){ const _mo=_mentorOffer;
-        mentorHook=`<div class="home-card-hook mentor-home-link" onclick="DG.startMentorRun(${_mo.mentor.rid},${_mo.target.id})">
+        mentorHook=`<div class="home-card-hook mentor-home-link" onclick="DG.startMentorRun(${_mo.mentor.rid},${_mo.target.id},'${_mo.direction}','home')">
           <div class="mentor-home-pair"><img src="${esc(_mo.mentor.img)}" alt=""><img src="${esc(_mo.target.img)}" alt=""></div>
-          <div class="hch-copy"><div class="hch-kicker">MENTOR LINK · 완주자 ${_mo.count}명</div>
+          <div class="hch-copy"><div class="hch-kicker">${dgT('home.mentorKicker',{count:_mo.count})}</div>
             <div class="hch-title">${esc(_mo.mentor.name)} → ${esc(idolName(_mo.target))}</div>
-            <div class="hch-sub">지난 완주의 제작 노하우를 잇고<br>새 아이돌 RUN을 바로 시작해</div></div><span class="hch-go">›</span></div>`;
+            <div class="hch-sub">${dgT('home.mentorGap',{role:esc(this.roleName(_mo.role)),direction:esc(t('st_'+_mo.direction))})}</div></div><span class="hch-go">›</span></div>`;
       }
       const _newCardId=Object.keys(this.data.newCards||{}).find(id=>this.owned(id));
       const _hookId=_newCardId || cardTypes.slice().sort((x,y)=>
@@ -6246,41 +6259,43 @@ window.addEventListener("popstate", ()=>{
       // 동적 슬롯: 리더 첫칸 고정 + 자유 편성(보컬그룹/힙합크루…). 최소 3칸·최대 9인
       const shown=this.slots();
       const syn=this.groupSynergy();
+      const debutReady=this.groupReadiness();
       const autoPlan=this.autoPlan(), autoDelta=Math.max(0,(autoPlan.sum||0)-(gi.sum||0));
       const roleRows=shown.map(s=>{const r=this.rosterById(this.data.lineup[s.sid]);return r?{s,r,val:this.posScore(r.stats,s.type)}:null;}).filter(Boolean).sort((a,b)=>a.val-b.val);
       const weakRole=roleRows[0]||null, weakInfo=weakRole?this.roleFitInfo(weakRole.val):null;
-      const slotCells=shown.map(s=>{ const r=this.rosterById(this.data.lineup[s.sid]); const nm=this.slotNm(s), ic=this.slotIco(s);
+      const slotCells=shown.map(s=>{ const r=this.rosterById(this.data.lineup[s.sid]); const nm=this.roleName(s.type), ic=this.slotIco(s);
         if(r){ const val=this.posScore(r.stats,s.type), av=r.img?`style="background-image:url('${r.img}')"`:'';
           const im=this.idolCardMeta(r);
           return `<div class="dg-slot filled" onclick="DG.openAssign('${s.sid}')"><div class="dg-pos">${ic} ${nm}</div>
             <span class="dg-av" ${av}>${r.img?'':'🎤'}</span>
             <div class="dg-nm">${esc(r.name)}</div><div class="dg-card-ver">★${im.star} · RUN ${im.runs}</div><div class="dg-gr">${this.fitLabel(val,nm)}</div></div>`; }
         const canClose=(s.type!=='leader' && shown.length>MIN_SLOTS);
-        return `<div class="dg-slot" onclick="DG.openAssign('${s.sid}')">${canClose?`<span class="dg-slot-x" onclick="event.stopPropagation();DG.removeSlot('${s.sid}')" title="이 자리 닫기">✕</span>`:''}<div class="dg-pos">${ic} ${nm}</div>
-          <span class="dg-av empty">＋</span><div class="dg-nm muted">배치</div></div>`;
+        return `<div class="dg-slot" onclick="DG.openAssign('${s.sid}')">${canClose?`<span class="dg-slot-x" onclick="event.stopPropagation();DG.removeSlot('${s.sid}')" title="${dgT('common.close')}">✕</span>`:''}<div class="dg-pos">${ic} ${nm}</div>
+          <span class="dg-av empty">＋</span><div class="dg-nm muted">${dgT('lineup.emptySlot')}</div></div>`;
       }).join('');
       document.getElementById('dgGroup').innerHTML=
-        `<div class="dg-sub" style="margin-top:15px"><b>📋 데뷔조 편성</b><span class="muted">${gi.n}/9명</span></div>
-         <div class="dg-head"><div class="dg-h-l">새 데뷔조 편성${gi.n>=3?' <span style="color:#18b06e;font-size:11px">● 데뷔 가능</span>':''}</div>
+        `<div class="dg-sub" style="margin-top:15px"><b>📋 ${dgT('lineup.section')}</b><span class="muted">${gi.n}/9</span></div>
+         <div class="dg-head"><div class="dg-h-l">${dgT('lineup.title')}${debutReady.pass?` <span style="color:#18b06e;font-size:11px">${dgT('lineup.passed')}</span>`:gi.n>=3?` <span style="color:#ffb35c;font-size:11px">${dgT('lineup.improve')}</span>`:''}</div>
           <div class="dg-h-g"><small>GROUP ROLE POWER</small>${gi.n? gi.grade : '–'}</div>
-          <div class="dg-h-s muted">${gi.n? `현재 역할 합 ${gi.sum} · RUN 카드 완성도와 별도` : '숙소에서 3명 이상 편성하면 활동 시작'}</div></div>
+          <div class="dg-h-s muted">${gi.n?dgT('lineup.powerSummary',{sum:gi.sum}):dgT('lineup.emptySummary')}</div>
+          <div class="debut-checks"><span class="${debutReady.checks.members?'ok':''}">✓ ${dgT('debut.checkMembers')}</span><span class="${debutReady.checks.front&&debutReady.checks.stage?'ok':''}">✓ ${dgT('debut.checkRoles')}</span><span class="${debutReady.checks.power?'ok':''}">✓ ${dgT('debut.checkPower')}</span><span class="${debutReady.checks.synergy?'ok':''}">✓ ${dgT('debut.checkSynergy')}</span></div></div>
          <div class="dg-grid nine">${slotCells}</div>
-         ${gi.n>=3&&autoDelta>=20?`<div class="role-coach"><div class="rc-copy"><b>🎧 지금 카드로 역할 파워 +${autoDelta}</b><span>RUN 카드는 그대로 두고 역할만 다시 맞출 수 있어.</span></div><button onclick="DG.autoFill()">최적 배치</button></div>`
-           :gi.n>=3&&weakRole&&weakInfo&&levelOf(weakRole.val)<2?`<div class="role-coach"><div class="rc-copy"><b>🎧 ${esc(this.slotNm(weakRole.s))} 슬롯과 맞는 RUN이 없어</b><span>아이돌 평가가 아니라, 현재 보유한 RUN 버전과 이 슬롯의 조합이야.</span></div><button onclick="DG.openAssign('${weakRole.s.sid}')">RUN 버전 보기</button></div>`:''}
+         ${gi.n>=3&&autoDelta>=20?`<div class="role-coach"><div class="rc-copy"><b>🎧 ${dgT('lineup.roleImprove',{value:autoDelta})}</b><span>${dgT('lineup.roleImproveCopy')}</span></div><button onclick="DG.autoFill()">${dgT('lineup.autoBest')}</button></div>`
+           :gi.n>=3&&weakRole&&weakInfo&&levelOf(weakRole.val)<2?`<div class="role-coach"><div class="rc-copy"><b>🎧 ${dgT('lineup.missingRole',{role:esc(this.roleName(weakRole.s.type))})}</b><span>${dgT('lineup.missingRoleCopy')}</span></div><button onclick="DG.openAssign('${weakRole.s.sid}')">${dgT('lineup.viewRuns')}</button></div>`:''}
          ${(gi.n>=3&&syn.list.length)?`<div class="syn-box" onclick="DG.showSynergy()" style="cursor:pointer">
-           <div class="syn-h">🔥 그룹 시너지 <b>+${syn.pct}%</b>${syn.capped?'<span class="syn-cap">상한</span>':''} <span style="font-size:11px;opacity:.6;float:right">자세히 ›</span></div>
+           <div class="syn-h">🔥 ${dgT('lineup.synergy')} <b>+${syn.pct}%</b> <span style="font-size:11px;opacity:.6;float:right">${dgT('lineup.details')}</span></div>
            <div class="syn-chips">${syn.list.map(x=>`<span class="syn-chip k-${x.k}">${esc(x.nm)} +${x.pct}</span>`).join('')}</div>
          </div>`:''}
          <div style="display:flex;gap:8px;margin-top:11px">
-           <button class="btn ghost" style="flex:1" onclick="DG.autoFill()">🎯 자동 편성</button>
-           ${gi.n>0?`<button class="btn ghost" style="flex:1" onclick="DG.clearLineup()">↺ 비우기</button>`:''}
+           <button class="btn ghost" style="flex:1" onclick="DG.autoFill()">🎯 ${dgT('lineup.auto')}</button>
+           ${gi.n>0?`<button class="btn ghost" style="flex:1" onclick="DG.clearLineup()">↺ ${dgT('lineup.clear')}</button>`:''}
          </div>
          <div style="display:flex;gap:8px;margin-top:8px">
-           ${shown.length<MAX_MEMBERS? `<button class="btn ghost" style="flex:1;font-size:13px" onclick="DG.addSlot()">＋ 자리 추가 <span class="muted">(${shown.length}/9)</span></button>` : `<span class="muted" style="flex:1;text-align:center;font-size:12px;align-self:center">멤버 9명 꽉 참 (최대)</span>`}
-           ${gi.n>=3? `<button class="btn ghost" style="flex:1" onclick="DG.previewLineupCard()">🔍 편성 미리보기</button>`:''}
+           ${shown.length<MAX_MEMBERS? `<button class="btn ghost" style="flex:1;font-size:13px" onclick="DG.addSlot()">＋ ${dgT('lineup.addSlot')} <span class="muted">(${shown.length}/9)</span></button>` : `<span class="muted" style="flex:1;text-align:center;font-size:12px;align-self:center">${dgT('lineup.maxMembers')}</span>`}
+           ${gi.n>=3? `<button class="btn ghost" style="flex:1" onclick="DG.previewLineupCard()">🔍 ${dgT('lineup.preview')}</button>`:''}
          </div>
-         ${gi.n>=3? `<button class="btn" style="margin-top:8px" onclick="DG.doDebut()">🎬 이 데뷔조 데뷔시키기 <span style="opacity:.8;font-size:12px">(${gi.n}명 전속 확정)</span></button>`:''}
-         ${this._showGrid? `<button class="btn ghost" style="margin-top:8px;width:100%" onclick="DG.closeLineup()">▲ 편성 접기</button>`:''}`;
+         ${debutReady.pass? `<button class="btn" style="margin-top:8px" onclick="DG.doDebut()">🎬 ${dgT('debut.rehearsalPassed')} <span style="opacity:.8;font-size:12px">(${dgT('lineup.exclusive',{count:gi.n})})</span></button>`:gi.n>=3?`<button class="btn ghost" style="margin-top:8px" onclick="DG.autoFill()">🎧 ${dgT('debut.improveRehearsal')}</button>`:''}
+         ${this._showGrid? `<button class="btn ghost" style="margin-top:8px;width:100%" onclick="DG.closeLineup()">▲ ${dgT('lineup.collapse')}</button>`:''}`;
       }
       // ① 대표는 히어로에 1번만 표시 — 목록은 '다른 데뷔 그룹'(비대표)만. 대표 교체는 여기 ⭐로(대표 실수 해체 방지 겸).
       const _repGid=this.repGroupGid();
@@ -6828,6 +6843,7 @@ window.addEventListener("popstate", ()=>{
     // 현 데뷔조를 그룹으로 데뷔(저장) → 멤버 전속. 이름 입력받아 스냅샷
     // 데뷔 = 전용 세리머니 화면(그룹명·로고 짓기). 기존 prompt 1줄 → s-debut 승격.
     doDebut(){ this.load(); const gi=this.groupInfo(); if(gi.n<3){ toast(dgT('debut.need3')); return; }
+      if(!this.groupReadiness().pass){ toast(dgT('debut.notReady')); return; }
       if((this.data.groups||[]).length>=5){ toast(dgT('debut.max5')); return; }
       this.renderDebut(); show('s-debut');
     },
@@ -6939,10 +6955,15 @@ window.addEventListener("popstate", ()=>{
       const nextAction=this.progressAction(idolR);
       const readyCount=(this.data.roster||[]).filter(r=>this.isEligibleRosterMember(r)).length, gi=this.groupInfo(), rep=this.repGroup();
       const actionLabel=nextAction.kind==='scout'?dgT('result.actionScout',{count:readyCount}):nextAction.kind==='lineup'?dgT('result.actionLineup',{count:readyCount}):nextAction.kind==='debut'?dgT('result.actionDebut',{count:gi.n}):nextAction.kind==='battle'?dgT('result.actionBattle',{name:esc(rep?rep.name:'GROUP')}):nextAction.kind==='promiseRetry'?dgT('result.actionPromiseRetry',{name:esc(idolR?idolR.name:'IDOL')}):dgT('result.actionRetry',{name:esc(idolR?idolR.name:'IDOL')});
+      const firstGroupStep=res.debuted&&FirstGroupJourney.resultStep({readyCount,groupCount:(this.data.groups||[]).length}), firstGroupOffer=firstGroupStep==='nextMember'?this.mentorHomeOffer():null;
+      const firstGroupJourney=firstGroupStep==='nextMember'
+        ? `<div class="first-group-journey"><div class="fgj-head">FIRST GROUP <b>${readyCount}/3</b></div><div class="fgj-cast">${firstGroupOffer&&firstGroupOffer.target.img?`<img src="${esc(firstGroupOffer.target.img)}" alt="">`:'<span>🎤</span>'}<div><strong>${dgT('result.firstGroupNextTitle',{count:readyCount+1})}</strong><small>${firstGroupOffer?dgT('result.firstGroupNextCopy',{mentor:esc(firstGroupOffer.mentor.name),target:esc(idolName(firstGroupOffer.target)),role:esc(this.roleName(firstGroupOffer.role)),direction:esc(t('st_'+firstGroupOffer.direction))}):dgT('result.firstGroupScoutCopy')}</small></div></div><button onclick="${firstGroupOffer?`DG.startMentorRun(${firstGroupOffer.mentor.rid},${firstGroupOffer.target.id},'${firstGroupOffer.direction}','result_first_group')`:'Game.goSelect()'}">${firstGroupOffer?dgT('result.firstGroupNextCta',{target:esc(idolName(firstGroupOffer.target)),count:readyCount+1}):dgT('result.actionScout',{count:readyCount})}</button></div>`
+        : firstGroupStep==='firstLineup'
+          ? `<div class="first-group-journey"><div class="fgj-head">FIRST GROUP <b>3/3</b></div><div class="fgj-cast"><span>🎬</span><div><strong>${dgT('result.firstGroupReadyTitle')}</strong><small>${dgT('result.firstGroupReadyCopy')}</small></div></div><button onclick="DG.go();DG.editLineup('result_first_group')">${dgT('result.firstGroupReadyCta')}</button></div>`:'';
       let returnHook='', returnPriority=false;
       try{
         const reply=this.dailyEchoState().ready, daily=this.dailyState();
-        returnPriority=!!reply||!daily.done;
+        returnPriority=(!!reply||!daily.done)&&!firstGroupJourney;
         const unlockTime=this.replyUnlockLabel();
         returnHook=reply
           ? `<div class="res-return-hook"><b>💌 ${dgT('result.returnReplyTitle')}</b><span>${dgT('result.returnReplyCopy')}</span><button type="button" onclick="DG.goDaily()">${dgT('result.returnReplyButton')}</button></div>`
@@ -6966,14 +6987,14 @@ window.addEventListener("popstate", ()=>{
         ${res.debuted?`<button class="btn ghost" onclick="${idolGroup?'DG.showBattleLobby()':'DG.goRoster()'}" style="margin-top:9px">${idolGroup?dgT('result.groupCheck',{name:esc(idolGroup.name)}):dgT('result.archive')}</button>`:''}
         ${nextAction.kind!=='scout'?`<button class="btn ghost" onclick="Game.goSelect()" style="margin-top:9px">${dgT('result.newIdol')}</button>`:''}`;
       box.innerHTML=`<div class="dg-res">${rec}<div class="dg-res-slot">${completionSummary}${gradeExplain}</div>${thanks}
-        ${returnHook}
+        ${firstGroupJourney}${returnHook}
         ${idolReveal}
         ${memoryResult}${bondResult}
         <div class="dg-res-cards"><b>${dgT('result.supportTitle')}</b><div class="dg-chips" style="margin-top:6px">${chips}</div></div>
         ${seasonResult}
         ${titleChips}
         ${goalPull}
-        ${returnPriority?`<details class="result-more-actions"><summary>${dgT('result.otherActions')}</summary>${progressButtons}</details>`:progressButtons}</div>`;
+        ${returnPriority||firstGroupJourney?`<details class="result-more-actions"><summary>${dgT('result.otherActions')}</summary>${progressButtons}</details>`:progressButtons}</div>`;
       if(res.debuted) setTimeout(()=>{ try{toast(dgT('result.rosterToast'));}catch(e){} }, 450);
       setTimeout(()=>{ try{ this.checkAchv(); }catch(e){} }, 1400);   // #7 완주 직후 업적 토스트
     },
@@ -7027,20 +7048,24 @@ window.addEventListener("popstate", ()=>{
       this.load();
       const completed=MentorInheritance.eligible(this.data.roster,{}).map(r=>{
         const meta=this.idolCardMeta(r);
-        return {rid:r.rid,name:r.name,img:r.img||'',grp:r.grp||'',star:meta.star,bond:Math.round(r.fanBond||0),favorite:this.data.favRid===r.rid};
+        return {rid:r.rid,name:r.name,img:r.img||'',grp:r.grp||'',star:meta.star,bond:Math.round(r.fanBond||0),favorite:this.data.favRid===r.rid,runDirection:r.runDirection||''};
       }).sort((a,b)=>(+b.favorite)-(+a.favorite)||b.star-a.star||b.bond-a.bond||b.rid-a.rid);
       const mentor=completed[0]; if(!mentor)return null;
       const owned=new Set((this.data.roster||[]).map(r=>r.idkey));
       const open=IDOLS.filter(i=>!owned.has('i:'+i.id)&&String(i.name||'')!==String(mentor.name||''));
       const target=open.find(i=>Game.appFavoriteId!=null&&String(i.id)===String(Game.appFavoriteId))
         ||open.find(i=>mentor.grp&&i.grp===mentor.grp)||open[0];
-      return target?{mentor,target,count:completed.length}:null;
+      const direction=FirstGroupJourney.nextDirection(completed.map(r=>r.runDirection));
+      return target?{mentor,target,count:completed.length,direction,role:FirstGroupJourney.DIRECTION_ROLE[direction]||'dancer'}:null;
     },
-    startMentorRun(mentorRid,idolId){
+    startMentorRun(mentorRid,idolId,direction,source){
       if(Game.hasSave()){ Game.continueGame(); return; }
       const idol=IDOLS.find(i=>String(i.id)===String(idolId)); if(!idol){ Game.goSelect(); return; }
       Game.goSelect(); Game.curMode='search'; Game.selIdol=idol; Game.pendingMentorRid=mentorRid; Game.pendingRunId=newRunId();
-      try{ ProductTelemetry.track('mentor_home_start',{run_id:Game.pendingRunId,mentor_rid:String(mentorRid),target_id:String(idolId)}); }catch(e){}
+      if(STATS.some(s=>s.k===direction))Game.pendingRunDirection=direction;
+      const readyCount=(this.data.roster||[]).filter(r=>this.isEligibleRosterMember(r)).length, eventSource=source||'home';
+      try{ ProductTelemetry.track('mentor_home_start',{run_id:Game.pendingRunId,mentor_rid:String(mentorRid),target_id:String(idolId),source:eventSource,direction});
+        ProductTelemetry.track('first_group_continue',{step:'next_member',source:eventSource,ready_count:readyCount,mentor_rid:String(mentorRid),target_id:String(idolId),direction}); }catch(e){}
       this.toCardPick();
     },
     mentorCandidates(){

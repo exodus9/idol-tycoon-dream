@@ -1,0 +1,59 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>
+  html,body,iframe{margin:0;width:100%;height:100%;border:0;background:#050914}
+  iframe{display:block}
+  output{position:fixed;z-index:20;right:4px;top:4px;padding:3px 5px;background:#000;color:#0f0;font:9px monospace;pointer-events:none}
+</style>
+<script>
+  const view=new URLSearchParams(location.search).get('view')==='lineup'?'lineup':'result';
+  const requestedLang=new URLSearchParams(location.search).get('lang')||'ko';
+  const lang=['ko','en','ja','id'].includes(requestedLang)?requestedLang:'en';
+  const pid=`first-group-journey-${view}-v1`, now=Date.now();
+  const stats=(focus)=>({vocal:160,acting:150,dance:focus==='dance'?260:170,visual:focus==='visual'?260:180,charm:focus==='charm'?260:180,creative:145,mental:170});
+  const roster=view==='lineup'
+    ? [
+        {rid:1,idkey:'i:5968168',name:'예준',grp:'플레이브',cat:'M',img:'',runDirection:'charm',stats:stats('charm'),grade:'B',fans:9000,fanBond:38,runs:1,progressRuns:1,joinedAt:now-3e5},
+        {rid:2,idkey:'i:5968169',name:'노아',grp:'플레이브',cat:'M',img:'',runDirection:'visual',stats:stats('visual'),grade:'B',fans:8400,fanBond:34,runs:1,progressRuns:1,joinedAt:now-2e5},
+        {rid:3,idkey:'i:5968170',name:'밤비',grp:'플레이브',cat:'M',img:'',runDirection:'dance',stats:stats('dance'),grade:'B',fans:8100,fanBond:31,runs:1,progressRuns:1,joinedAt:now-1e5}
+      ]
+    : [{rid:1,idkey:'i:5968168',name:'예준',grp:'플레이브',cat:'M',img:'',runDirection:'charm',stats:stats('charm'),grade:'B',fans:9000,fanBond:38,runs:1,progressRuns:1,joinedAt:now-3e5}];
+  const data={v:5,roster,runRecords:[],slots:[{sid:1,type:'leader'},{sid:2,type:'center'},{sid:3,type:'dancer'}],slotSeq:3,
+    lineup:view==='lineup'?{1:1,2:2,3:3}:{},groups:[],groupSeq:0,cards:{},newCards:{},ridSeq:roster.length,runs:roster.length,favRid:1,mic:5,micAt:now,
+    agency:{name:'네온 엔터',logo:'🌟'},daily:{lastDay:'',streak:0,total:0,choice:''},dailyBoosts:[],dailyEchoes:[],bondHistory:[]};
+  localStorage.setItem('idol_pid',pid);
+  localStorage.setItem(`dg_save_${pid}`,JSON.stringify(data));
+  localStorage.removeItem('idol_save');
+  localStorage.removeItem('idol_save_backup_v1');
+  localStorage.setItem('idol_seen_intro','1');
+  localStorage.setItem('dg_tut_v2',JSON.stringify({active:false,off:true,done:{}}));
+
+  function boot(frame){
+    setTimeout(()=>{
+      try{
+        const w=frame.contentWindow;
+        if(view==='lineup'){
+          w.eval("DG.go();DG.editLineup();document.getElementById('s-office').scrollTop=0");
+        }else{
+          w.eval(`DG.load();
+            document.getElementById('endStage').textContent='FIRST RUN COMPLETE';
+            document.getElementById('endIdolName').textContent='예준';
+            document.getElementById('endEmoji').textContent='🌟';
+            document.getElementById('endName').textContent='첫 무대를 완성했어';
+            document.getElementById('endSub').textContent='이제 예준의 제작 방향을 다음 멤버에게 이어줘.';
+            DG.renderResult(document.getElementById('dgResult'),{drops:[],newRecord:true,fans:9000,titles:[],debuted:true,tier:'B',newRid:1,fanBond:38,fandom:'플리',mentorName:'',completionView:{kind:'first',name:'예준',grade:'B',direction:'charm'},adopted:true,runGradeScore:178,runAverage:178,joinMsg:'',seasonEdition:null});
+            show('s-end');document.getElementById('s-end').scrollTop=0`);
+        }
+      }catch(error){ document.body.dataset.bootError=String(error); }
+    },1800);
+    setInterval(()=>{ try{ const w=frame.contentWindow, state=w.eval("({screen:document.querySelector('.screen.on')?.id||'-',journey:!!document.querySelector('.first-group-journey'),ready:!!document.querySelector('.debut-checks span.ok:nth-child(4)')})"); document.querySelector('output').textContent=`view=${view} screen=${state.screen} journey=${state.journey?'yes':'no'} ready=${state.ready?'yes':'no'}`; }catch(error){} },250);
+  }
+</script>
+<output aria-label="fixture status">view=- screen=- journey=no ready=no</output>
+<iframe id="fixtureFrame" title="First group journey fixture"></iframe>
+<script>
+  const fixtureFrame=document.getElementById('fixtureFrame');
+  fixtureFrame.onload=()=>boot(fixtureFrame);
+  fixtureFrame.src=`/index.html?lang=${encodeURIComponent(lang)}&qa=first-group-journey`;
+</script>

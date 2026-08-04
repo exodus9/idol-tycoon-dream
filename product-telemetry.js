@@ -17,7 +17,7 @@
     result_share:['run_no','method'],season_retrain_click:['season_no','trend_pos','rid','direction','deferred','generic'],group_debut:['member_count','group_grade','total_groups'],season_brief_open:['season_no','previous_season','previous_tier','has_run_proposal','proposal_rid'],
     daily_complete:['choice','streak','total','milestone'],daily_reply_open:['kind','wait_days','archived','first_group_bridge'],daily_reply_to_scout:['source_rid','start'],promise_reply_open:['run_id','promise_id','status','wait_days'],promise_reply_to_retrain:['rid','run_id','promise_id'],
     run_album_open:['rid','run_count'],run_record_open:['rid','run_id','run_no','promise_status','adopted'],promise_offer:['run_id','option_count','retry','source'],promise_selected:['run_id','promise_id','source','retry','reply_run_id','reply_promise_id'],
-    mentor_home_start:['run_id','mentor_rid','target_id'],mentor_select:['run_id','selected','source','mentor_rid'],mentor_offer:['run_id','candidate_count','default_selected'],retrain_started:['rid','run_id','source','direction','promise_id','reply_run_id','reply_promise_id']
+    mentor_home_start:['run_id','mentor_rid','target_id','source','direction'],first_group_continue:['step','source','ready_count','mentor_rid','target_id','direction'],mentor_select:['run_id','selected','source','mentor_rid'],mentor_offer:['run_id','candidate_count','default_selected'],retrain_started:['rid','run_id','source','direction','promise_id','reply_run_id','reply_promise_id']
   };
   const SAFE_EVENT_TEXT=/^[\p{L}\p{N}\s:_-]{1,120}$/u;
   const SAFE_SLOT=/^[a-z0-9_-]{1,24}$/;

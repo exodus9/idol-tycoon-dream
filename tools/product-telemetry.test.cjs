@@ -41,4 +41,8 @@ const localeEvent=Telemetry.track('app_locale_applied',{locale:'ja',secret:'must
 assert.equal(localeEvent.locale,'ja');
 assert.equal('secret' in localeEvent,false,'locale telemetry must keep the event allowlist');
 
+const firstGroup=Telemetry.track('first_group_continue',{step:'next_member',source:'result_first_group',ready_count:1,mentor_rid:'1',target_id:'5968169',direction:'visual',idol_name:'must-not-pass'});
+assert.deepEqual({step:firstGroup.step,source:firstGroup.source,ready_count:firstGroup.ready_count,direction:firstGroup.direction},{step:'next_member',source:'result_first_group',ready_count:1,direction:'visual'});
+assert.equal('idol_name' in firstGroup,false,'first-group funnel events must not expose real-person display names');
+
 console.log('product telemetry: OK');
