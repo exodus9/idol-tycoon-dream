@@ -356,13 +356,13 @@ window.I18N = {
     act_debut:"Round 1",
     act_domestic:"Prelim·Survival",
     act_world:"Debut Final",
-    st_vocal:"Vocal Stage", st_dance:"Performance", st_visual:"Styling", st_charm:"Fan Bond",
+    st_vocal:"Vocal Stage", st_dance:"Performance", st_visual:"Styling", st_charm:"Fan Engagement",
     st_acting:"Rap Stage", st_creative:"Stage Plan", st_mental:"Mental",
     st_creative_short:"Stage Plan", radar_grade:"RUN {g}",
     tr_vocal_t:"Vocal Direction", tr_vocal_d:"key, parts & harmony",
     tr_dance_t:"Performance Plan", tr_dance_d:"blocking & choreo",
     tr_visual_t:"Styling Meeting", tr_visual_d:"wardrobe & moodboard",
-    tr_charm_t:"Fan Bond Plan", tr_charm_d:"content & promises",
+    tr_charm_t:"Fan Engagement Plan", tr_charm_d:"content & promises",
     tr_acting_t:"Rap Direction", tr_acting_d:"flow & part design",
     tr_creative_t:"Stage Planning", tr_creative_d:"concept & arrangement",
     tr_rest_t:"Rest", tr_rest_d:"recover condition", tr_care_t:"Mental Care", tr_care_d:"recover mental 💗",
@@ -638,7 +638,7 @@ window.I18N = {
     act_debut:"1次オーディション",
     act_domestic:"予選·サバイバル",
     act_world:"デビューファイナル",
-    st_vocal:"ボーカル舞台", st_dance:"パフォーマンス", st_visual:"スタイリング", st_charm:"ファンの絆",
+    st_vocal:"ボーカル舞台", st_dance:"パフォーマンス", st_visual:"スタイリング", st_charm:"ファン交流",
     st_acting:"ラップ舞台", st_creative:"舞台企画", st_mental:"メンタル",
     st_creative_short:"舞台企画", radar_grade:"RUN {g}",
     tr_vocal_t:"ボーカル演出", tr_vocal_d:"キー・パート・ハーモニー",
@@ -920,7 +920,7 @@ window.I18N = {
     act_debut:"第一轮试镜",
     act_domestic:"预选·生存",
     act_world:"出道决赛",
-    st_vocal:"主唱舞台", st_dance:"表演设计", st_visual:"造型方案", st_charm:"粉丝羁绊",
+    st_vocal:"主唱舞台", st_dance:"表演设计", st_visual:"造型方案", st_charm:"粉丝互动",
     st_acting:"说唱舞台", st_creative:"舞台企划", st_mental:"心态",
     st_creative_short:"舞台企划", radar_grade:"RUN {g}",
     tr_vocal_t:"主唱导演", tr_vocal_d:"音域·分段·和声",
@@ -1202,7 +1202,7 @@ window.I18N = {
     act_debut:"第一輪試鏡",
     act_domestic:"預選·生存",
     act_world:"出道決賽",
-    st_vocal:"主唱舞台", st_dance:"表演設計", st_visual:"造型方案", st_charm:"粉絲羈絆",
+    st_vocal:"主唱舞台", st_dance:"表演設計", st_visual:"造型方案", st_charm:"粉絲互動",
     st_acting:"饒舌舞台", st_creative:"舞台企劃", st_mental:"心態",
     st_creative_short:"舞台企劃", radar_grade:"RUN {g}",
     tr_vocal_t:"主唱導演", tr_vocal_d:"音域·分段·和聲",
@@ -1482,7 +1482,7 @@ window.I18N = {
     lang_name:"Bahasa Indonesia",t_title:"Project Choeaedol",t_tagline:"Pilih favoritmu, buat panggung baru di setiap RUN,<br>simpan setiap versi sebagai kartu,<br>dan bentuk grup impianmu.",t_continue:"▶ Lanjutkan",t_pick:"Pilih favorit →",t_dex:"📖 Koleksi Akhir",t_league:"🏆 Liga Debut",t_groupdex:"📖 Koleksi Grup",t_hall:"🏅 Catatan RUN",t_intro:"❓ Cara Bermain",
     manual_ok:"Mengerti!",manual_intro_title:"Game apa ini?",manual_intro_body:"<p>Kamu adalah <b>produser</b> agensi baru. Pilih favoritmu, bentuk konsep panggung melalui enam area produksi, lalu lewati audisi survival untuk menyimpan hasilnya sebagai Kartu RUN.</p><div class='mrow'><span class='mi'>🎯</span><span class='mt'>Lewati Audisi, Penyisihan, Survival, dan Final Debut untuk menyelesaikan RUN.</span></div><div class='mrow'><span class='mi'>🎴</span><span class='mt'>Setiap RUN menghasilkan versi berbeda untuk dikoleksi, diperbarui, dan dimasukkan ke grup.</span></div><div class='mrow'><span class='mi'>💞</span><span class='mt'>Penuhi janji bersama fandom dan bawa kenangannya ke RUN berikutnya.</span></div><p>Siap membuat panggung pertamamu?</p>",manual_play_title:"Bagaimana cara bermain?",manual_play_body:"<div class='mrow'><span class='mi'>🎬</span><span class='mt'><b>Produksi</b> — pilih satu dari tiga kartu tiap giliran untuk mengembangkan enam area panggung.</span></div><div class='mrow'><span class='mi'>⚡</span><span class='mt'><b>Stamina</b> — stamina rendah meningkatkan risiko produksi. Istirahat sebelum pilihan menyempit.</span></div><div class='mrow'><span class='mi'>🧠</span><span class='mt'><b>Mental</b> — sisakan cukup tenaga untuk gerbang berikutnya.</span></div><div class='mrow'><span class='mi'>🎲</span><span class='mt'><b>Peristiwa</b> — pilihanmu mengubah RUN, ikatan fandom, dan kartu akhir.</span></div><div class='mrow'><span class='mi'>🏆</span><span class='mt'><b>Gerbang</b> — adu rancangan panggung dan maju ke final.</span></div><p>💡 Fokus pada satu arah atau seimbangkan keenamnya. Semua hasil tersimpan sebagai versi di arsipmu.</p>",
     sel_who:"Dengan siapa kamu membuat RUN ini?",sel_tab_search:"🔍 Cari idola",sel_tab_custom:"✏️ Kustom",sel_search_ph:"Cari nama atau grup",sel_no_result:"Tidak ada hasil. Coba nama lain.",sel_photo:"Unggah foto (opsional)",sel_name_ph:"Nama idola (maks. 10 karakter)",sel_pick_gender:"Pilih gender tampilan",gender_f:"👩 Perempuan",gender_m:"👨 Laki-laki",sel_pick_spec:"Pilih panggung utama RUN ini",sel_start:"Mulai →",sel_start_named:"Buat RUN {name} →",mode_full:"Produksi Penuh",mode_full_sub:"24 giliran · cerita panjang",mode_quick:"Produksi Cepat",mode_quick_sub:"12 giliran · cepat",mode_quick_lock:"Selesaikan satu RUN untuk membuka",mode_quick_locktoast:"Selesaikan RUN pertamamu untuk membuka Produksi Cepat",custom_idol:"Idola Kustom",custom_short:"Kustom",my_idol:"Favoritku",
-    p_fans:"Penggemar",p_cond:"Kondisi",p_week:"GILIRAN {w}",act_debut:"Audisi Pertama",act_domestic:"Penyisihan · Survival",act_world:"Final Debut",st_vocal:"Panggung Vokal",st_dance:"Performa",st_visual:"Penataan Gaya",st_charm:"Ikatan Fandom",st_acting:"Panggung Rap",st_creative:"Konsep Panggung",st_mental:"Mental",st_creative_short:"Konsep",radar_grade:"RUN {g}",
+    p_fans:"Penggemar",p_cond:"Kondisi",p_week:"GILIRAN {w}",act_debut:"Audisi Pertama",act_domestic:"Penyisihan · Survival",act_world:"Final Debut",st_vocal:"Panggung Vokal",st_dance:"Performa",st_visual:"Penataan Gaya",st_charm:"Interaksi Fandom",st_acting:"Panggung Rap",st_creative:"Konsep Panggung",st_mental:"Mental",st_creative_short:"Konsep",radar_grade:"RUN {g}",
     tr_vocal_t:"Produksi Vokal",tr_vocal_d:"nada · bagian · harmoni",tr_dance_t:"Susunan Performa",tr_dance_d:"formasi · koreografi",tr_visual_t:"Rapat Styling",tr_visual_d:"busana · moodboard",tr_charm_t:"Proyek Fandom",tr_charm_d:"konten · janji",tr_acting_t:"Produksi Rap",tr_acting_d:"flow · pembagian bagian",tr_creative_t:"Konsep Panggung",tr_creative_d:"konsep · aransemen",tr_rest_t:"Istirahat",tr_rest_d:"pulihkan stamina",tr_care_t:"Perawatan Mental",tr_care_d:"pulihkan mental 💗",
     fx_vocal:"Menyiapkan vokal",fx_dance:"Menyiapkan performa",fx_visual:"Menyiapkan styling",fx_charm:"Menyiapkan proyek fandom",fx_acting:"Menyiapkan rap",fx_creative:"Menyiapkan konsep",fx_rest:"Beristirahat",j_dbad:"Kacau…",j_fail:"Meleset",j_ok:"Bagus!",j_great:"Sempurna!",j_perfect:"Adegan terbaik! ✨",say_dbad:"Aduh, berantakan… 😵",say_fail:"Hampir… 😥",say_ok:"Bagus! 👍",say_great:"Adegan ini berhasil! 🔥",say_perfect:"Produksi sempurna! ✨ Simpan adegan ini!",
     menu_title:"Menu",menu_settings:"Pengaturan",menu_lang:"Bahasa",menu_save:"Simpan",menu_quit:"Keluar",sfx_on:"🔊 Suara aktif",sfx_off:"🔇 Suara mati",bgm_on:"🎵 Musik aktif",bgm_off:"🎵 Musik mati",menu_saved:"Progres tersimpan! 💾",exit_title:"Keluar dari game?",exit_sub:"Simpan dulu agar RUN ini bisa dilanjutkan.",exit_save:"💾 Simpan dan keluar",exit_quit:"Keluar tanpa menyimpan",exit_cancel:"Batal (lanjut bermain)",leave_title:"Tunggu — sebelum keluar!",leave_sub:"Hasil ini akan hilang jika kamu keluar sekarang.",leave_save:"🔗 Bagikan",leave_go:"Keluar tanpa menyimpan",
@@ -1531,16 +1531,16 @@ window.I18N = {
     });
   };
   normalizeEventAreas(window.I18N.ko,[
-    [/화술/g,'팬 유대'],[/비주얼/g,'스타일링'],[/스타일(?!링)/g,'스타일링'],[/댄스/g,'퍼포먼스'],[/작곡/g,'무대 기획'],[/발성/g,'보컬 무대']
+    [/화술/g,'팬 소통'],[/비주얼/g,'스타일링'],[/스타일(?!링)/g,'스타일링'],[/댄스/g,'퍼포먼스'],[/작곡/g,'무대 기획'],[/발성/g,'보컬 무대']
   ]);
   normalizeEventAreas(window.I18N.en,[
-    [/\bCharm\b/g,'Fan Bond'],[/\bVisual\b/g,'Styling'],[/\bDance\b/g,'Performance'],[/\bComposition\b/g,'Stage Planning'],[/\bCreativity\b/g,'Stage Planning']
+    [/\bCharm\b/g,'Fan Engagement'],[/\bVisual\b/g,'Styling'],[/\bDance\b/g,'Performance'],[/\bComposition\b/g,'Stage Planning'],[/\bCreativity\b/g,'Stage Planning']
   ]);
   normalizeEventAreas(window.I18N.ja,[
-    [/華/g,'ファンの絆'],[/ビジュアル/g,'スタイリング'],[/ダンス/g,'パフォーマンス'],[/作曲/g,'舞台企画']
+    [/華/g,'ファン交流'],[/ビジュアル/g,'スタイリング'],[/ダンス/g,'パフォーマンス'],[/作曲/g,'舞台企画']
   ]);
   normalizeEventAreas(window.I18N.id,[
-    [/\bCharm\b/g,'Fan Bond'],[/\bVisual\b/g,'Styling'],[/\bDance\b/g,'Performance'],[/\bComposition\b/g,'Stage Planning'],[/\bCreativity\b/g,'Stage Planning']
+    [/\bCharm\b/g,'Fan Engagement'],[/\bVisual\b/g,'Styling'],[/\bDance\b/g,'Performance'],[/\bComposition\b/g,'Stage Planning'],[/\bCreativity\b/g,'Stage Planning']
   ]);
   // 선언된 언어들 중 실제 언어팩(I18N)이 존재하는 것만 활성. 팩 추가하면 스위처에 자동 노출.
   // 상용 안전 게이트: RUN 제작 모델로 전량 검수된 언어만 노출한다.

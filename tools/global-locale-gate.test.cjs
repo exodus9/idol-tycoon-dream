@@ -175,7 +175,7 @@ test('event decisions and rewards use the current six production-area names',()=
     for(const [key,value] of rewards) assert.equal(banned.test(String(value)),false,`${locale}.${key} uses a retired production-area label`);
   }
   const ja=boot('ja-JP').I18N.ja;
-  assert.match(ja.ev_birthday_c2,/ファンの絆\+12/);
+  assert.match(ja.ev_birthday_c2,/ファン交流\+12/);
   assert.match(ja.ev_mv_w_d,/スタイリング/);
   assert.match(ja.ev_mv_w_d,/舞台企画/);
 });

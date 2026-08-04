@@ -106,7 +106,18 @@
     return {boost:found,boosts:list.filter(x=>!x.usedAt||at-x.usedAt<7*86400000)};
   }
 
-  const api={kstDay,dayDiff,addDays,nextKstResetAt,state,complete,queueEcho,echoState,claimEcho,pendingEcho,mergeReplyBoost,consume};
+  function firstGroupBridge(input){
+    const p=input&&typeof input==='object'?input:{}, ready=Math.max(0,Number(p.readyCount)||0), groups=Math.max(0,Number(p.groupCount)||0), echo=p.echo;
+    if(!echo||groups>0||ready<1||ready>=3)return null;
+    return {id:`first-group:${echo.id}`,sourceRid:echo.rid,sourceEchoId:echo.id,start:8,createdAt:Number(p.now)||Date.now()};
+  }
+
+  function consumeFirstGroupBridge(bridge,isRetrain,now){
+    if(!bridge||typeof bridge!=='object'||bridge.usedAt||isRetrain)return {boost:null,bridge:bridge||null};
+    return {boost:{start:Math.max(0,Number(bridge.start)||0),sourceRid:bridge.sourceRid,sourceEchoId:bridge.sourceEchoId},bridge:{...bridge,usedAt:Number(now)||Date.now()}};
+  }
+
+  const api={kstDay,dayDiff,addDays,nextKstResetAt,state,complete,queueEcho,echoState,claimEcho,pendingEcho,mergeReplyBoost,consume,firstGroupBridge,consumeFirstGroupBridge};
   root.DailyRetention=api;
   if(typeof module!=='undefined'&&module.exports) module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

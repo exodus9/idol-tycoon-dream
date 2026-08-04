@@ -4,15 +4,18 @@
   let context={};
   let lastScreen='';
   let lastContextKey='';
+  let imageFailures=0;
   const EVENT_FIELDS={
     app_open:['standalone'],screen_view:['screen'],context_received:['has_favorite'],app_locale_applied:['locale'],
+    startup_health:['load_ms','image_failures','native_context'],context_timeout:['wait_ms'],reply_impression:['kind','wait_days'],
     favorite_context_applied:['favorite_id'],favorite_context_change:['source'],favorite_context_unmatched:[],
     fandom_first_contact:['run_id','choice','bond_after'],
+    first_run_gate_protected:['run_id','rank','mode'],
     run_start:['run_id','prev_run_id','reply_run_id','reply_promise_id','source','mode','run_no','retrain','direction','season_edition_target','started_season','promise_id','promise_retry','daily_boost','mentor','mentor_rid'],
     promise_checkpoint:['run_id','promise_id','choice','progress','target','on_track'],mentor_moment:['run_id','run_no','mentor_rid','choice','direction'],stage_strategy:['run_no','strategy','outcome'],promise_result:['run_id','promise_id','status','retry'],
     run_finish:['run_id','prev_run_id','run_no','completed','final_rank','direction','season_edition_completed','season_edition_new','season_edition_best_updated','season_edition_version_added','season_no','card_registered','mentor','mentor_rid','mentor_choice','promise_id','promise_status','promise_retry'],
     result_share:['run_no','method'],season_retrain_click:['season_no','trend_pos','rid','direction','deferred','generic'],group_debut:['member_count','group_grade','total_groups'],season_brief_open:['season_no','previous_season','previous_tier','has_run_proposal','proposal_rid'],
-    daily_complete:['choice','streak','total','milestone'],daily_reply_open:['kind','wait_days','archived'],promise_reply_open:['run_id','promise_id','status','wait_days'],promise_reply_to_retrain:['rid','run_id','promise_id'],
+    daily_complete:['choice','streak','total','milestone'],daily_reply_open:['kind','wait_days','archived','first_group_bridge'],daily_reply_to_scout:['source_rid','start'],promise_reply_open:['run_id','promise_id','status','wait_days'],promise_reply_to_retrain:['rid','run_id','promise_id'],
     run_album_open:['rid','run_count'],run_record_open:['rid','run_id','run_no','promise_status','adopted'],promise_offer:['run_id','option_count','retry','source'],promise_selected:['run_id','promise_id','source','retry','reply_run_id','reply_promise_id'],
     mentor_home_start:['run_id','mentor_rid','target_id'],mentor_select:['run_id','selected','source','mentor_rid'],mentor_offer:['run_id','candidate_count','default_selected'],retrain_started:['rid','run_id','source','direction','promise_id','reply_run_id','reply_promise_id']
   };
@@ -66,7 +69,10 @@
     track('context_received',{has_favorite:!!context.favorite_id});
     return true;
   }
-  function ready(){ nativePost({type:'DREAM_GROUP_READY',data:{version:'2026-08-03'}}); track('app_open',{standalone:!(root.webkit||root.Android)}); }
+  function ready(){ const native=!!(root.webkit||root.Android); nativePost({type:'DREAM_GROUP_READY',data:{version:'2026-08-03'}}); track('app_open',{standalone:!native});
+    if(native) root.setTimeout&&root.setTimeout(()=>{ if(!lastContextKey)track('context_timeout',{wait_ms:2500}); },2500); }
+  root.addEventListener&&root.addEventListener('error',event=>{ try{ if(event&&event.target&&String(event.target.tagName).toUpperCase()==='IMG')imageFailures++; }catch(_){} },true);
+  root.addEventListener&&root.addEventListener('load',()=>track('startup_health',{load_ms:Date.now()-START,image_failures:imageFailures,native_context:!!lastContextKey}));
   root.addEventListener&&root.addEventListener('message',receive);
   const api={track,screen,ready,getContext:()=>({...context})};
   root.ProductTelemetry=api;

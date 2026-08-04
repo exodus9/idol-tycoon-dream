@@ -151,6 +151,18 @@
   .run-direction-effect{margin-top:8px;padding:7px 9px;border-radius:10px;background:rgba(78,112,255,.13);color:#c9d7ff;font-size:10px;line-height:1.35}
   .first-run-plan{display:grid;grid-template-columns:34px minmax(0,1fr);gap:9px;align-items:center;margin-bottom:9px;padding:10px;border-radius:12px;background:linear-gradient(135deg,rgba(255,95,162,.2),rgba(78,112,255,.18));border:1px solid rgba(255,157,207,.38);color:#f8eaff}
   .first-run-plan>span{font-size:23px;text-align:center}.first-run-plan b{display:block;font-size:12px}.first-run-plan small{display:block;margin-top:3px;font-size:9.5px;line-height:1.4;color:#d5c7e8}
+  .first-run-kit{display:grid;grid-template-columns:34px minmax(0,1fr);gap:9px;align-items:center;margin:10px 0;padding:11px 12px;border-radius:13px;background:linear-gradient(135deg,rgba(56,93,205,.2),rgba(255,65,132,.08));border:1px solid rgba(99,132,255,.38)}
+  .first-run-kit>span{font-size:22px;text-align:center}.first-run-kit b{display:block;font-size:11px;color:#aec3ff}.first-run-kit small{display:block;margin-top:3px;font-size:9.5px;line-height:1.45;color:#9eabc0}
+  #s-cardpick.first-run-setup .cardpick-rule{display:none}
+  #s-cardpick.first-run-setup .first-run-plan b{font-size:13px}
+  #s-cardpick.first-run-setup .first-run-plan small,#s-cardpick.first-run-setup .run-direction-head span,#s-cardpick.first-run-setup .promise-head span{font-size:10.5px}
+  #s-cardpick.first-run-setup .advanced-pick summary{font-size:11px}
+  #s-cardpick.first-run-setup .promise-option b{font-size:12px}
+  #s-cardpick.first-run-setup .promise-option small{font-size:10.5px}
+  #s-cardpick.first-run-setup .promise-option em{font-size:10px}
+  #s-cardpick.first-run-setup .promise-effect{display:none}
+  .result-more-actions{margin-top:10px}.result-more-actions summary{cursor:pointer;list-style:none;padding:10px;border:1px solid rgba(255,255,255,.14);border-radius:11px;color:#aeb9ca;font-size:11px;font-weight:900;text-align:center}.result-more-actions summary::-webkit-details-marker{display:none}
+  @media(max-height:780px){#s-cardpick.first-run-setup .first-run-kit{display:none}}
   .advanced-pick{margin-top:8px}.advanced-pick summary{cursor:pointer;list-style:none;padding:7px 9px;border-radius:10px;border:1px solid rgba(255,255,255,.12);color:#b9aeca;font-size:10px;font-weight:800;text-align:center}
   .advanced-pick summary::-webkit-details-marker{display:none}.advanced-pick[open] summary{margin-bottom:8px;color:#fff;border-color:rgba(255,95,162,.45)}
   .res-return-hook{margin:10px 0;padding:12px 13px;border:1px solid rgba(255,211,92,.36);border-radius:14px;background:linear-gradient(135deg,rgba(255,211,92,.1),rgba(255,95,146,.1));text-align:left}
@@ -183,7 +195,8 @@
   .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;
     color:var(--txt);font:inherit;text-align:left;padding:0;width:100%;cursor:pointer;transition:transform .12s,border-color .12s,box-shadow .15s;position:relative;box-shadow:0 6px 16px -10px rgba(0,0,0,.6)}
   .card:active{transform:scale(.97)}
-  .card .ph{width:100%;aspect-ratio:.82;background:#322748 center 22%/cover no-repeat;display:block}
+  .card .ph{position:relative;width:100%;aspect-ratio:.82;background:#322748;overflow:hidden;display:block}
+  .card .ph img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 22%}
   .card .ph::after{content:"";position:absolute;left:0;right:0;top:0;height:56%;background:linear-gradient(180deg,transparent,rgba(20,10,36,.66));pointer-events:none}
   .card .nm{position:relative;padding:7px 10px 3px;font-weight:800;font-size:14.5px;line-height:1.15}
   .card .gp{padding:0 10px 9px;color:var(--sub);font-size:11px}
@@ -1057,7 +1070,7 @@
 <!-- 콘텐츠(다국어·아이돌DB) 갱신 시 v= 날짜를 올려 캐시 무효화 → 재방문 유저에게도 반영 -->
 <script src="storage-journal.js?v=4e2dec8a4b"></script>
 <script src="run-migration.js?v=2160e1c632"></script>
-<script src="daily-retention.js?v=d7cd3127fd"></script>
+<script src="daily-retention.js?v=07088d420d"></script>
 <script src="progress-action.js?v=a280a2c299"></script>
 <script src="mentor-inheritance.js?v=9b37b72298"></script>
 <script src="run-memory.js?v=4e9d4557c3"></script>
@@ -1067,10 +1080,10 @@
 <script src="run-balance-rules.js?v=7e1af59983"></script>
 <script src="stage-criteria.js?v=6d23aaaa14"></script>
 <script src="completion-transaction.js?v=8c3a470bcb"></script>
-<script src="product-telemetry.js?v=216a8e51f6"></script>
+<script src="product-telemetry.js?v=23e1d8566d"></script>
 <script src="run-adoption.js?v=f5ce39d47f"></script>
-<script src="dg-i18n.js?v=0636aa5572"></script>
-<script src="i18n.js?v=9095da3986"></script>
+<script src="dg-i18n.js?v=39cacf3982"></script>
+<script src="i18n.js?v=b295633ad5"></script>
 <script src="idols.js?v=sync202608040520"></script>
 <script>
 // 검색용 아이돌: idols.js의 window.IDOL_DB (최애돌 실데이터 = 활성 아이돌만, 전일 하트투표 순위로 정렬됨). 로드 실패 시 빈 배열.
@@ -1703,7 +1716,7 @@ const Game = {
     if(!list.length){ grid.innerHTML=`<p class="muted" style="grid-column:1/-1;text-align:center;padding:24px">${t("sel_no_result")}</p>`; return; }
     grid.innerHTML = list.map(i=>{
       return `<button type="button" class="card" data-id="${i.id}" data-picked="${esc(dgT('entry.selected'))}" onclick="Game.pick(${i.id},'user')">
-        <span class="ph" style="background-image:url('${i.img}')"></span>
+        <span class="ph"><img src="${i.img}" alt="" loading="lazy" decoding="async"></span>
         <div class="nm">${esc(idolName(i))}</div>
         <div class="gp">${esc(idolGrp(i))}</div>
       </button>`;}).join("");
@@ -1843,6 +1856,7 @@ const Game = {
     let inheritedBond=8;
     if(retrainRid){ const prev=DG.rosterById(retrainRid); if(prev) inheritedBond=Math.min(45,Math.max(8,Math.round((prev.fanBond||8)*.55))); }
     const dailyBoost=retrainRid?DG.takeDailyBoost(retrainRid):null;
+    const firstGroupBoost=!retrainRid?DG.takeFirstGroupBridge():null;
     if(dailyBoost&&dailyBoost.bond) inheritedBond=Math.min(60,inheritedBond+dailyBoost.bond);
     let runNo=1; try{ DG.load(); runNo=Math.max(1,(DG.data.runs||0)+1); }catch(e){}
     const runId=this.pendingRunId||newRunId(), replySource=this.replyPromiseSource, replyLink=window.RunMemory?RunMemory.replyLink(replySource):{}; let prevRunId=''; try{ prevRunId=localStorage.getItem('dg_last_finished_run_id')||''; }catch(e){}
@@ -1858,6 +1872,8 @@ const Game = {
     if(retrainRid){ const prev=DG.rosterById(retrainRid); if(prev){ const im=DG.idolCardMeta(prev), inherit=4+im.star*3;
       STATS.forEach(x=>this.st[x.k]=(this.st[x.k]||0)+inherit); this.st.idolCardInherit=inherit; } }
     if(dailyBoost&&dailyBoost.start){ this.st[runDirection]=(this.st[runDirection]||0)+dailyBoost.start; this.st.dailyStart=dailyBoost.start; }
+    if(firstGroupBoost&&firstGroupBoost.start){ this.st[runDirection]=(this.st[runDirection]||0)+firstGroupBoost.start; this.st.firstGroupStart=firstGroupBoost.start;
+      try{ ProductTelemetry.track('daily_reply_to_scout',{source_rid:String(firstGroupBoost.sourceRid||''),start:firstGroupBoost.start}); }catch(e){} }
     { const _e=DG.effOf(DG.equipped); this.st.cardGrowth=1+(_e.growth||0); this.st.cardGate=1+(_e.gate||0);
       this.st.condSave=_e.condSave||0; this.st.mentalSave=_e.mentalSave||0; this.st.earlyGrow=_e.earlyGrow||0; }   // 특수효과: SSR/UR 배수 + N 성향(개근/긍정/근성)
     // 학원마스식 성장 비포/애프터: 첫날 스탯 스냅샷(카드 보정 포함) → 결과 레이더에 회색 고스트로 "첫날의 너 vs 지금"
@@ -6402,6 +6418,7 @@ window.addEventListener("popstate", ()=>{
     goDaily(){ this.load(); this.renderDaily(); show('s-daily'); },
     renderDaily(){ const box=document.getElementById('dailyBody'), head=document.getElementById('dailyHead'); if(!box)return;
       const state=this.dailyState(), fav=this.dailyFavorite(), echoState=this.dailyEchoState(), ready=echoState.ready, revealed=echoState.revealed;
+      if(ready&&this._dailyReplyImpressionId!==ready.id){ this._dailyReplyImpressionId=ready.id; try{ProductTelemetry.track('reply_impression',{kind:ready.kind,wait_days:this.dayDiff(state.today,ready.fromDay)});}catch(e){} }
       if(head) head.textContent=ready?dgT('daily.headReply'):(state.done?dgT('daily.headDone'):dgT('daily.headStreak',{streak:state.streak}));
       if(!fav){ box.innerHTML=`<div class="daily-locked"><img src="assets/mascot.png" alt="CHOEAEDOL"><h3>${dgT('daily.lockedTitle')}</h3>
           <p>${dgT('daily.lockedCopy')}</p><button class="btn" style="margin-top:13px" onclick="Game.goSelect()">${dgT('daily.lockedCta')}</button></div>`; return; }
@@ -6412,7 +6429,7 @@ window.addEventListener("popstate", ()=>{
         <div class="daily-idol">${this.idolCardHTML(fav,{favorite:true})}</div>
         <div class="daily-streak"><b>${dgT('daily.streak',{streak:state.streak})}</b><span>${dgT('daily.streakReward')}</span><div class="daily-dots">${weekDots}</div></div></div>`;
       let replyOpen='';
-      if(revealed){ const rf=this.rosterById(revealed.rid)||{rid:revealed.rid,name:revealed.idolName||dgT('daily.previousIdol'),_fandomName:revealed.fandomName||dgT('daily.genericFandom')}, rm=this.dailyEchoCopy(revealed.kind,rf,!!revealed.archivedReward,revealed), promiseReply=String(revealed.kind||'').startsWith('promise:'); if(rm) replyOpen=`<div class="daily-reply open"><div class="daily-reply-row"><img src="${rm.img}" alt=""><div><div class="daily-reply-kicker">${esc(rm.kicker)} · OPENED</div><h3>${esc(rm.title)}</h3></div></div><p>${esc(rm.text)}${promiseReply?'':esc(dgT('daily.openedExtra'))}</p><div class="daily-reply-reward"><span>${dgT(promiseReply?'daily.openedPromiseReward':'daily.openedChoiceReward')}</span><b>${esc(rm.reward)}</b></div></div>${promiseReply&&this.rosterById(revealed.rid)?`<button class="btn" style="margin:10px 0 2px;width:100%" onclick="DG.retrainFromPromiseReply(${revealed.rid},'${encodeURIComponent(revealed.runId||'')}','${encodeURIComponent(revealed.promiseId||'')}')">${dgT(revealed.promiseStatus==='failed'?'daily.promiseRetry':'daily.promiseContinue')}</button>`:''}`; }
+      if(revealed){ const rf=this.rosterById(revealed.rid)||{rid:revealed.rid,name:revealed.idolName||dgT('daily.previousIdol'),_fandomName:revealed.fandomName||dgT('daily.genericFandom')}, rm=this.dailyEchoCopy(revealed.kind,rf,!!revealed.archivedReward,revealed), promiseReply=String(revealed.kind||'').startsWith('promise:'), bridge=this.data.firstGroupBridge&&!this.data.firstGroupBridge.usedAt; if(rm) replyOpen=`<div class="daily-reply open"><div class="daily-reply-row"><img src="${rm.img}" alt=""><div><div class="daily-reply-kicker">${esc(rm.kicker)} · OPENED</div><h3>${esc(rm.title)}</h3></div></div><p>${esc(rm.text)}${promiseReply?'':esc(dgT('daily.openedExtra'))}</p><div class="daily-reply-reward"><span>${dgT(promiseReply?'daily.openedPromiseReward':'daily.openedChoiceReward')}</span><b>${esc(rm.reward)}</b></div>${bridge?`<div class="daily-reply-reward"><span>FIRST GROUP</span><b>${dgT('daily.firstGroupBridge')}</b></div>`:''}</div>${bridge?`<button class="btn" style="margin:10px 0 2px;width:100%" onclick="Game.goSelect()">${dgT('daily.firstGroupBridgeCta')}</button>`:promiseReply&&this.rosterById(revealed.rid)?`<button class="btn" style="margin:10px 0 2px;width:100%" onclick="DG.retrainFromPromiseReply(${revealed.rid},'${encodeURIComponent(revealed.runId||'')}','${encodeURIComponent(revealed.promiseId||'')}')">${dgT(revealed.promiseStatus==='failed'?'daily.promiseRetry':'daily.promiseContinue')}</button>`:''}`; }
       let action='';
       if(ready){ const rf=this.rosterById(ready.rid)||{rid:ready.rid,name:ready.idolName||dgT('daily.previousIdol'),_fandomName:ready.fandomName||dgT('daily.genericFandom')}, rm=this.dailyEchoCopy(ready.kind,rf,false,ready), replySource=dgT(String(ready.kind).startsWith('promise:')?'daily.replyScene':'daily.replyChoice');
         action=rm?`<div class="daily-reply"><div class="daily-reply-row"><img src="${rm.img}" alt=""><div><div class="daily-reply-kicker">${esc(rm.kicker)} · ARRIVED</div><h3>${dgT('daily.replyArrivedTitle',{name:esc(rf.name),source:replySource})}</h3></div></div><p>${dgT('daily.replyReadyCopy')}</p><div class="daily-reply-reward"><span>${dgT('daily.receivedAt',{date:esc(ready.revealDay)})}</span><b>${dgT('daily.combinedReward')}</b></div></div><button class="btn" style="margin-top:10px;width:100%" onclick="DG.claimDailyEcho()">${dgT('daily.openReply')}</button>`:'';
@@ -6452,11 +6469,14 @@ window.addEventListener("popstate", ()=>{
         try{ ProductTelemetry.track('daily_reply_open',{kind:echo.kind,wait_days:this.dayDiff(state.today,echo.fromDay),archived:true}); toast(dgT('daily.archivedToast')); }catch(e){} this.renderDaily(); return; }
       const meta=this.dailyEchoCopy(echo.kind,fav,false,echo); if(!meta)return;
       this.data.dailyBoosts=DailyRetention.mergeReplyBoost(this.data.dailyBoosts,echo,meta.boost,state.today);
+      const readyCount=(this.data.roster||[]).filter(r=>this.isEligibleRosterMember(r)).length;
+      const bridge=DailyRetention.firstGroupBridge({echo,readyCount,groupCount:(this.data.groups||[]).length});
+      if(bridge)this.data.firstGroupBridge=bridge;
       fav.fanBond=Math.min(100,Math.max(8,Math.round((fav.fanBond||8)+3)));
       if(!Array.isArray(this.data.bondHistory))this.data.bondHistory=[];
       this.data.bondHistory.push({rid:fav.rid,day:state.today,kind:`reply-${echo.kind}`,text:dgT('daily.replyHistory',{fandom:fandomOf(fav).name,bond:fav.fanBond})});
       this.data.bondHistory=this.data.bondHistory.slice(-40); this.data.dailyEchoes=claimed.echoes; this.persist();
-      try{ ProductTelemetry.track('daily_reply_open',{kind:echo.kind,wait_days:this.dayDiff(state.today,echo.fromDay)}); }catch(e){}
+      try{ ProductTelemetry.track('daily_reply_open',{kind:echo.kind,wait_days:this.dayDiff(state.today,echo.fromDay),first_group_bridge:!!bridge}); }catch(e){}
       if(String(echo.kind||'').startsWith('promise:'))try{ ProductTelemetry.track('promise_reply_open',{run_id:echo.runId||'',promise_id:echo.promiseId||'',status:echo.promiseStatus||'',wait_days:this.dayDiff(state.today,echo.fromDay)}); }catch(e){}
       try{ sfx('fanfare'); if(Game.confetti)Game.confetti(54,false); toast(dgT('daily.revealToast',{reward:meta.reward})); }catch(e){}
       this.renderDaily();
@@ -6471,6 +6491,8 @@ window.addEventListener("popstate", ()=>{
     },
     takeDailyBoost(rid){ this.load(); const used=DailyRetention.consume(this.data.dailyBoosts,rid); if(!used.boost)return null;
       this.data.dailyBoosts=used.boosts; this.persist(); return used.boost; },
+    takeFirstGroupBridge(){ this.load(); const used=DailyRetention.consumeFirstGroupBridge(this.data.firstGroupBridge,false); if(!used.boost)return null;
+      this.data.firstGroupBridge=used.bridge; this.persist(); return used.boost; },
     goAchv(){ this.load(); this.checkAchv(); this.data.achvViewed=this.achvDone(); this.persist(); this.renderAchv(); show('s-achv'); },   // 메뉴 도트 해제 기준
     showMenu(){ this.load(); const m=document.getElementById('menuAchv'); if(m){ try{ m.textContent=this.achvDone()+' / '+ACHV.length; }catch(e){} }
       const md=document.getElementById('menuDaily'); if(md){ const ds=this.dailyState(), er=this.dailyEchoState().ready; md.textContent=er?dgT('menu.reply'):(ds.done?dgT('menu.done',{streak:ds.streak}):dgT('menu.available')); }
@@ -6917,9 +6939,10 @@ window.addEventListener("popstate", ()=>{
       const nextAction=this.progressAction(idolR);
       const readyCount=(this.data.roster||[]).filter(r=>this.isEligibleRosterMember(r)).length, gi=this.groupInfo(), rep=this.repGroup();
       const actionLabel=nextAction.kind==='scout'?dgT('result.actionScout',{count:readyCount}):nextAction.kind==='lineup'?dgT('result.actionLineup',{count:readyCount}):nextAction.kind==='debut'?dgT('result.actionDebut',{count:gi.n}):nextAction.kind==='battle'?dgT('result.actionBattle',{name:esc(rep?rep.name:'GROUP')}):nextAction.kind==='promiseRetry'?dgT('result.actionPromiseRetry',{name:esc(idolR?idolR.name:'IDOL')}):dgT('result.actionRetry',{name:esc(idolR?idolR.name:'IDOL')});
-      let returnHook='';
+      let returnHook='', returnPriority=false;
       try{
         const reply=this.dailyEchoState().ready, daily=this.dailyState();
+        returnPriority=!!reply||!daily.done;
         const unlockTime=this.replyUnlockLabel();
         returnHook=reply
           ? `<div class="res-return-hook"><b>💌 ${dgT('result.returnReplyTitle')}</b><span>${dgT('result.returnReplyCopy')}</span><button type="button" onclick="DG.goDaily()">${dgT('result.returnReplyButton')}</button></div>`
@@ -6938,17 +6961,19 @@ window.addEventListener("popstate", ()=>{
         ${this.idolCardHTML(idolR,{cls:'result-idol-card',state:idolR.incomplete?'incomplete':(keptAfterFail||!res.adopted?'complete':'new'),onclick:`DG.showRosterDetail(${idolR.rid})`})}
         <div class="res-card-copy"><b>${dgT(idolR.incomplete?'result.cardIncomplete':keptAfterFail||!res.adopted?'result.cardKept':'result.cardSaved',{name:esc(idolR.name)})}</b><span>${dgT(idolR.incomplete?'result.cardIncompleteCopy':keptAfterFail||!res.adopted?'result.cardKeptCopy':this.idolCardMeta(idolR).star>=5?'result.cardMax':'result.cardNext',{goal:this.idolNextGoal(this.idolCardMeta(idolR))})}</span></div>
       </div>`:'';
+      const progressButtons=`<button class="btn" onclick="${nextAction.on}" style="margin-top:10px">${actionLabel}</button>
+        ${idolR&&!['promiseRetry','retry','retrain'].includes(nextAction.kind)?`<button class="btn ghost" onclick="DG.retrain(${idolR.rid})" style="margin-top:9px">🔥 ${dgT('result.retrainCta',{name:esc(idolR.name)})}</button>`:''}
+        ${res.debuted?`<button class="btn ghost" onclick="${idolGroup?'DG.showBattleLobby()':'DG.goRoster()'}" style="margin-top:9px">${idolGroup?dgT('result.groupCheck',{name:esc(idolGroup.name)}):dgT('result.archive')}</button>`:''}
+        ${nextAction.kind!=='scout'?`<button class="btn ghost" onclick="Game.goSelect()" style="margin-top:9px">${dgT('result.newIdol')}</button>`:''}`;
       box.innerHTML=`<div class="dg-res">${rec}<div class="dg-res-slot">${completionSummary}${gradeExplain}</div>${thanks}
         ${returnHook}
         ${idolReveal}
+        ${memoryResult}${bondResult}
         <div class="dg-res-cards"><b>${dgT('result.supportTitle')}</b><div class="dg-chips" style="margin-top:6px">${chips}</div></div>
-        ${seasonResult}${memoryResult}${bondResult}
+        ${seasonResult}
         ${titleChips}
         ${goalPull}
-        <button class="btn" onclick="${nextAction.on}" style="margin-top:10px">${actionLabel}</button>
-        ${idolR&&!['promiseRetry','retry','retrain'].includes(nextAction.kind)?`<button class="btn ghost" onclick="DG.retrain(${idolR.rid})" style="margin-top:9px">🔥 ${dgT('result.retrainCta',{name:esc(idolR.name)})}</button>`:''}
-        ${res.debuted?`<button class="btn ghost" onclick="${idolGroup?'DG.showBattleLobby()':'DG.goRoster()'}" style="margin-top:9px">${idolGroup?dgT('result.groupCheck',{name:esc(idolGroup.name)}):dgT('result.archive')}</button>`:''}
-        ${nextAction.kind!=='scout'?`<button class="btn ghost" onclick="Game.goSelect()" style="margin-top:9px">${dgT('result.newIdol')}</button>`:''}</div>`;
+        ${returnPriority?`<details class="result-more-actions"><summary>${dgT('result.otherActions')}</summary>${progressButtons}</details>`:progressButtons}</div>`;
       if(res.debuted) setTimeout(()=>{ try{toast(dgT('result.rosterToast'));}catch(e){} }, 450);
       setTimeout(()=>{ try{ this.checkAchv(); }catch(e){} }, 1400);   // #7 완주 직후 업적 토스트
     },
@@ -6980,7 +7005,7 @@ window.addEventListener("popstate", ()=>{
         try{ ProductTelemetry.track('promise_offer',{run_id:Game.pendingRunId||'',option_count:list.length,retry:!!selected.retryOf,source}); ProductTelemetry.track('promise_selected',{run_id:Game.pendingRunId||'',promise_id:selected.id,source,retry:!!selected.retryOf,...RunMemory.replyLink(Game.replyPromiseSource)}); }catch(e){} }
       const linkedFromRecord=Game.replyPromiseSource&&Game.replyPromiseSource.source==='run_record';
       const firstRun=BeginnerFlow.isFirstRun(this.data,Game._retrainRid), optionHtml=p=>{ const v=this.runPromiseView(p); return `<button type="button" class="promise-option ${selected&&selected.id===p.id?'on':''}" onclick="DG.selectRunPromise('${esc(p.id)}')"><span class="po-ic">${p.icon}</span><span><b>${esc(v.title)}</b><small>${esc(v.copy)}</small><em>${dgT('setup.promiseGoal',{goal:esc(v.goal)})} / ${esc(v.tradeoff)}</em></span></button>`; };
-      const promiseOptions=firstRun?`${optionHtml(selected)}${list.length>1?`<details class="advanced-pick"><summary>${dgT('setup.promiseRetry')}</summary><div class="promise-options">${list.filter(p=>p.id!==selected.id).map(optionHtml).join('')}</div></details>`:''}`:`<div class="promise-options">${list.map(optionHtml).join('')}</div>`;
+      const promiseOptions=firstRun?`${optionHtml(selected)}${list.length>1?`<details class="advanced-pick"><summary>${dgT('setup.otherPromises')}</summary><div class="promise-options">${list.filter(p=>p.id!==selected.id).map(optionHtml).join('')}</div></details>`:''}`:`<div class="promise-options">${list.map(optionHtml).join('')}</div>`;
       const selectedView=this.runPromiseView(selected);
       box.innerHTML=`<div class="promise-pick"><div class="promise-head"><b>${dgT('setup.promiseTitle')}</b><span>${linkedFromRecord?dgT('setup.recordPromiseSource'):dgT('setup.promiseCopy')}</span></div>${promiseOptions}
         <div class="promise-effect">${dgT('setup.promiseGoal',{goal:`<b>${esc(selectedView.goal)}</b>`})}<br>${dgT('setup.promiseCopy')}</div></div>`;
@@ -7036,6 +7061,7 @@ window.addEventListener("popstate", ()=>{
     renderMentorPick(){
       const box=document.getElementById('mentorPick'); if(!box)return;
       const list=this.mentorCandidates();
+      if(BeginnerFlow.isFirstRun(this.data,Game._retrainRid)){ box.innerHTML=''; return; }
       if(!list.length){ box.innerHTML=`<div class="mentor-pick"><div class="mentor-head"><b>${dgT('setup.mentorTitle')}</b><span>${dgT('setup.mentorCopy')}</span></div><div class="mentor-empty">${BeginnerFlow.isFirstRun(this.data,Game._retrainRid)?dgT('run.firstProtection'):dgT('setup.mentorEmpty')}</div></div>`; return; }
       const selected=list.find(x=>String(x.rid)===String(Game.mentorRid));
       box.innerHTML=`<div class="mentor-pick"><div class="mentor-head"><b>${dgT('setup.mentorTitle')} · ${list.length}</b><span>${dgT('setup.mentorCopy')}</span></div><div class="mentor-strip">
@@ -7104,16 +7130,18 @@ window.addEventListener("popstate", ()=>{
       const runs=Math.max(1,(rr&&rr.runs)||1);
       const total=Game.trainMode==='quick'?12:24;
       const firstRun=BeginnerFlow.isFirstRun(this.data,Game._retrainRid);
+      const setupScreen=document.getElementById('s-cardpick'); if(setupScreen) setupScreen.classList.toggle('first-run-setup',firstRun);
       if(hero){
         const draft=rr||{name:idolName(idol),img:idol.img,grade:'?',runs:1,stats:{}};
         const im=rr?this.idolCardMeta(rr):null;
         const photo=this.idolCardHTML(draft,{cls:'cph-idol-card',state:'training'});
         const trend=this.currentTrend()||{}, trendKey=TREND_STAT[trend.pos]||'vocal', seasonLabel=`S${this.seasonNo()+1}`;
         const ownedEdition=rr?this.seasonEditionOf(rr.rid,this.seasonNo()):null;
-        const editionPreview=Game.runDirection===trendKey?`<div class="season-edition-preview"><b>${esc(trend.ic||'🎬')} ${dgT('setup.seasonEdition',{season:seasonLabel})}</b><span>${dgT(ownedEdition?'setup.editionOwned':'setup.editionUnowned')}</span></div>`:'';
+        const editionPreview=!firstRun&&Game.runDirection===trendKey?`<div class="season-edition-preview"><b>${esc(trend.ic||'🎬')} ${dgT('setup.seasonEdition',{season:seasonLabel})}</b><span>${dgT(ownedEdition?'setup.editionOwned':'setup.editionUnowned')}</span></div>`:'';
         const directionButtons=`<div class="specpick">${STATS.map(s=>`<button type="button" class="sp ${Game.runDirection===s.k?'on':''}" onclick="DG.setRunDirection('${s.k}')"><span class="spico">${s.ico}</span>${esc(t('st_'+s.k))}${s.k===trendKey?`<small>${dgT('setup.seasonEdition',{season:seasonLabel})}</small>`:'<small>&nbsp;</small>'}</button>`).join('')}</div>`;
-        const firstPlan=firstRun&&Game.runDirection?`<div class="first-run-plan"><span>✨</span><div><b>${dgT('setup.recommend')} · ${esc(t('st_'+Game.runDirection))}</b><small>${dgT('run.firstProtection')}</small></div></div>`:'';
-        const directionPick=`<div class="run-direction"><div class="run-direction-head"><b>${dgT('setup.directionTitle')}</b><span>${dgT('setup.directionCopy')}</span></div>${firstPlan}${firstRun?`<details class="advanced-pick"><summary>${dgT('select.direction')}</summary>${directionButtons}</details>`:directionButtons}${Game.runDirection?`<div class="run-direction-effect"><b>${dgT('setup.directionEffect',{direction:esc(t('st_'+Game.runDirection)),bonus:18})}</b> · ×1.22 · 18%${Game.runDirection===trendKey?' · ×1.25':''}</div>`:''}${editionPreview}</div>`;
+        const firstPlan=firstRun&&Game.runDirection?`<div class="first-run-plan"><span>✨</span><div><b>${dgT('setup.firstPlan')} · ${esc(t('st_'+Game.runDirection))}</b><small>${dgT('run.firstProtection')}</small></div></div>`:'';
+        const directionEffect=Game.runDirection?`<div class="run-direction-effect"><b>${firstRun?dgT('setup.firstDirectionEffect'):dgT('setup.directionEffect',{direction:esc(t('st_'+Game.runDirection)),bonus:18})}</b>${firstRun?'':` · ×1.22 · 18%${Game.runDirection===trendKey?' · ×1.25':''}`}</div>`:'';
+        const directionPick=`<div class="run-direction"><div class="run-direction-head"><b>${dgT('setup.directionTitle')}</b><span>${dgT('setup.directionCopy')}</span></div>${firstPlan}${firstRun?`<details class="advanced-pick"><summary>${dgT('setup.changeDirection')}</summary>${directionButtons}</details>`:directionButtons}${directionEffect}${editionPreview}</div>`;
         hero.innerHTML=`${photo}<div class="cph-copy"><div class="cph-kicker">${Game._retrainRid?'IDOL CARD UPGRADE':'NEW IDOL CARD'}</div>
           <div class="cph-name">${esc(idolName(idol)||'IDOL')}</div>
           <div class="cph-run">${Game._retrainRid?`RUN ${runs+1} · MENTOR +${4+(im?im.star:1)*3} · ${im&&im.star>=5?'MAX RUN':this.idolNextGoal(im)}`:dgT('setup.cardPending')}</div>
@@ -7124,7 +7152,7 @@ window.addEventListener("popstate", ()=>{
       this.renderRunPromisePick();
       this.renderMentorPick();
       // 지원카드는 아이돌 카드 성장을 돕는 장비. 탭=장착 토글(최대 2).
-      box.innerHTML=`${types.length>1?`<button class="btn ghost pick-reco" onclick="DG.pickBest()">✨ ${dgT('setup.recommend')}${this.equipped.length?' ✓':''}</button>`:''}
+      box.innerHTML=firstRun?`<div class="first-run-kit"><span>🎴</span><div><b>${dgT('setup.firstKitTitle')}</b><small>${dgT('setup.firstKitCopy')}</small></div></div>`:`${types.length>1?`<button class="btn ghost pick-reco" onclick="DG.pickBest()">✨ ${dgT('setup.recommend')}${this.equipped.length?' ✓':''}</button>`:''}
       ${types.length?'':`<div class="empty-support-promise"><b>${dgT('setup.firstOpeningCard')}</b><span>${dgT('setup.firstSupportCard')}</span><small>${dgT('run.firstProtection')}</small></div>`}
       <div class="tgrid two" style="margin-top:10px">${types.map(id=>{ const bs=this.bestStar(id);
         const ct=this.consumeTarget(id), dur=ct?this.durLeft(id,ct):0;

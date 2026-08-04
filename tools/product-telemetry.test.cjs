@@ -22,6 +22,14 @@ assert.equal(Telemetry.track('INVALID EVENT',{}),null);
 assert.equal(Telemetry.track('unknown_but_valid_name',{mode:'quick'}),null,'unknown events must not cross the bridge');
 assert.ok(global.dataLayer.some(x=>x.event==='dream_group_run_start'));
 
+const protectedGate=Telemetry.track('first_run_gate_protected',{run_id:'run-1',rank:4,mode:'quick',user_id:'must-not-pass'});
+assert.equal(protectedGate.event,'first_run_gate_protected');
+assert.equal(protectedGate.rank,4);
+assert.equal('user_id' in protectedGate,false);
+const startup=Telemetry.track('startup_health',{load_ms:820,image_failures:1,native_context:true,token:'must-not-pass'});
+assert.deepEqual({load_ms:startup.load_ms,image_failures:startup.image_failures,native_context:startup.native_context},{load_ms:820,image_failures:1,native_context:true});
+assert.equal('token' in startup,false);
+
 assert.equal(Telemetry._receiveForTest({source:{},data:{type:'DREAM_GROUP_CONTEXT',data:{user_id:'forged',favorite_id:999}}}),false,'another frame/source must not replace app context');
 assert.equal(Telemetry._receiveForTest({source:globalThis,data:{type:'DREAM_GROUP_CONTEXT',data:{favorite_id:999}}}),false,'origin-less context must be rejected');
 Telemetry._receiveForTest({source:globalThis,origin:'https://game.local',data:{type:'DREAM_GROUP_CONTEXT',data:{user_id:'must-not-pass',favorite_id:7,favorite_name:'예준',profile:{private:true},token:'must-not-pass',jwt:'must-not-pass',credential:'must-not-pass',secret:'must-not-pass'}}});

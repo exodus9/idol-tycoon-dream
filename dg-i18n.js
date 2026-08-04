@@ -168,6 +168,14 @@
   Object.assign(PACKS.ja, {'setup.pickDirectionFirst':'今回のRUNの核となるステージを先に選んで。','support.equippedToast':'✨ {cards} を装備','support.maxTwo':'サポートカードは最大2枚まで装備できる。'});
   Object.assign(PACKS.id, {'setup.pickDirectionFirst':'Pilih panggung utama RUN ini terlebih dahulu.','support.equippedToast':'✨ {cards} dipasang','support.maxTwo':'Maksimal 2 Kartu Dukungan dapat dipasang.'});
   Object.assign(PACKS.ko, {'setup.pickDirectionFirst':'이번 RUN 핵심 무대를 먼저 골라줘.','support.equippedToast':'✨ {cards} 장착!','support.maxTwo':'지원 카드는 최대 2장까지 장착할 수 있어.'});
+  Object.assign(PACKS.en, {'setup.firstPlan':'First RUN recommended plan','setup.firstDirectionEffect':'Recommended direction selected · matching card guaranteed in the opening hand','setup.firstKitTitle':'Your first RUN kit is ready','setup.firstKitCopy':'No deck setup yet. Finish this RUN to keep your first Support Card.','setup.changeDirection':'Change recommended direction','setup.otherPromises':'See other promises','result.otherActions':'Other choices'});
+  Object.assign(PACKS.ja, {'setup.firstPlan':'初回RUNおすすめプラン','setup.firstDirectionEffect':'おすすめ方向を選択済み・最初の手札に同じ領域のカードを保証','setup.firstKitTitle':'初回RUNキット準備完了','setup.firstKitCopy':'デッキ設定はまだ不要。完走すると最初のサポートカードが残る。','setup.changeDirection':'おすすめ方向を変更','setup.otherPromises':'ほかの約束を見る','result.otherActions':'ほかの選択'});
+  Object.assign(PACKS.id, {'setup.firstPlan':'Rencana rekomendasi RUN pertama','setup.firstDirectionEffect':'Arah rekomendasi dipilih · kartu yang cocok dijamin di tangan awal','setup.firstKitTitle':'Perlengkapan RUN pertamamu siap','setup.firstKitCopy':'Belum perlu mengatur deck. Selesaikan RUN untuk menyimpan Kartu Dukungan pertamamu.','setup.changeDirection':'Ubah arah rekomendasi','setup.otherPromises':'Lihat janji lain','result.otherActions':'Pilihan lain'});
+  Object.assign(PACKS.ko, {'setup.firstPlan':'첫 RUN 추천 플랜','setup.firstDirectionEffect':'추천 방향 선택 완료 · 첫 손패에 같은 영역 카드 보장','setup.firstKitTitle':'첫 RUN 준비는 끝났어','setup.firstKitCopy':'지금은 덱을 고를 필요 없어. 완주하면 첫 지원 카드가 남아.','setup.changeDirection':'추천 방향 바꾸기','setup.otherPromises':'다른 약속 보기','result.otherActions':'다른 선택 보기'});
+  Object.assign(PACKS.en, {'daily.firstGroupBridge':'Your favorite’s reply gives the next member +8 starting preparation.','daily.firstGroupBridgeCta':'Pass the cheer to the next member'});
+  Object.assign(PACKS.ja, {'daily.firstGroupBridge':'推しからの返事で、次のメンバーの開始準備 +8。','daily.firstGroupBridgeCta':'次のメンバーへ応援をつなぐ'});
+  Object.assign(PACKS.id, {'daily.firstGroupBridge':'Balasan favoritmu memberi anggota berikutnya +8 persiapan awal.','daily.firstGroupBridgeCta':'Teruskan dukungan ke anggota berikutnya'});
+  Object.assign(PACKS.ko, {'daily.firstGroupBridge':'최애의 답장이 다음 멤버 시작 준비 +8로 이어져.','daily.firstGroupBridgeCta':'응원을 다음 멤버에게 잇기'});
   Object.assign(PACKS.en, {'run.combo':'🔥 {count} combo'});
   Object.assign(PACKS.ja, {'run.combo':'🔥 {count}連続'});
   Object.assign(PACKS.id, {'run.combo':'🔥 Kombo {count}'});

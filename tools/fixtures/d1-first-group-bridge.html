@@ -1,0 +1,26 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>html,body,iframe{margin:0;width:100%;height:100%;border:0;background:#050914}iframe{display:block}output{position:fixed;z-index:20;right:4px;top:4px;padding:3px 5px;background:#000;color:#0f0;font:9px monospace;pointer-events:none}</style>
+<script>
+  const pid='d1-first-group-bridge-v1', now=Date.now();
+  const kst=new Date(now+9*3600000);
+  const today=`${kst.getUTCFullYear()}-${String(kst.getUTCMonth()+1).padStart(2,'0')}-${String(kst.getUTCDate()).padStart(2,'0')}`;
+  const yesterdayDate=new Date(Date.UTC(kst.getUTCFullYear(),kst.getUTCMonth(),kst.getUTCDate()-1));
+  const yesterday=`${yesterdayDate.getUTCFullYear()}-${String(yesterdayDate.getUTCMonth()+1).padStart(2,'0')}-${String(yesterdayDate.getUTCDate()).padStart(2,'0')}`;
+  const roster=[{rid:1,idkey:'i:5968168',name:'예준',grp:'플레이브',cat:'M',img:'',runDirection:'vocal',stats:{vocal:300,acting:220,dance:240,visual:260,charm:280,creative:210},grade:'B',fans:9000,fanBond:32,runs:1,progressRuns:1,joinedAt:now-864e5}];
+  const echoId=`${yesterday}:1:letter`;
+  const data={v:5,roster,runRecords:[],slots:[{sid:1,type:'leader'},{sid:2,type:'center'},{sid:3,type:'dancer'}],slotSeq:3,lineup:{},groups:[],groupSeq:0,cards:{},newCards:{},ridSeq:1,runs:1,favRid:1,mic:5,micAt:now,agency:{name:'네온 엔터',logo:'🌟'},daily:{lastDay:yesterday,streak:1,total:1,choice:'letter'},dailyBoosts:[{id:echoId,rid:1,kind:'letter',day:yesterday,awaitingReply:true,bond:6}],dailyEchoes:[{id:echoId,rid:1,kind:'letter',fromDay:yesterday,revealDay:today,idolName:'예준',fandomName:'플리'}],bondHistory:[]};
+  localStorage.setItem('idol_pid',pid);
+  localStorage.setItem(`dg_save_${pid}`,JSON.stringify(data));
+  localStorage.removeItem('idol_save');
+  localStorage.setItem('idol_seen_intro','1');
+  localStorage.setItem('dg_tut_v2',JSON.stringify({active:false,off:true,done:{}}));
+  function boot(frame){
+    setTimeout(()=>{ try{ frame.contentWindow.eval('DG.goDaily()'); }catch(error){ document.body.dataset.bootError=String(error); } },1800);
+    setInterval(()=>{ try{ const w=frame.contentWindow, state=w.eval('({screen:document.querySelector(".screen.on")?.id||"-",boost:Game.st&&Game.st.firstGroupStart||0,used:!!(DG.data.firstGroupBridge&&DG.data.firstGroupBridge.usedAt)})'), out=document.querySelector('output');
+      out.textContent=`screen=${state.screen} boost=${state.boost} used=${state.used?'yes':'no'}`; }catch(error){} },250);
+  }
+</script>
+<output aria-label="fixture status">screen=- boost=0 used=no</output>
+<iframe title="D1 first-group bridge fixture" src="/index.html?lang=ko&qa=d1-first-group-bridge" onload="boot(this)"></iframe>

@@ -86,6 +86,15 @@ assert.equal(oneRun.boost.climax,12);
 assert.equal(oneRun.boosts.filter(x=>!x.usedAt).length,7,'one RUN must consume exactly one of eight preserved rewards');
 assert.equal(Daily.consume(oneRun.boosts,999,101).boost,null,'another idol must not consume preserved rewards');
 
+const groupBridge=Daily.firstGroupBridge({echo:{id:'2026-08-04:7:letter',rid:7},readyCount:1,groupCount:0,now:10});
+assert.equal(groupBridge.start,8,'the first D1 reply must advance the first-group path');
+assert.equal(Daily.firstGroupBridge({echo:{id:'x',rid:7},readyCount:3,groupCount:0}),null,'the bridge closes once the first lineup is ready');
+assert.equal(Daily.firstGroupBridge({echo:{id:'x',rid:7},readyCount:1,groupCount:1}),null,'the bridge is onboarding-only');
+assert.equal(Daily.consumeFirstGroupBridge(groupBridge,true,11).boost,null,'retraining keeps the agency-wide bridge for a new member');
+const usedBridge=Daily.consumeFirstGroupBridge(groupBridge,false,12);
+assert.equal(usedBridge.boost.start,8);
+assert.equal(Daily.consumeFirstGroupBridge(usedBridge.bridge,false,13).boost,null,'the first-group bridge is one-use');
+
 let promiseQueue=[];
 for(let i=1;i<=25;i++) promiseQueue=Daily.queueEcho(promiseQueue,{today:'2026-11-01',rid:7,kind:`promise:run-${i}`,runId:`run-${i}`,promiseId:'signature'});
 assert.equal(promiseQueue.length,25,'unopened RUN replies must never disappear behind the claimed-history cap');
