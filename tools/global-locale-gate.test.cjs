@@ -162,13 +162,22 @@ test('Choeaedol event decisions and outcomes are reviewed in every release local
   }
 });
 
-test('Japanese event rewards use the same production-area names as the growth UI',()=>{
-  const pack=boot('ja-JP').I18N.ja;
-  for(const key of ['ev_mv_w_d','ev_collab_w_d','ev_cf_w_d']){
-    assert.equal(/ビジュアル|作曲/.test(pack[key]),false,`${key} uses a retired stat label`);
+test('event decisions and rewards use the current six production-area names',()=>{
+  const cases=[
+    ['ko','ko-KR',/화술|비주얼|스타일(?!링)|댄스|작곡|발성/],
+    ['en','en-US',/\bCharm\b|\bVisual\b|\bDance\b|\bComposition\b|\bCreativity\b/],
+    ['ja','ja-JP',/華|ビジュアル|ダンス|作曲/],
+    ['id','id-ID',/\bCharm\b|\bVisual\b|\bDance\b|\bComposition\b|\bCreativity\b/]
+  ];
+  for(const [locale,language,banned] of cases){
+    const pack=boot(language).I18N[locale];
+    const rewards=Object.entries(pack).filter(([key])=>/^ev_.+_(?:c\d+|w_d|lo_d)$/.test(key));
+    for(const [key,value] of rewards) assert.equal(banned.test(String(value)),false,`${locale}.${key} uses a retired production-area label`);
   }
-  assert.match(pack.ev_mv_w_d,/スタイリング/);
-  assert.match(pack.ev_mv_w_d,/舞台企画/);
+  const ja=boot('ja-JP').I18N.ja;
+  assert.match(ja.ev_birthday_c2,/ファンの絆\+12/);
+  assert.match(ja.ev_mv_w_d,/スタイリング/);
+  assert.match(ja.ev_mv_w_d,/舞台企画/);
 });
 
 test('critical achievement and support-card renderers use locale keys instead of Korean literals',()=>{

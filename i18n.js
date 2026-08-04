@@ -1520,6 +1520,28 @@ window.I18N = {
     ev_miracle_title:"Miracle Bulan Ini!",ev_miracle_text:"RUN ini terpilih sebagai proyek rookie yang paling ramai dibicarakan bulan ini.",ev_miracle_c1:"Berterima kasih pada fandom (penggemar ↑↑, mental +10)",
     ev_mv_c2:"Pilih susunan aman (Styling +12)",ev_mv_w_d:"Styling <b>+30</b> · Perencanaan Panggung <b>+16</b> · Penggemar <b>↑↑</b>",ev_collab_w_d:"Panggung Vokal <b>+24</b> · Perencanaan Panggung <b>+20</b> · Penggemar <b>naik besar↑↑</b>"
   });
+  // Event choices are rendered from the legacy global pack. Keep every visible
+  // reward label on the same six production-area vocabulary as the RUN HUD.
+  // Only decision/outcome copy is normalized so natural event titles and story
+  // prose can still say things such as "dance challenge" conversationally.
+  const normalizeEventAreas=(pack,replacements)=>{
+    Object.keys(pack||{}).filter(key=>/^ev_.+_(?:c\d+|w_d|lo_d)$/.test(key)).forEach(key=>{
+      if(typeof pack[key]!=='string')return;
+      let value=pack[key]; replacements.forEach(([from,to])=>{value=value.replace(from,to);}); pack[key]=value;
+    });
+  };
+  normalizeEventAreas(window.I18N.ko,[
+    [/화술/g,'팬 유대'],[/비주얼/g,'스타일링'],[/스타일(?!링)/g,'스타일링'],[/댄스/g,'퍼포먼스'],[/작곡/g,'무대 기획'],[/발성/g,'보컬 무대']
+  ]);
+  normalizeEventAreas(window.I18N.en,[
+    [/\bCharm\b/g,'Fan Bond'],[/\bVisual\b/g,'Styling'],[/\bDance\b/g,'Performance'],[/\bComposition\b/g,'Stage Planning'],[/\bCreativity\b/g,'Stage Planning']
+  ]);
+  normalizeEventAreas(window.I18N.ja,[
+    [/華/g,'ファンの絆'],[/ビジュアル/g,'スタイリング'],[/ダンス/g,'パフォーマンス'],[/作曲/g,'舞台企画']
+  ]);
+  normalizeEventAreas(window.I18N.id,[
+    [/\bCharm\b/g,'Fan Bond'],[/\bVisual\b/g,'Styling'],[/\bDance\b/g,'Performance'],[/\bComposition\b/g,'Stage Planning'],[/\bCreativity\b/g,'Stage Planning']
+  ]);
   // 선언된 언어들 중 실제 언어팩(I18N)이 존재하는 것만 활성. 팩 추가하면 스위처에 자동 노출.
   // 상용 안전 게이트: RUN 제작 모델로 전량 검수된 언어만 노출한다.
   // EN/JA/ID는 위 안전 오버라이드까지 검수된 출시 언어다. 미검수 ZH/ES 팩은 선택/자동감지에서 제외한다.
