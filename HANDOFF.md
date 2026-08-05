@@ -1,7 +1,7 @@
 # 프로젝트 최애돌 (드림그룹) — 개발 핸드오프
 
 > 이 문서는 **다른 도구/머신(예: 집의 안티그래비티/Gemini)에서 이어서 개발**할 때 읽는 크로스툴 핸드오프다.
-> 코드 최신은 GitHub(`mandreojo/idol-tycoon-dream`)에 있으니 `git clone` 후 이 문서부터 읽고 이어가면 된다.
+> 코드 최신은 GitHub(`exodus9/idol-tycoon-dream`)에 있으니 `git clone` 후 이 문서부터 읽고 이어가면 된다.
 
 ## ▶ 다음 세션 백로그 (2026-07-28 까칠이 10회 루프 후 · 현 상태 첫세션 8/10)
 착수 전 필독: 재율애비가 직접 **몇 판 돌려 밸런스 체감** 먼저(아래 P0-1). 상세 맥락은 메모리 `idol-tycoon-dream-improvements`.
@@ -44,7 +44,7 @@
 
 ## 실행 / 배포
 - 로컬: `cd ~/idol-tycoon-dream && python3 -m http.server 8785` → `http://localhost:8785/index.html?v=N` (⚠️캐시버스터 `?v=` 필수).
-- 배포: GitHub Pages public — `git push`하면 Actions로 자동 재배포. 라이브 = https://mandreojo.github.io/idol-tycoon-dream/index.html
+- 배포: GitHub Pages public — `git push`하면 Actions로 자동 재배포. 라이브 = https://exodus9.github.io/idol-tycoon-dream/index.html
 - ⚠️ **i18n.js 수정 시 `index.html`의 `<script src="i18n.js?v=...">` 버전 올릴 것** (안 올리면 폰이 옛 텍스트 캐시). 현재 `v=20260803a`.
 - 개발 방식: 코드 수정 → 로컬서버+브라우저로 **직접 렌더·조작 검증**(콘솔 에러 0 확인) → 커밋 → push. 재율애비가 잡는 버그 8할이 "변경이 전 표면에 전파 안 됨"이라, 카피/스탯명/개편은 **전 표면 grep 대조**할 것.
 

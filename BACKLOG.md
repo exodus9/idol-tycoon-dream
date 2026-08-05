@@ -1,6 +1,6 @@
 # 프로젝트 최애돌(드림그룹) — 백로그
 
-> 라이브: https://mandreojo.github.io/idol-tycoon-dream/index.html (2026-07-23 밤 기준 b66bf83, 캐시버스터 v36)
+> 라이브: https://exodus9.github.io/idol-tycoon-dream/index.html (2026-07-23 밤 기준 b66bf83, 캐시버스터 v36)
 
 ## 상용 출시 기준 (2026-08-03 확정)
 
