@@ -3,6 +3,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      rollback_sha:
+        description: 'Optional last-known-good commit to package with the current release tooling'
+        required: false
+        type: string
 permissions:
   contents: read
   pages: write
@@ -15,6 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -24,6 +31,8 @@ jobs:
         run: for f in tools/*-check.mjs; do node "$f"; done
       - name: Enforce public release gate
         run: node tools/release-gate.mjs --public
+      - name: Build and verify public artifact
+        run: node tools/build-release.mjs && node --test tools/release-artifact.test.cjs
   deploy:
     needs: verify
     environment:
@@ -32,9 +41,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build public artifact
+        env:
+          ROLLBACK_SHA: ${{ inputs.rollback_sha }}
+        run: |
+          if [ -n "$ROLLBACK_SHA" ]; then
+            case "$ROLLBACK_SHA" in *[!0-9a-fA-F]*) echo "rollback_sha must be a commit hash"; exit 2;; esac
+            git cat-file -e "$ROLLBACK_SHA^{commit}"
+            git worktree add --detach /tmp/dream-group-release-source "$ROLLBACK_SHA"
+            node tools/build-release.mjs _site --source /tmp/dream-group-release-source --sha "$(git rev-parse "$ROLLBACK_SHA")"
+          else
+            node tools/build-release.mjs
+          fi
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: '_site'
       - id: deployment
         uses: actions/deploy-pages@v4

@@ -38,7 +38,7 @@
     },
     {
       "id": "local_data_lifecycle",
-      "title": "Local progress can be exported and reset",
+      "title": "Local progress can be exported, restored, and reset",
       "status": "pass",
       "required_for": ["internal_rc", "public_rc", "commercial_production"],
       "evidence": ["data-lifecycle.js", "tools/data-lifecycle.test.cjs", "tools/privacy-controls.test.cjs"]

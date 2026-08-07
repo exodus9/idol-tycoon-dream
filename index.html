@@ -1,6 +1,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>프로젝트 최애돌</title>
+<link rel="icon" href="assets/logo.png" type="image/png">
 <style>
   :root{
     /* 다크 게임 테마 (프리미엄 수집형 게임 톤) */
@@ -172,6 +173,7 @@
   .first-group-journey .fgj-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;font-weight:1000;letter-spacing:1px;color:#8ddcff}.first-group-journey .fgj-head b{font-size:11px;color:#fff;letter-spacing:0}
   .first-group-journey .fgj-cast{display:grid;grid-template-columns:38px 1fr;align-items:center;gap:9px;margin-top:9px}.first-group-journey .fgj-cast img,.first-group-journey .fgj-cast span{width:38px;height:46px;border-radius:9px;object-fit:cover;background:#24334d;display:flex;align-items:center;justify-content:center}
   .first-group-journey .fgj-cast strong,.first-group-journey .fgj-cast small{display:block}.first-group-journey .fgj-cast strong{font-size:13px}.first-group-journey .fgj-cast small{margin-top:3px;color:#aebbd0;font-size:10px;line-height:1.4}.first-group-journey button{width:100%;margin-top:10px;padding:10px;border:1px solid rgba(95,201,255,.5);border-radius:10px;background:linear-gradient(135deg,#285dff,#7344d8);color:#fff;font:inherit;font-size:12px;font-weight:900}
+  .fgj-slots{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}.fgj-slot{position:relative;min-width:0;aspect-ratio:3/3.8;overflow:hidden;border:1px dashed #42516a;border-radius:11px;background:linear-gradient(145deg,#111b2b,#0a111d);display:flex;align-items:center;justify-content:center}.fgj-slot img{width:100%;height:100%;object-fit:cover}.fgj-slot span{font-size:22px;opacity:.45}.fgj-slot small{position:absolute;left:4px;right:4px;bottom:4px;padding:3px 4px;border-radius:6px;background:rgba(3,7,13,.78);color:#e8f0ff;font-size:8px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}.fgj-slot.next{border-style:solid;border-color:#5fc9ff;box-shadow:0 0 14px rgba(95,201,255,.18)}.fgj-slot.locked{filter:saturate(.5)}
   .debut-checks{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}.debut-checks span{padding:4px 7px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid #2d3a51;color:#8592a8;font-size:9.5px;font-weight:900}.debut-checks span.ok{border-color:rgba(79,214,160,.4);background:rgba(79,214,160,.1);color:#7de0b8}
   .res-grade-explain{display:block;margin-top:5px;font-size:9px;line-height:1.35;color:#c3b7ce}
   .season-edition-preview{display:flex;align-items:center;gap:8px;margin-top:7px;padding:8px 9px;border-radius:10px;background:linear-gradient(90deg,rgba(35,96,255,.2),rgba(197,51,198,.16));border:1px solid rgba(111,139,255,.35);color:#dce7ff}
@@ -730,6 +732,7 @@
     padding:6px 26px 6px 10px;font-family:inherit;cursor:pointer;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%239a8f9a' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
     background-repeat:no-repeat;background-position:right 10px center}
+  .home-langsel{width:48px;height:30px;border:1px solid rgba(255,255,255,.14);border-radius:9px;background:#0a101a;color:#dce6f4;font:800 10px -apple-system,BlinkMacSystemFont,sans-serif;text-align:center}
   .shared-banner{text-align:center;font-size:14px;font-weight:800;color:var(--accent);
     background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin-bottom:12px}
 </style>
@@ -745,7 +748,7 @@
   <!-- TITLE -->
   <!-- 스플래시: 하트오락실서 입장 → 로고 잠깐 → 로비(홈) 자동 진입 -->
   <section class="screen on" id="s-title">
-    <select id="langSel" class="langsel" onchange="Game.changeLang(this.value)" aria-label="language" style="display:none"></select>
+    <select id="langSel" class="langsel" onchange="Game.changeLang(this.value)" aria-label="language"></select>
     <div class="splash">
       <img id="titleMascot" class="splash-mascot" src="assets/mascot.png" alt="">
       <img id="logo" class="splash-logo" src="assets/logo.png" alt="최애돌">
@@ -952,6 +955,7 @@
       <span class="week" id="pWeek">턴 1 / 24</span>
       <span class="actbanner" id="pAct">Road to Debut</span>
     </div>
+    <div class="beginner-prompt" id="beginnerPrompt" hidden></div>
 
     <div class="vitals" id="vitalsBox"></div>
 
@@ -1076,7 +1080,7 @@
 
 <!-- 콘텐츠(다국어·아이돌DB) 갱신 시 v= 날짜를 올려 캐시 무효화 → 재방문 유저에게도 반영 -->
 <script src="storage-journal.js?v=4e2dec8a4b"></script>
-<script src="data-lifecycle.js?v=689d558581"></script>
+<script src="data-lifecycle.js?v=2f31e7d231"></script>
 <script src="run-identity.js?v=03b57db72d"></script>
 <script src="run-migration.js?v=2160e1c632"></script>
 <script src="daily-retention.js?v=2d3b159bdc"></script>
@@ -1090,12 +1094,13 @@
 <script src="run-balance-rules.js?v=7e1af59983"></script>
 <script src="stage-criteria.js?v=6d23aaaa14"></script>
 <script src="completion-transaction.js?v=a40787a406"></script>
-<script src="product-telemetry.js?v=46f774b08d"></script>
+<script src="product-telemetry.js?v=f64d1a41ab"></script>
 <script src="run-adoption.js?v=f5ce39d47f"></script>
-<script src="dg-i18n.js?v=47266930e0"></script>
+<script src="dg-i18n.js?v=813a4d2545"></script>
 <script src="i18n.js?v=b295633ad5"></script>
-<script src="idols.js?v=sync202608070520"></script>
+<script src="idols.js?v=sync202608080520"></script>
 <script>
+try{if(window.DataLifecycle)DataLifecycle.recoverImport(localStorage);}catch(_){}
 // 검색용 아이돌: idols.js의 window.IDOL_DB (최애돌 실데이터 = 활성 아이돌만, 전일 하트투표 순위로 정렬됨). 로드 실패 시 빈 배열.
 const IDOLS = window.IDOL_DB || [];
 // 영문모드 이름 표기: 아이돌 영문명(nameEn)·그룹 영문명(grpEn) 있으면 사용, 없으면(커스텀 등) 한글 폴백.
@@ -2008,6 +2013,9 @@ const Game = {
 
   render(){
     const s=this.st, idol=s.idol;
+    const playScreen=document.getElementById('s-play'), beginnerStage=(s.runNo||1)===1&&s.week<=2?s.week:0, guidedFirst=!!(window.Tut&&Tut.on&&Tut.on()&&Tut.did&&!Tut.did('s2_train1'));
+    playScreen.classList.toggle('hud-stage-1',beginnerStage===1); playScreen.classList.toggle('hud-stage-2',beginnerStage===2);
+    const beginnerPrompt=document.getElementById('beginnerPrompt'); beginnerPrompt.hidden=!beginnerStage||guidedFirst; beginnerPrompt.textContent=beginnerStage?dgT(beginnerStage===1?'run.beginnerFocus1':'run.beginnerFocus2'):'';
     const av=document.getElementById("pAvatar");
     if(idol.img){ av.style.backgroundImage=`url('${idol.img}')`; av.textContent=""; }
     else { av.style.backgroundImage="none"; av.textContent="🎤"; }
@@ -3392,6 +3400,8 @@ const Game = {
         <button class="${consent==='denied'?'sel':''}" onclick="Game.setAnalyticsConsent('denied')">${dgT('privacy.deny')}</button>
       </div>
       <button class="sheet-btn primary" onclick="Game.exportData()">${dgT('privacy.export')}</button>
+      <button class="sheet-btn plain" onclick="document.getElementById('saveImportFile').click()">${dgT('privacy.import')}</button>
+      <input id="saveImportFile" type="file" accept="application/json,.json" hidden onchange="Game.prepareImportData(event)">
       <button class="sheet-btn plain" onclick="Game.closeSheet()">${dgT('common.close')}</button>`);
   },
   setAnalyticsConsent(state){
@@ -3407,6 +3417,19 @@ const Game = {
       document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
       toast(dgT('privacy.exported'));
     }catch(_){ toast(dgT('privacy.exportFailed')); }
+  },
+  async prepareImportData(event){
+    try{
+      const file=event&&event.target&&event.target.files&&event.target.files[0]; if(!file)return;
+      if(file.size>DataLifecycle.MAX_IMPORT_BYTES)throw new Error('snapshot_too_large');
+      const snapshot=DataLifecycle.validateSnapshot(await file.text());
+      this._pendingImport=snapshot;
+      this.openSheet(`<div class="sheet-title">${dgT('privacy.importConfirmTitle')}</div><div class="sheet-sub">${dgT('privacy.importConfirmCopy',{count:Object.keys(snapshot.storage).length})}</div><button class="sheet-btn danger" onclick="Game.confirmImportData()">${dgT('privacy.importConfirm')}</button><button class="sheet-btn plain" onclick="Game._pendingImport=null;Game.openPrivacy()">${dgT('common.cancel')}</button>`);
+    }catch(_){ this._pendingImport=null; toast(dgT('privacy.importInvalid')); }
+  },
+  confirmImportData(){
+    try{if(!this._pendingImport)throw new Error('missing');DataLifecycle.importSnapshot(localStorage,this._pendingImport);this._pendingImport=null;toast(dgT('privacy.imported'));setTimeout(()=>location.reload(),500);}
+    catch(error){this._pendingImport=null;toast(dgT(error&&error.recoveryPending?'privacy.importRecoveryPending':'privacy.importFailed'));this.openPrivacy();}
   },
   // 결과화면 나가기 가드: 저장/공유 안 했는데 나가면 결과 유실 → 확인 시트
   confirmReset(){
@@ -4005,7 +4028,7 @@ window.addEventListener("popstate", ()=>{
     min-height:405px;padding:16px 16px 17px;border:2px solid rgba(255,255,255,.9);
     background-image:
       linear-gradient(180deg,rgba(255,255,255,.02) 0%,rgba(39,17,75,.02) 43%,rgba(24,10,55,.88) 78%,rgba(18,7,42,.98) 100%),
-      url('assets/agency-stage-v1.png');
+      url('assets/agency-stage-v1.jpg');
     background-position:center 44%;background-size:cover;
     box-shadow:0 22px 42px rgba(23,11,57,.42),inset 0 0 0 1px rgba(255,255,255,.48)
   }
@@ -4373,7 +4396,7 @@ window.addEventListener("popstate", ()=>{
   /* 5차: 메인 로비의 밝은 인물 중심 문법을 카드 선택까지 끊김 없이 연결 */
   #s-cardpick{background:
     linear-gradient(180deg,rgba(252,248,255,.88) 0%,rgba(247,239,255,.94) 52%,#f7f0ff 100%),
-    url('assets/agency-stage-v1.png') center 18%/cover fixed;color:#29213d}
+    url('assets/agency-stage-v1.jpg') center 18%/cover fixed;color:#29213d}
   #s-cardpick .sub-head{position:relative;z-index:2;margin-bottom:9px}
   #s-cardpick .sub-head h2{font-size:20px;color:#302344;text-shadow:none}
   #s-cardpick .menu-btn{background:rgba(255,255,255,.75);border-color:rgba(104,75,147,.16);color:#3f3158}
@@ -4791,7 +4814,7 @@ window.addEventListener("popstate", ()=>{
   #s-office #homeHero{height:100%;min-height:0}
   .hero-stage3{position:relative;height:100%;min-height:0;overflow:hidden;background:
     linear-gradient(180deg,rgba(4,8,15,.04),rgba(3,7,13,.18) 54%,rgba(3,7,13,.96) 88%),
-    url('assets/agency-lounge-dark-v1.png') center/cover no-repeat;color:#fff}
+    url('assets/agency-lounge-dark-v1.jpg') center/cover no-repeat;color:#fff}
   .hs3-shade{position:absolute;inset:0;background:
     radial-gradient(circle at 50% 42%,transparent 0 24%,rgba(4,8,15,.22) 54%,rgba(4,8,15,.55) 100%);
     pointer-events:none}
@@ -4913,6 +4936,10 @@ window.addEventListener("popstate", ()=>{
   #s-play .hcard .hc-ic{width:38px;height:38px}
   #s-play .hcard .hc-nm{font-size:14px}
   #s-play .hand-cap{margin:0 2px 5px}
+  .beginner-prompt{margin:0 0 6px;padding:8px 10px;border:1px solid rgba(95,201,255,.4);border-radius:10px;background:rgba(35,79,151,.18);color:#dceaff;font-size:10.5px;font-weight:850;line-height:1.4}
+  #s-play.hud-stage-1 #vitalsBox .vital:not(:first-child),#s-play.hud-stage-1 #vitalsBox .cond-face{display:none}
+  #s-play.hud-stage-1 #statBox{display:none}
+  #s-play.hud-stage-2 #vitalsBox .fandom-vital,#s-play.hud-stage-2 #vitalsBox .cond-face{display:none}
 
   /* 새 5탭 내비게이션 */
   .tabbar{height:64px;padding:5px 6px max(5px,env(safe-area-inset-bottom));background:rgba(5,9,16,.96);
@@ -6120,6 +6147,7 @@ window.addEventListener("popstate", ()=>{
            <span class="hp-logo" onclick="DG.editAgency()">${this.logoHtml(a.logo,28)}</span>
            <div class="hp-id" onclick="DG.editAgency()" style="cursor:pointer"><div class="hp-name">${esc(a.name)} <span style="font-size:11px;opacity:.5">✏️</span></div></div>
            <span class="hp-trend" onclick="DG.showLeague&&DG.showLeague()" title="${esc(dgT('season.currentTitle'))}">${_trend0.ic} <b>${esc(this.trendName(_trend0))}</b> <span class="hp-td">D-${_td0}</span></span>
+           <select class="home-langsel" aria-label="language" onchange="Game.changeLang(this.value)">${langList().map(l=>`<option value="${l.code}"${l.code===window.LANG?' selected':''}>${l.code.toUpperCase()}</option>`).join('')}</select>
            ${_mics!=null?`<span class="hp-coin">🎤 <b>${_mics}</b></span>`:''}
          </div>`;
 
@@ -6432,6 +6460,12 @@ window.addEventListener("popstate", ()=>{
     checkAchv(){ this.load(); this._ensureAchv();
       const newly=[]; ACHV.forEach(a=>{ if(a.cur(this)>=a.goal && !this.data.achvSeen[a.id]){ this.data.achvSeen[a.id]=1;
         const rw=this.achvReward(a); if(rw && CARDS[rw]) this.data.achvRw[a.id]=rw; newly.push(a); } });
+      const completed=(this.data.roster||[]).some(r=>!r.incomplete&&!r.legacyRun);
+      if(!completed&&newly.length){this.data.pendingAchvFx=[...new Set([...(this.data.pendingAchvFx||[]),...newly.map(a=>a.id)])];this.persist();return newly;}
+      if(completed&&this.data.pendingAchvFx&&this.data.pendingAchvFx.length){
+        for(const id of this.data.pendingAchvFx){const a=ACHV.find(x=>x.id===id);if(a&&!newly.some(x=>x.id===id))newly.unshift(a);}
+        this.data.pendingAchvFx=[];
+      }
       // 여러 개 동시 달성 → 하나로 묶어 표시(우르르 방지). 1개면 그대로.
       if(newly.length){ this.persist();
         if(newly.length===1) this.queueAchvFx(newly[0]);
@@ -7021,16 +7055,20 @@ window.addEventListener("popstate", ()=>{
       const readyCount=(this.data.roster||[]).filter(r=>this.isEligibleRosterMember(r)).length, gi=this.groupInfo(), rep=this.repGroup();
       const actionLabel=nextAction.kind==='scout'?dgT('result.actionScout',{count:readyCount}):nextAction.kind==='lineup'?dgT('result.actionLineup',{count:readyCount}):nextAction.kind==='debut'?dgT('result.actionDebut',{count:gi.n}):nextAction.kind==='battle'?dgT('result.actionBattle',{name:esc(rep?rep.name:'GROUP')}):nextAction.kind==='promiseRetry'?dgT('result.actionPromiseRetry',{name:esc(idolR?idolR.name:'IDOL')}):dgT('result.actionRetry',{name:esc(idolR?idolR.name:'IDOL')});
       const firstGroupStep=res.debuted&&FirstGroupJourney.resultStep({readyCount,groupCount:(this.data.groups||[]).length}), firstGroupOffer=firstGroupStep==='nextMember'?this.mentorHomeOffer():null;
+      const firstGroupNeedsPromise=firstGroupStep==='nextMember'&&!this.dailyState().done;
+      const firstGroupCtaOn=firstGroupNeedsPromise?'DG.goDaily()':firstGroupOffer?`DG.startMentorRun(${firstGroupOffer.mentor.rid},${firstGroupOffer.target.id},'${firstGroupOffer.direction}','result_first_group')`:'Game.goSelect()';
+      const firstGroupCtaLabel=firstGroupNeedsPromise?dgT('result.firstGroupPromiseCta'):firstGroupOffer?dgT('result.firstGroupNextCta',{target:esc(idolName(firstGroupOffer.target)),count:readyCount+1}):dgT('result.actionScout',{count:readyCount});
+      const firstGroupMembers=(this.data.roster||[]).filter(r=>this.isEligibleRosterMember(r)).slice(-3), firstGroupSlots=[0,1,2].map(i=>{const member=firstGroupMembers[i];if(member)return `<div class="fgj-slot ready">${member.img?`<img src="${esc(member.img)}" alt="">`:'<span>🎤</span>'}<small>${esc(member.name||dgT('result.firstGroupMember'))}</small></div>`;if(i===firstGroupMembers.length&&firstGroupOffer&&firstGroupOffer.target)return `<div class="fgj-slot next">${firstGroupOffer.target.img?`<img src="${esc(firstGroupOffer.target.img)}" alt="">`:'<span>＋</span>'}<small>${esc(idolName(firstGroupOffer.target))}</small></div>`;return `<div class="fgj-slot locked"><span>＋</span><small>${dgT('result.firstGroupOpenSlot')}</small></div>`;}).join('');
       const firstGroupJourney=firstGroupStep==='nextMember'
-        ? `<div class="first-group-journey"><div class="fgj-head">FIRST GROUP <b>${readyCount}/3</b></div><div class="fgj-cast">${firstGroupOffer&&firstGroupOffer.target.img?`<img src="${esc(firstGroupOffer.target.img)}" alt="">`:'<span>🎤</span>'}<div><strong>${dgT('result.firstGroupNextTitle',{count:readyCount+1})}</strong><small>${firstGroupOffer?dgT('result.firstGroupNextCopy',{mentor:esc(firstGroupOffer.mentor.name),target:esc(idolName(firstGroupOffer.target)),role:esc(this.roleName(firstGroupOffer.role)),direction:esc(t('st_'+firstGroupOffer.direction))}):dgT('result.firstGroupScoutCopy')}</small></div></div><button onclick="${firstGroupOffer?`DG.startMentorRun(${firstGroupOffer.mentor.rid},${firstGroupOffer.target.id},'${firstGroupOffer.direction}','result_first_group')`:'Game.goSelect()'}">${firstGroupOffer?dgT('result.firstGroupNextCta',{target:esc(idolName(firstGroupOffer.target)),count:readyCount+1}):dgT('result.actionScout',{count:readyCount})}</button></div>`
+        ? `<div class="first-group-journey"><div class="fgj-head">FIRST GROUP <b>${readyCount}/3</b></div><div class="fgj-slots">${firstGroupSlots}</div><div class="fgj-cast">${firstGroupOffer&&firstGroupOffer.target.img?`<img src="${esc(firstGroupOffer.target.img)}" alt="">`:'<span>🎤</span>'}<div><strong>${dgT('result.firstGroupNextTitle',{count:readyCount+1})}</strong><small>${firstGroupOffer?dgT('result.firstGroupNextCopy',{mentor:esc(firstGroupOffer.mentor.name),target:esc(idolName(firstGroupOffer.target)),role:esc(this.roleName(firstGroupOffer.role)),direction:esc(t('st_'+firstGroupOffer.direction))}):dgT('result.firstGroupScoutCopy')}</small></div></div><button onclick="${firstGroupCtaOn}">${firstGroupCtaLabel}</button></div>`
         : firstGroupStep==='firstLineup'
-          ? `<div class="first-group-journey"><div class="fgj-head">FIRST GROUP <b>3/3</b></div><div class="fgj-cast"><span>🎬</span><div><strong>${dgT('result.firstGroupReadyTitle')}</strong><small>${dgT('result.firstGroupReadyCopy')}</small></div></div><button onclick="DG.go();DG.editLineup('result_first_group')">${dgT('result.firstGroupReadyCta')}</button></div>`:'';
+          ? `<div class="first-group-journey"><div class="fgj-head">FIRST GROUP <b>3/3</b></div><div class="fgj-slots">${firstGroupSlots}</div><div class="fgj-cast"><span>🎬</span><div><strong>${dgT('result.firstGroupReadyTitle')}</strong><small>${dgT('result.firstGroupReadyCopy')}</small></div></div><button onclick="DG.go();DG.editLineup('result_first_group')">${dgT('result.firstGroupReadyCta')}</button></div>`:'';
       let returnHook='', returnPriority=false;
       try{
         const reply=this.dailyEchoState().ready, daily=this.dailyState(), exactReturn=DailyRetention.pendingReturn((this.data&&this.data.dailyEchoes)||[],daily.today,{rid:res.newRid,runId:res.runId});
-        returnPriority=(!!reply||!daily.done)&&!firstGroupJourney;
+        returnPriority=firstGroupNeedsPromise||((!!reply||!daily.done)&&!firstGroupJourney);
         const unlockTime=this.replyUnlockLabel();
-        returnHook=exactReturn
+        returnHook=firstGroupNeedsPromise?'':exactReturn
           ? `<div class="res-return-hook"><b>💌 ${dgT('result.returnExactTitle',{time:esc(unlockTime),fandom:esc(exactReturn.fandomName||res.fandom),idol:esc(exactReturn.idolName||idolR&&idolR.name||'IDOL')})}</b><span>${dgT('result.returnExactCopy',{scene:esc(this.dailyPromiseTitle(exactReturn,idolR))})}</span><button type="button" onclick="DG.goDaily('${encodeURIComponent(exactReturn.id)}')">${dgT('result.returnExactButton')}</button></div>`
           : reply
             ? `<div class="res-return-hook"><b>💌 ${dgT('result.returnReplyTitle')}</b><span>${dgT('result.returnReplyCopy')}</span><button type="button" onclick="DG.goDaily()">${dgT('result.returnReplyButton')}</button></div>`

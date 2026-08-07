@@ -44,6 +44,9 @@ assert.equal('promise_id' in embedded,false,'URL-shaped strings must not cross t
 assert.equal(Telemetry.track('INVALID EVENT',{}),null);
 assert.equal(Telemetry.track('unknown_but_valid_name',{mode:'quick'}),null,'unknown events must not cross the bridge');
 assert.ok(global.dataLayer.some(x=>x.event==='dream_group_run_start'));
+const noDuplicateId=event.event_id, noDuplicateBefore=global.dataLayer.filter(x=>x.event_id===noDuplicateId).length;
+Telemetry.flush(); Telemetry.flush();
+assert.equal(global.dataLayer.filter(x=>x.event_id===noDuplicateId).length,noDuplicateBefore,'an unacked event must not be delivered twice in one page session');
 
 const protectedGate=Telemetry.track('first_run_gate_protected',{run_id:'run-1',rank:4,mode:'quick',user_id:'must-not-pass'});
 assert.equal(protectedGate.event,'first_run_gate_protected');
@@ -78,6 +81,8 @@ assert.equal(Telemetry.getStatus().outbox_size,1);
 global.navigator.onLine=true;
 assert.equal(Telemetry.flush(),1);
 assert.equal(Telemetry.getStatus().outbox_size,1,'delivery attempt without ACK must remain queued');
+assert.equal(global.dataLayer.length,deliveredBefore+1);
+assert.equal(Telemetry.flush(),0,'an in-flight event must wait for ACK instead of duplicating');
 assert.equal(global.dataLayer.length,deliveredBefore+1);
 assert.equal(Telemetry._receiveForTest({source:globalThis,origin:'https://game.local',data:{type:'DREAM_GROUP_EVENT_ACK',data:{event_id:queuedFailure.event_id}}}),true);
 assert.equal(Telemetry.getStatus().outbox_size,0,'only an ACK may remove a queued event');

@@ -6,6 +6,7 @@
   let lastContextKey='';
   let imageFailures=0;
   let sequence=0;
+  const inFlight=new Set();
   const SCHEMA_VERSION=2;
   const CONSENT_KEY='dg_analytics_consent_v1';
   const PARTICIPANT_KEY='dg_analytics_participant_v1';
@@ -74,20 +75,36 @@
     try{ if(root.webkit&&root.webkit.messageHandlers&&root.webkit.messageHandlers.nativeApp) root.webkit.messageHandlers.nativeApp.postMessage(payload); }catch(_){}
     try{ if(root.Android&&typeof root.Android.receiveMessage==='function') root.Android.receiveMessage(JSON.stringify(payload)); }catch(_){}
   }
+  function endpoint(){
+    try{
+      const raw=String(root.DREAM_GROUP_TELEMETRY_ENDPOINT||'').trim(); if(!raw)return '';
+      const url=new URL(raw,root.location&&root.location.href||'https://local.invalid');
+      if(url.protocol!=='https:'&&url.hostname!=='localhost'&&url.hostname!=='127.0.0.1')return '';
+      return url.href;
+    }catch(_){return '';}
+  }
+  function endpointPost(event){
+    const url=endpoint(); if(!url||typeof root.fetch!=='function')return;
+    root.fetch(url,{method:'POST',headers:{'content-type':'application/json','x-dream-group-event-id':event.event_id},body:JSON.stringify(event),keepalive:true,credentials:'omit'})
+      .then(response=>{if(response&&response.ok)ack(event.event_id);else inFlight.delete(event.event_id);})
+      .catch(()=>inFlight.delete(event.event_id));
+  }
   function deliver(event){
     try{ root.dataLayer=root.dataLayer||[]; root.dataLayer.push({...event,event:`dream_group_${event.event}`}); }catch(_){}
     nativePost({type:'DREAM_GROUP_EVENT',data:event});
+    endpointPost(event);
   }
   function ack(eventId){
     if(typeof eventId!=='string'||!/^e-[a-z0-9-]{8,40}$/.test(eventId))return false;
     const before=readOutbox(),after=before.filter(item=>!item||item.event_id!==eventId);
     if(after.length===before.length)return false;
-    writeOutbox(after); return true;
+    writeOutbox(after); inFlight.delete(eventId); return true;
   }
   function flush(){
     if(consentState()!=='granted')return 0;
     try{if(root.navigator&&root.navigator.onLine===false)return 0;}catch(_){}
-    const list=readOutbox(); list.forEach(deliver); return list.length;
+    const list=readOutbox().filter(event=>event&&event.event_id&&!inFlight.has(event.event_id));
+    list.forEach(event=>{inFlight.add(event.event_id);deliver(event);}); return list.length;
   }
   function track(name,props){
     name=String(name||''); if(!/^[a-z][a-z0-9_]{1,39}$/.test(name)||!EVENT_FIELDS[name]) return null;
@@ -118,7 +135,7 @@
   function setConsent(state){
     if(state!=='granted'&&state!=='denied')return false;
     const before=consentState(); if(!safeSet(CONSENT_KEY,state))return false;
-    if(state==='denied'){try{root.localStorage&&root.localStorage.removeItem(PARTICIPANT_KEY);root.localStorage&&root.localStorage.removeItem(OUTBOX_KEY);}catch(_){}}
+    if(state==='denied'){inFlight.clear();try{root.localStorage&&root.localStorage.removeItem(PARTICIPANT_KEY);root.localStorage&&root.localStorage.removeItem(OUTBOX_KEY);}catch(_){}}
     if(before!==state)track('consent_changed',{state});
     if(state==='granted')flush(); return true;
   }
@@ -129,7 +146,7 @@
   root.addEventListener&&root.addEventListener('online',flush);
   root.addEventListener&&root.addEventListener('load',()=>track('startup_health',{load_ms:Date.now()-START,image_failures:imageFailures,native_context:!!lastContextKey}));
   root.addEventListener&&root.addEventListener('message',receive);
-  const api={track,screen,ready,flush,ack,setConsent,getConsent:consentState,getContext:()=>({...context}),getStatus:()=>({schema_version:SCHEMA_VERSION,build:buildVersion(),consent:consentState(),participant_id:participantId(),outbox_size:readOutbox().length,pending_consent_size:0})};
+  const api={track,screen,ready,flush,ack,setConsent,getConsent:consentState,getContext:()=>({...context}),getStatus:()=>({schema_version:SCHEMA_VERSION,build:buildVersion(),consent:consentState(),participant_id:participantId(),outbox_size:readOutbox().length,in_flight_size:inFlight.size,transport:endpoint()?'endpoint':(root.webkit||root.Android)?'native':'standalone',pending_consent_size:0})};
   root.ProductTelemetry=api;
   if(typeof module!=='undefined'&&module.exports){ api._receiveForTest=receive; module.exports=api; }
 })(typeof window!=='undefined'?window:globalThis);
