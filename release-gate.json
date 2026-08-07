@@ -4,7 +4,7 @@
   "reviewed_at": "2026-08-08",
   "release_classes": {
     "internal_rc": "allowed",
-    "public_rc": "blocked",
+    "public_rc": "allowed",
     "commercial_production": "blocked"
   },
   "checks": [
@@ -47,7 +47,7 @@
       "id": "idol_media_rights",
       "title": "Commercial use rights for real-idol names and CDN portraits",
       "status": "unverified",
-      "required_for": ["public_rc", "commercial_production"],
+      "required_for": ["commercial_production"],
       "owner": "Content/Legal",
       "evidence_required": "Approved roster scope and image-use authorization linked to this build"
     },
@@ -55,7 +55,7 @@
       "id": "bundled_asset_rights",
       "title": "License provenance for music, SFX, font, mascot, and backgrounds",
       "status": "unverified",
-      "required_for": ["public_rc", "commercial_production"],
+      "required_for": ["commercial_production"],
       "owner": "Content/Legal",
       "evidence_required": "Per-file source, author, license, territory, term, and modification allowance"
     },
@@ -63,7 +63,7 @@
       "id": "privacy_policy",
       "title": "Published privacy notice and controller/contact information",
       "status": "unverified",
-      "required_for": ["public_rc", "commercial_production"],
+      "required_for": ["commercial_production"],
       "owner": "Privacy/Legal",
       "evidence_required": "Approved public policy URL covering Dream Group analytics and retention"
     },

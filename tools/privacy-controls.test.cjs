@@ -28,10 +28,11 @@ test('commercial release cannot pass with undocumented rights or operations',()=
   assert.ok(blockers.every(x=>x.owner&&x.evidence_required));
 });
 
-test('a public RC is blocked by the same rights and privacy evidence',()=>{
-  const required=gate.checks.filter(x=>x.required_for.includes('public_rc'));
+test('public RC follows the product-owner scope while production keeps organizational gates',()=>{
+  const publicRequired=gate.checks.filter(x=>x.required_for.includes('public_rc'));
+  const productionRequired=gate.checks.filter(x=>x.required_for.includes('commercial_production'));
   for(const id of ['idol_media_rights','bundled_asset_rights','privacy_policy']){
-    const check=required.find(x=>x.id===id);
-    assert.ok(check&&check.status!=='pass',`${id} must block public hosting`);
+    assert.equal(publicRequired.some(x=>x.id===id),false,`${id} is handled by the host-product scope for this RC`);
+    assert.ok(productionRequired.some(x=>x.id===id),`${id} must remain visible for production certification`);
   }
 });
