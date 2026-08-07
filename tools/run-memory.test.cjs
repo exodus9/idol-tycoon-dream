@@ -67,4 +67,25 @@ const weak={mode:'full',runId:'r3',runDirection:'dance',mental:40,stam:10,cond:3
 RunMemory.applyStart(weak,RunMemory.options({...ctx,mode:'full'})[2]);
 RunMemory.resolveCheckpoint(weak,'commit');
 assert.equal(RunMemory.evaluate(weak).status,'failed');
+
+const signatureRoute={runNo:2,runDirection:'vocal',runPromise:{baseType:'signature'}};
+assert.deepEqual(RunMemory.routeEffect(signatureRoute,{stat:'vocal',kind:'lesson',outcome:'ok'}),{type:'signature',growthMult:1.05,fanMult:1,bondGain:0,mentalLossMult:1,mentalGain:0,active:true});
+assert.equal(RunMemory.routeEffect(signatureRoute,{stat:'dance',kind:'lesson',outcome:'ok'}).active,false);
+const fandomRoute={runNo:2,runDirection:'vocal',runPromise:{baseType:'fandom'}};
+assert.deepEqual(RunMemory.routeEffect(fandomRoute,{stat:'charm',kind:'lesson',outcome:'ok'}),{type:'fandom',growthMult:1,fanMult:1.1,bondGain:2,mentalLossMult:1,mentalGain:0,active:true});
+const resilienceRoute={runNo:2,runDirection:'vocal',runPromise:{baseType:'resilience'}};
+assert.equal(RunMemory.routeEffect(resilienceRoute,{stat:'dance',kind:'lesson',outcome:'fail'}).mentalLossMult,.5);
+assert.equal(RunMemory.routeEffect(resilienceRoute,{kind:'rest',outcome:'ok'}).mentalGain,4);
+assert.equal(RunMemory.routeEffect({}, {stat:'vocal'}).active,false);
+assert.equal(RunMemory.routeEffect({runNo:1,runDirection:'vocal',runPromise:{baseType:'signature'}},{stat:'vocal'}).active,false,'first RUN onboarding balance stays unchanged');
+const setupHtml=require('node:fs').readFileSync(require('node:path').join(__dirname,'..','index.html'),'utf8');
+assert.ok(setupHtml.includes("route=firstRun?'':dgT('run.routeEffect.'"),'first RUN must not advertise inactive route effects');
+const DGI18n=require('../dg-i18n.js');
+for(const locale of ['ko','en','ja','id']){
+  assert.match(DGI18n.t(locale,'run.routeEffect.signature'),/5%/);
+  assert.match(DGI18n.t(locale,'run.routeEffect.fandom',{amount:2}),/10%/);
+  assert.match(DGI18n.t(locale,'run.routeEffect.fandom',{amount:2}),/2/);
+  assert.match(DGI18n.t(locale,'run.routeEffect.resilience'),/50%/);
+  assert.match(DGI18n.t(locale,'run.routeEffect.resilience'),/4/);
+}
 console.log('run memory: OK');

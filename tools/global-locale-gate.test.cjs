@@ -209,8 +209,9 @@ test('result explains the final fan jump and shows collection rewards before dia
   const resultRenderer=html.slice(html.indexOf('renderResult(box, res)'),html.indexOf('runPromiseView(p,ctx)'));
   assert.ok(resultRenderer.indexOf('${idolReveal}')<resultRenderer.indexOf('${seasonResult}'),'idol card must precede detailed season copy');
   assert.ok(resultRenderer.indexOf('${returnHook}')<resultRenderer.indexOf('${idolReveal}'),'the next-day fandom hook must be visible before the tall idol-card reward');
-  assert.ok(resultRenderer.indexOf('${returnHook}')<resultRenderer.indexOf("dgT('result.supportTitle')"),'the next-day fandom hook must not be buried below secondary rewards');
-  assert.ok(resultRenderer.indexOf("dgT('result.supportTitle')")<resultRenderer.indexOf('${seasonResult}'),'support rewards must precede detailed season copy');
+  assert.ok(resultRenderer.includes("dgT('result.supportTitle')"),'support rewards must keep their localized heading');
+  assert.ok(resultRenderer.indexOf('${returnHook}')<resultRenderer.indexOf('${supportResult}'),'the next-day fandom hook must not be buried below secondary rewards');
+  assert.ok(resultRenderer.indexOf('${supportResult}')<resultRenderer.indexOf('${seasonResult}'),'support rewards must precede detailed season copy');
   assert.equal(resultRenderer.includes("dgT('result.joinBalance'"),false,'the primary reward summary must not compete with a second letter grade');
 });
 

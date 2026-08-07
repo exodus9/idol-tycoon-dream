@@ -23,3 +23,26 @@ test('thrown storage error follows the same rollback path',()=>{
   assert.equal(ok,false);
   assert.equal(restored,'stable');
 });
+
+for(const failAt of ['run','agency'])test(`${failAt} failure restores active RUN and reward ledger together`,()=>{
+  let run='ACTIVE-A',agency='REWARDS-A',emitted=0;
+  const beforeRun=run,beforeAgency=agency;
+  agency='REWARDS-CONSUMED';
+  const result=CompletionTransaction.commitPair({
+    persistRun:()=>{run='ACTIVE-B';return failAt!=='run';},
+    persistAgency:()=>failAt!=='agency',
+    restoreRun:()=>{run=beforeRun;return true;},
+    restoreAgency:()=>{agency=beforeAgency;return true;}
+  });
+  if(result.ok)emitted++;
+  assert.equal(result.ok,false);
+  assert.equal(result.recovered,true);
+  assert.equal(run,'ACTIVE-A');
+  assert.equal(agency,'REWARDS-A');
+  assert.equal(emitted,0,'failed replacement must not emit run_start');
+});
+
+test('recovery uncertainty remains visible',()=>{
+  const result=CompletionTransaction.commitPair({persistRun:()=>false,persistAgency:()=>true,restoreRun:()=>false,restoreAgency:()=>true});
+  assert.deepEqual(result,{ok:false,recovered:false});
+});

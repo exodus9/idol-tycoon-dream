@@ -1,0 +1,87 @@
+{
+  "schema": "dream-group-release-gate-v1",
+  "artifact": "standalone-web",
+  "reviewed_at": "2026-08-08",
+  "release_classes": {
+    "internal_rc": "allowed",
+    "public_rc": "blocked",
+    "commercial_production": "blocked"
+  },
+  "checks": [
+    {
+      "id": "gameplay_regression",
+      "title": "Core gameplay and mobile regression",
+      "status": "pass",
+      "required_for": ["internal_rc", "public_rc", "commercial_production"],
+      "evidence": ["tools/mobile-layout.test.cjs", "tools/balance-sim-cli.test.cjs"]
+    },
+    {
+      "id": "truthful_competition",
+      "title": "Local competition is labeled Ghost League",
+      "status": "pass",
+      "required_for": ["internal_rc", "public_rc", "commercial_production"],
+      "evidence": ["index.html", "tools/network-isolation.test.cjs", "docs/상용-서버원장-계약.md"]
+    },
+    {
+      "id": "standalone_network_isolation",
+      "title": "Standalone build cannot read or write the shared live leaderboard",
+      "status": "pass",
+      "required_for": ["internal_rc", "public_rc", "commercial_production"],
+      "evidence": ["tools/network-isolation.test.cjs"]
+    },
+    {
+      "id": "analytics_consent",
+      "title": "Analytics requires a user choice and excludes free text",
+      "status": "pass",
+      "required_for": ["internal_rc", "public_rc", "commercial_production"],
+      "evidence": ["product-telemetry.js", "tools/privacy-controls.test.cjs"]
+    },
+    {
+      "id": "local_data_lifecycle",
+      "title": "Local progress can be exported and reset",
+      "status": "pass",
+      "required_for": ["internal_rc", "public_rc", "commercial_production"],
+      "evidence": ["data-lifecycle.js", "tools/data-lifecycle.test.cjs", "tools/privacy-controls.test.cjs"]
+    },
+    {
+      "id": "idol_media_rights",
+      "title": "Commercial use rights for real-idol names and CDN portraits",
+      "status": "unverified",
+      "required_for": ["public_rc", "commercial_production"],
+      "owner": "Content/Legal",
+      "evidence_required": "Approved roster scope and image-use authorization linked to this build"
+    },
+    {
+      "id": "bundled_asset_rights",
+      "title": "License provenance for music, SFX, font, mascot, and backgrounds",
+      "status": "unverified",
+      "required_for": ["public_rc", "commercial_production"],
+      "owner": "Content/Legal",
+      "evidence_required": "Per-file source, author, license, territory, term, and modification allowance"
+    },
+    {
+      "id": "privacy_policy",
+      "title": "Published privacy notice and controller/contact information",
+      "status": "unverified",
+      "required_for": ["public_rc", "commercial_production"],
+      "owner": "Privacy/Legal",
+      "evidence_required": "Approved public policy URL covering Dream Group analytics and retention"
+    },
+    {
+      "id": "production_observability",
+      "title": "Crash/error ingestion, alerting, and on-call ownership",
+      "status": "unverified",
+      "required_for": ["commercial_production"],
+      "owner": "Engineering",
+      "evidence_required": "Production endpoint, alert threshold, owner, and test incident"
+    },
+    {
+      "id": "rollback_drill",
+      "title": "Versioned deployment and verified rollback drill",
+      "status": "unverified",
+      "required_for": ["commercial_production"],
+      "owner": "Engineering",
+      "evidence_required": "Release SHA, last-known-good SHA, rollback command, and timed drill result"
+    }
+  ]
+}

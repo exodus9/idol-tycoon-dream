@@ -5,10 +5,10 @@ const path = require('node:path');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 
-test('leaderboard submission encodes the submitted group season, not the representative season', () => {
-  const submit = html.slice(html.indexOf('    submitGroup(g){'), html.indexOf('    showLeague(){'));
-  assert.ok(submit.includes('this.battleSeasonOf(g.gid).pts'));
-  assert.equal(submit.includes('this.battleSeason().pts'), false);
+test('standalone group updates cannot submit any leaderboard state', () => {
+  const submit = html.slice(html.indexOf('    submitGroup()'), html.indexOf('    showLeague(){'));
+  assert.match(submit,/submitGroup\(\)\{ this\._leagueServer=false; return false; \}/);
+  assert.equal(submit.includes('fetch('), false);
 });
 
 test('rerun adoption protects displayed BEST score and every assigned group slot', () => {

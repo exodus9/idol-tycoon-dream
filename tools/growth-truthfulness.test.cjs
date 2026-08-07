@@ -6,7 +6,7 @@ const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const sim = fs.readFileSync(path.join(root, 'tools', 'balance-sim.mjs'), 'utf8');
 
-assert.match(html, /const jk = \(c\.kind==="rare"\) \? "great" : rollJudge/,
+assert.match(html, /const rolled=\(c\.kind==="rare"\) \? "great" : rollJudge/,
   'live RUN must guarantee great, not perfect, for rare lessons');
 assert.match(sim, /card\.kind === 'rare' \? 'great' : rollJudge/,
   'balance simulator must mirror the live rare-lesson judgment');

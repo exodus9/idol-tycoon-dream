@@ -88,7 +88,7 @@
   .sheet-btn.plain{background:var(--panel2);color:var(--txt);border:1px solid var(--line)}
   .sheet-btn.danger{background:var(--panel2);color:var(--bad);border:1px solid var(--line)}
   .sheet-lang{display:flex;gap:8px;margin-top:9px}
-  .sheet-lang button{flex:1;border-radius:12px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;
+  .sheet-lang button{flex:1;min-height:44px;border-radius:12px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;
     border:1px solid var(--line);background:var(--panel2);color:var(--sub);font-family:inherit}
   .sheet-lang button.sel{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
 
@@ -294,6 +294,7 @@
   .act:active{transform:scale(.97)}
   .act.spec{border-color:rgba(240,160,30,.55);box-shadow:inset 0 0 12px rgba(240,160,30,.10)}   /* ⑭ 타고난 특기 훈련 강조 */
   .bloom-line{color:#ffd35c;font-weight:bold;font-size:15px;margin-bottom:4px;text-shadow:0 0 12px rgba(255,211,92,.45);animation:bloomPop .5s ease}
+  .first-fandom-moment{margin:0 0 7px;padding:7px 9px;border-radius:10px;background:linear-gradient(90deg,rgba(255,77,114,.2),rgba(132,92,255,.16));border:1px solid rgba(255,116,158,.38);color:#ffd8e5;font-size:13px;font-weight:800}
   @keyframes bloomPop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
   .spec-tag{font-size:10px;color:#f0a01e;font-weight:bold;vertical-align:1px}
   .act.rest{background:var(--panel2)}
@@ -805,7 +806,7 @@
           <b data-i18n="mode_quick">간이 육성</b><small id="msegQuickSub" data-i18n="mode_quick_lock">완주하면 열려</small>
         </button>
       </div>
-      <button class="btn" id="startBtn" disabled onclick="DG.toCardPick()" data-i18n="sel_start">육성 시작 →</button>
+      <button class="btn" id="startBtn" disabled onclick="DG.beginRunFromSelection()" data-i18n="sel_start">육성 시작 →</button>
     </div>
   </section>
 
@@ -827,11 +828,11 @@
 
   <!-- 카드 보관함 (보유·강화 | 도감) -->
   <section class="screen" id="s-cards">
-    <div class="sub-head"><h2 style="margin:0">SUPPORT DECK</h2><button class="mini-head-action" onclick="DG.goForge()">강화·합성 ›</button></div>
-    <p class="card-kind-note"><b>지원 카드</b> · 플레이 보상 전용 육성 장비 · 결제/뽑기 없음 <button onclick="DG.goRoster()">아이돌 카드 보기 ›</button></p>
+    <div class="sub-head"><h2 style="margin:0">SUPPORT DECK</h2><button class="mini-head-action" onclick="DG.goForge()" data-dg-i18n="cards.forge">강화·합성 ›</button></div>
+    <p class="card-kind-note"><b data-dg-i18n="cards.kindTitle">지원 카드</b> <span data-dg-i18n="cards.kindNote">· 플레이 보상 전용 육성 장비 · 결제/뽑기 없음</span> <button onclick="DG.goRoster()" data-dg-i18n="cards.viewIdols">아이돌 카드 보기 ›</button></p>
     <div class="segtab" style="margin-bottom:9px">
-      <button class="seg on" id="cseg-own" onclick="DG.cardsTab('own')">🎴 보유</button>
-      <button class="seg" id="cseg-dex" onclick="DG.cardsTab('dex')">📖 도감</button>
+      <button class="seg on" id="cseg-own" onclick="DG.cardsTab('own')" data-dg-i18n="cards.owned">🎴 보유</button>
+      <button class="seg" id="cseg-dex" onclick="DG.cardsTab('dex')" data-dg-i18n="cards.dex">📖 도감</button>
     </div>
     <p class="muted" id="cardsHint" style="margin:0 0 8px"></p>
     <div id="cardsFilter"></div>
@@ -917,10 +918,10 @@
 
   <!-- 연습생 숙소 -->
   <section class="screen" id="s-roster">
-    <div class="sub-head"><h2 style="margin:0">IDOL CARD</h2><button class="mini-head-action" onclick="DG.go();DG.editLineup()">그룹 편성 ›</button></div>
-    <div class="section-switch"><button class="on" onclick="DG.goRoster()">아이돌</button><button onclick="DG.go();DG.editLineup()">그룹 편성</button><button onclick="DG.showGroupDex()">그룹 도감</button></div>
+    <div class="sub-head"><h2 style="margin:0">IDOL CARD</h2><button class="mini-head-action" onclick="DG.go();DG.editLineup()" data-dg-i18n="roster.lineupShort">그룹 편성 ›</button></div>
+    <div class="section-switch"><button class="on" onclick="DG.goRoster()" data-dg-i18n="roster.idols">아이돌</button><button onclick="DG.go();DG.editLineup()" data-dg-i18n="roster.lineup">그룹 편성</button><button onclick="DG.showGroupDex()" data-dg-i18n="roster.groupDex">그룹 도감</button></div>
     <div id="rosterList"></div>
-    <button class="btn compact-bottom-action" onclick="Game.goSelect()">＋ 새 아이돌 육성</button>
+    <button class="btn compact-bottom-action" onclick="Game.goSelect()" data-dg-i18n="roster.newIdol">＋ 새 아이돌 육성</button>
   </section>
 
   <!-- 포지션 배치 -->
@@ -1040,6 +1041,7 @@
       <button class="menu-item" onclick="DG.go(); if(window.Tut)Tut.replay();"><span class="mi-ic">🎓</span><span class="mi-t" data-dg-i18n="menu.tutorial">튜토리얼 다시 보기</span><span class="mi-ar">›</span></button>
       <button class="menu-item" onclick="DG.editAgency()"><span class="mi-ic">✏️</span><span class="mi-t" data-dg-i18n="menu.agency">기획사 설정</span><span class="mi-ar">›</span></button>
       <button class="menu-item" onclick="Game.openSettings()"><span class="mi-ic">⚙️</span><span class="mi-t" data-dg-i18n="menu.settings">설정</span><span class="mi-v muted">Language · Sound</span><span class="mi-ar">›</span></button>
+      <button class="menu-item" onclick="Game.openPrivacy()"><span class="mi-ic">🛡️</span><span class="mi-t" data-dg-i18n="menu.privacy">데이터·개인정보</span><span class="mi-v muted">PRIVACY</span><span class="mi-ar">›</span></button>
       <button class="menu-item" onclick="DG.resetData()"><span class="mi-ic">🗑️</span><span class="mi-t" data-dg-i18n="menu.reset">데이터 초기화</span><span class="mi-v muted">RESET</span><span class="mi-ar">›</span></button>
       <button class="menu-item danger" onclick="Nav.exit()"><span class="mi-ic">✕</span><span class="mi-t" data-dg-i18n="menu.exit">게임 나가기</span><span class="mi-v muted">CHOEAEDOL</span></button>
     </div>
@@ -1074,21 +1076,23 @@
 
 <!-- 콘텐츠(다국어·아이돌DB) 갱신 시 v= 날짜를 올려 캐시 무효화 → 재방문 유저에게도 반영 -->
 <script src="storage-journal.js?v=4e2dec8a4b"></script>
+<script src="data-lifecycle.js?v=689d558581"></script>
+<script src="run-identity.js?v=03b57db72d"></script>
 <script src="run-migration.js?v=2160e1c632"></script>
-<script src="daily-retention.js?v=07088d420d"></script>
+<script src="daily-retention.js?v=2d3b159bdc"></script>
 <script src="progress-action.js?v=a280a2c299"></script>
 <script src="first-group-journey.js?v=d24f63065d"></script>
 <script src="mentor-inheritance.js?v=9b37b72298"></script>
-<script src="run-memory.js?v=4e9d4557c3"></script>
+<script src="run-memory.js?v=7e082974bb"></script>
 <script src="fandom-onboarding.js?v=b79c701b69"></script>
 <script src="season-edition.js?v=5b6e84402d"></script>
-<script src="beginner-flow.js?v=30f2aee718"></script>
+<script src="beginner-flow.js?v=f57e1da8c9"></script>
 <script src="run-balance-rules.js?v=7e1af59983"></script>
 <script src="stage-criteria.js?v=6d23aaaa14"></script>
-<script src="completion-transaction.js?v=8c3a470bcb"></script>
-<script src="product-telemetry.js?v=cb4ba96a19"></script>
+<script src="completion-transaction.js?v=a40787a406"></script>
+<script src="product-telemetry.js?v=46f774b08d"></script>
 <script src="run-adoption.js?v=f5ce39d47f"></script>
-<script src="dg-i18n.js?v=bcc9dc869a"></script>
+<script src="dg-i18n.js?v=47266930e0"></script>
 <script src="i18n.js?v=b295633ad5"></script>
 <script src="idols.js?v=sync202608070520"></script>
 <script>
@@ -1186,14 +1190,8 @@ function drawHand(stam){
 // 에셋 캐시버스터: 애니/스프라이트 갱신이 브라우저·Pages 하드캐시에 막혀 구버전 표시되던 문제 방지.
 // 애니 바꿀 때마다 이 값 갱신(날짜+접미).
 const ASSET_VER = "20260723a";   // 버디=레티 교체(서사 정합: 연습실 코치=레티)
-// ===== Firebase (Firestore REST) — 서버 공유 리더보드. apiKey는 브라우저용 공개키(시크릿 아님), 실보안은 Security Rules =====
-const FB_PID="idol-tycoon", FB_KEY="AIzaSyCUgSzgS2DBf58G6-lHzO77Qn0ZkZglAeE";
-const FS_BASE=`https://firestore.googleapis.com/v1/projects/${FB_PID}/databases/(default)/documents`;
-function fsStr(v){ return {stringValue:String(v==null?"":v)}; }
-function fsParse(doc){ const f=doc.fields||{};
-  const g=k=>{ const c=f[k]; if(!c) return ""; return c.stringValue!=null?c.stringValue:(c.integerValue!=null?+c.integerValue:(c.doubleValue!=null?+c.doubleValue:"")); };
-  return {player:g("player"),name:g("name"),ending:g("ending"),emoji:g("emoji"),fans:+g("fans")||0,lang:g("lang"),title:g("title")};
-}
+// 스탠드얼론은 모든 순위·고스트를 이 기기에서만 처리한다.
+// 인증·서버 검산·전용 원장이 갖춰지기 전에는 공용 DB 읽기/쓰기를 연결하지 않는다.
 // 훈련 도트 연출: 활동별 동작(영차영차) + 결과별 마무리
 const TRAIN_FX = {
   vocal:   {motion:"fx-sing",   notes:["♪","♫","🎵"], word:"발성 연습 중"},
@@ -1675,6 +1673,25 @@ const validRunSave=s=>!!(s&&s.idol&&typeof s.week==='number'&&s.week>=1);
 const Game = {
   st:null, lastResult:null, selIdol:null, curMode:"search", trainMode:"full", customSpec:null, runDirection:null, pendingRunDirection:null, runPromiseId:null, replyPromiseSource:null, replyPromiseSelectionTracked:false, mentorRid:null, pendingRunId:null, pendingMentorRid:null, customImg:null, customGender:"F", appFavoriteId:null, appFavoriteDismissed:false, userIdolOverride:false,
 
+  activeRunSummary(){ try{const got=StorageJournal.read(localStorage,RUN_SAVE_KEY,RUN_BACKUP_KEY,validRunSave);return got&&got.value?RunIdentity.summary(got.value):null;}catch(e){return null;} },
+  runSaveSnapshot(){ try{return {primary:localStorage.getItem(RUN_SAVE_KEY),backup:localStorage.getItem(RUN_BACKUP_KEY)};}catch(e){return {primary:null,backup:null};} },
+  restoreRunSave(snapshot){ try{[['primary',RUN_SAVE_KEY],['backup',RUN_BACKUP_KEY]].forEach(([field,key])=>{const value=snapshot&&snapshot[field];if(value==null)localStorage.removeItem(key);else localStorage.setItem(key,value);});return true;}catch(e){return false;} },
+  discardPendingRunSetup(){ this.selIdol=null;this.runDirection=null;this.pendingRunDirection=null;this.runPromiseId=null;this.replyPromiseSource=null;this.replyPromiseSelectionTracked=false;this.mentorRid=null;this.pendingRunId=null;this.pendingMentorRid=null;this._retrainRid=null;this._retrainIdkey=null; },
+  promptActiveRunDecision(selected,autoStart){
+    const active=this.activeRunSummary(), conflict=active&&selected?RunIdentity.conflict({runId:active.runId,idol:{id:active.idolId==='custom'?'custom':active.idolId,name:active.idolName},week:active.week,mode:active.total===12?'quick':'full',retrainRid:active.retrainRid},selected):null;
+    if(!active||!selected||!conflict)return false;
+    if(RunIdentity.approvalMatches(this._replaceApproval,active,selected))return false;
+    this._replaceApproval=null;
+    const target=idolName(selected)||selected.name||dgT('common.idol'), key=`${active.runId}>${conflict.selectedKey}`;
+    if(!autoStart&&this._activeRunPromptKey===key)return false;
+    this._activeRunPromptKey=key;
+    const params={active:esc(active.idolName||'IDOL'),target:esc(target),week:active.week,total:active.total};
+    try{DG.confirmModal({title:dgT('run.replaceTitle',params),body:dgT('run.replaceCopy',params),cancel:dgT('run.keepPlaying',params),ok:dgT('run.startNew',params),
+      onCancel:()=>{this._replaceApproval=null;try{ProductTelemetry.track('active_run_decision',{active_run_id:active.runId,active_id:active.idolKey,target_id:conflict.selectedKey,decision:'continue',turn:active.week});}catch(e){} this.discardPendingRunSetup();this.continueGame();},
+      onOk:()=>{this._replaceApproval=RunIdentity.approval(active,selected);try{ProductTelemetry.track('active_run_decision',{active_run_id:active.runId,active_id:active.idolKey,target_id:conflict.selectedKey,decision:'replace',turn:active.week});}catch(e){} if(autoStart)this.start();}});}catch(e){return false;}
+    return true;
+  },
+
   goSelect(){
     this.selIdol=null; this.customImg=null; this.customSpec=null; this.runDirection=null; this.pendingRunDirection=null; this.runPromiseId=null; this.replyPromiseSource=null; this.replyPromiseSelectionTracked=false; this.mentorRid=null; this.pendingRunId=null; this.pendingMentorRid=null; this.customGender="F";
     this._retrainRid=null; this._retrainIdkey=null;   // 재육성 취소 후 다른 아이돌이 기존 카드에 덮이는 것 방지
@@ -1690,6 +1707,7 @@ const Game = {
     this.search();
     // ⭐첫 사용자 감성 훅: 첫 아이돌이면 "네 최애를 찾아봐" 프레이밍 + 검색창 자동 포커스
     let _first=false; try{ DG.load(); _first=(DG.data.roster||[]).length===0; }catch(e){}
+    if(_first&&!this._entryExperimentTracked){this._entryExperimentTracked=true;try{ProductTelemetry.track('experiment_exposure',{experiment:'first_run_guidance_v1',variant:'guided'});}catch(e){}}
     const _h=document.querySelector('#s-select .sub-head h2');
     if(_h) _h.textContent = _first ? '✨ '+dgT('entry.firstChoice') : dgT('select.title');
     const _si=document.getElementById('idolSearch');
@@ -1705,7 +1723,7 @@ const Game = {
   dismissAppFavoritePick(){ const had=this.appFavoriteId!=null; this.userIdolOverride=true; this.appFavoriteDismissed=true; this.selIdol=null; this.runDirection=null; const input=document.getElementById('idolSearch'); if(input)input.value=''; this.renderAppFavoriteHint(null); this.search(); this.updateStartFab(); const h=document.querySelector('#s-select .sub-head h2'); if(h)h.textContent='✨ '+dgT('entry.firstChoice'); try{if(input)input.focus();if(had)ProductTelemetry.track('favorite_context_change',{source:'hint'});}catch(e){} },
   mode(m,source){
     if(source==='user'){this.userIdolOverride=true;this.appFavoriteDismissed=true;this.renderAppFavoriteHint(null);}
-    this.curMode=m; this.selIdol=null; this.runDirection=null; this.runPromiseId=null; this.mentorRid=null;
+    this._replaceApproval=null; this.curMode=m; this.selIdol=null; this.runDirection=null; this.runPromiseId=null; this.mentorRid=null;
     document.getElementById("seg-search").classList.toggle("on", m==="search");
     document.getElementById("seg-custom").classList.toggle("on", m==="custom");
     document.getElementById("mode-search").style.display = m==="search"?"":"none";
@@ -1732,11 +1750,14 @@ const Game = {
     const changedFavorite=this.appFavoriteId!=null&&String(id)!==String(this.appFavoriteId)&&!this.appFavoriteDismissed;
     if(changedFavorite){this.appFavoriteDismissed=true;this.renderAppFavoriteHint(null);try{ProductTelemetry.track('favorite_context_change',{source:'card'});}catch(e){}}
     this.selIdol = IDOLS.find(i=>i.id===id) || null;
+    let firstRoster=true; try{DG.load();firstRoster=(DG.data.roster||[]).length===0;}catch(e){}
+    try{ProductTelemetry.track('idol_select',{idol_id:String(id),source:source||'unknown',first_roster:firstRoster});}catch(e){}
     this.runDirection=null;
     document.querySelectorAll("#idolGrid .card").forEach(c=>{ const on=(+c.dataset.id===id); c.classList.toggle("sel", on);
       if(on){ c.classList.remove("pickpop"); void c.offsetWidth; c.classList.add("pickpop"); } });
     try{ sfx("sparkle"); if(navigator.vibrate)navigator.vibrate(12); }catch(e){}
     this.updateStartFab();
+    this.promptActiveRunDecision(this.selIdol,false);
   },
   renderSpecPick(){
     document.getElementById("specPick").innerHTML = STATS.map(s=>
@@ -1831,18 +1852,13 @@ const Game = {
   },
   // 육성 방식 토글(정식 24턴 / 간이 12턴). 실행이 아니라 선택 → 오탭해도 화면전환 없음.
   setTrainMode(m){
-    this.trainMode=m; sfx("click");   // 간이 잠금 해제(첫 판부터 선택 가능)
+    this._replaceApproval=null; this.trainMode=m; sfx("click");   // 간이 잠금 해제(첫 판부터 선택 가능)
     this.updateStartFab();
   },
   start(){
-    if(this.hasSave()&&!this._replaceConfirmed){
-      try{ DG.confirmModal({title:dgT('run.replaceTitle'),body:dgT('run.replaceCopy'),
-        cancel:dgT('run.keepPlaying'),ok:dgT('run.startNew'),onCancel:()=>this.continueGame(),
-        onOk:()=>{ this._replaceConfirmed=true; this.start(); }}); }catch(e){}
-      return;
-    }
-    this._replaceConfirmed=false;
-    const idol=this._pickIdol(); if(!idol) return;
+    const idol=this._pickIdol(); if(!idol)return;
+    if(this.promptActiveRunDecision(idol,true))return;
+    const activeAtCommit=this.activeRunSummary(),replacingActive=RunIdentity.approvalMatches(this._replaceApproval,activeAtCommit,idol); this._replaceApproval=null;
     this._finished=false;   // 새 판 = finish 멱등 가드 해제
     const mode=(this.trainMode==="quick")?"quick":"full";
     const runDirection=this.runDirection;
@@ -1850,6 +1866,7 @@ const Game = {
     const seasonTarget=DG.seasonEditionFor(runDirection);
     const runPromise=DG.runPromiseForStart(this.runPromiseId);
     if(!runPromise){ try{toast('이번 RUN에서 지킬 약속을 골라줘');}catch(e){} return; }
+    const previousSt=this.st,runSnapshot=this.runSaveSnapshot(),agencySnapshot=DG.snapshotRunStart();
     idol.runDirection=runDirection;
     const {base} = talentOf(runDirection);
     const pickedKey=idol.id==='custom'?'c:'+idol.name:'i:'+(idol.id!=null?idol.id:idol.name);
@@ -1889,8 +1906,11 @@ const Game = {
     this.logWeek(t("start_log",{name:esc(idolName(idol))}));
     if(mentorApplied) this.logWeek(`🫶 ${esc(this.st.mentor.name)} 멘토의 ${statLabel(mentorApplied.direction)} 제작 노하우 +${mentorApplied.boost}`);
     if(dailyBoost) this.logWeek(`💞 오늘의 팬덤 프로젝트 보정 적용${dailyBoost.bond?` · 유대 +${dailyBoost.bond}`:''}${dailyBoost.climax?` · 올인 +${dailyBoost.climax}%p`:''}${dailyBoost.start?` · ${statLabel(runDirection)} +${dailyBoost.start}`:''}`);
+    if(replacingActive)this.clearSave();
+    const commit=CompletionTransaction.commitPair({persistRun:()=>this.save(),persistAgency:()=>DG.persist(),restoreRun:()=>this.restoreRunSave(runSnapshot),restoreAgency:()=>DG.restoreRunStart(agencySnapshot)});
+    if(!commit.ok){this.st=previousSt;try{ProductTelemetry.track('save_failure',{store:'run_start',operation:'commit',recoverable:!!commit.recovered});}catch(e){} try{toast(dgT(commit.recovered?'save.startRollback':'save.startRecoveryUnknown'));}catch(e){} return;}
     try{ ProductTelemetry.track('run_start',{run_id:runId,prev_run_id:prevRunId,...replyLink,mode,run_no:runNo,retrain:!!retrainRid,direction:runDirection,season_edition_target:!!seasonTarget,started_season:this.st.startedSeason,promise_id:this.st.runPromise&&this.st.runPromise.id||'',promise_retry:!!(this.st.runPromise&&this.st.runPromise.retryOf),daily_boost:dailyBoost?dailyBoost.kind:'none',mentor:!!mentorApplied,mentor_rid:mentorApplied&&this.st.mentor?String(this.st.mentor.rid):''}); }catch(e){}
-    this.save();
+    if(runNo===2)try{ProductTelemetry.track('second_run_start',{run_id:runId,mode,direction:runDirection,source:retrainRid?'retrain':'new_idol'});}catch(e){}
     const go=()=>{ show("s-play"); this.startWeek(); this.armBackGuard(); toast(t("start_toast",{name:idolName(idol)})); };
     // 간이 육성: 온보딩 컷씬 스킵하고 바로 12턴 플레이(재료 빠르게 뽑기). 정식은 오프닝 컷씬.
     if(mode==="quick") go();
@@ -2066,7 +2086,8 @@ const Game = {
         : (spec?'<span class="spk">⭐</span>':'');
       const capped=!!impactStat&&(Number(s[impactStat])||0)>=800;
       const nextCombo=s.comboStat===impactStat?(s.combo||0)+1:1;
-      const previewInput=impactStat?{base:c.base,current:s[impactStat],growthMult:growthMult(s[impactStat]),talentMult:impactStat===s.runDirection?1.25:1,trendMult:RunBalanceRules.trendMultiplier(impactStat,_trendStat),cardGrowth:s.cardGrowth||1,comboMult:1+Math.min(.6,(nextCombo-1)*.15),buffMult:s.buff&&s.buff.turns>0?s.buff.mult:1}:null;
+      const routePreview=RunMemory.routeEffect(s,{stat:impactStat,kind:c.kind,outcome:'ok'});
+      const previewInput=impactStat?{base:c.base,current:s[impactStat],growthMult:growthMult(s[impactStat]),talentMult:impactStat===s.runDirection?1.25:1,trendMult:RunBalanceRules.trendMultiplier(impactStat,_trendStat),cardGrowth:(s.cardGrowth||1)*routePreview.growthMult,comboMult:1+Math.min(.6,(nextCombo-1)*.15),buffMult:s.buff&&s.buff.turns>0?s.buff.mult:1}:null;
       const previewRange=(judgeMult)=>{ const low=RunBalanceRules.growthOutcome({...previewInput,judgeMult,randomMult:.9}).applied, high=RunBalanceRules.growthOutcome({...previewInput,judgeMult,randomMult:1.1}).applied; return {min:Math.min(low,high),max:Math.max(low,high)}; };
       const normalRange=impactStat&&!capped?previewRange(c.kind==="rare"?JUDGE.great.mult:JUDGE.ok.mult):{min:0,max:0};
       const failRange=impactStat&&!capped&&c.kind!=="rare"?previewRange(JUDGE.fail.mult):{min:0,max:0};
@@ -2083,6 +2104,8 @@ const Game = {
     };
     // 상태 칩(콤보·몰입) — 숫자 없이 최소 표기. 효과는 결과로 체감.
     let chips='';
+    const routeType=s.runPromise&&(s.runPromise.baseType||s.runPromise.id);
+    if(routeType) chips+=`<span class="tstat-chip">${dgT('run.routeChip',{route:dgT('run.route.'+routeType)})}</span>`;
     if(s.combo>=2) chips+=`<span class="tstat-chip combo">${dgT('run.combo',{count:s.combo})}</span>`;
     if(s.buff && s.buff.turns>0) chips+=`<span class="tstat-chip buff">🧘 ${dgT('run.focusChip',{turns:s.buff.turns})}</span>`;
     const handCards=s.hand.map(cardById), recovery=BeginnerFlow.recoveryState(s.stam,handCards);
@@ -2103,6 +2126,10 @@ const Game = {
     const id=(s.hand||[])[i]; const c=(id==="special"?RARE_CARD:TRAIN_CARDS.find(x=>x.id===id));
     if(!c) return;
     if(c.cost>0 && (s.stam!=null?s.stam:100) < c.cost){ toast(dgT('run.noStamina')); return; }
+    if(!s.firstActionTracked){
+      s.firstActionTracked=true;
+      try{ProductTelemetry.track('first_action',{run_id:s.runId||'',run_no:s.runNo||1,turn:s.week||1,card_id:c.id||id||'',direction:s.runDirection||'',recommended:!!(c.stat&&c.stat===s.runDirection)});}catch(e){}
+    }
     try{ if(window.Tut && Tut.on && Tut.on()){ Tut.clear&&Tut.clear(); } }catch(e){}   // 카드 탭 시 코치마크 정리(잔존 방지)
     s.busy=true;
     const cb=condBucket(s.cond), mult=COND_INFO[cb].mult;
@@ -2112,16 +2139,19 @@ const Game = {
     else s.stam=Math.max(0, (s.stam!=null?s.stam:100) - c.cost);
 
     if(c.kind==="rest"){
-      s.cond=Math.min(100, s.cond+30); s.mental=Math.min(100,(s.mental||60)+14);   // 컨디션·멘탈 둘 다 확실히 회복(리스크 관리 레버)
+      const route=RunMemory.routeEffect(s,{kind:'rest',outcome:'ok'});
+      s.cond=Math.min(100, s.cond+30); s.mental=Math.min(100,(s.mental||60)+14+route.mentalGain);   // 컨디션·멘탈 둘 다 확실히 회복(리스크 관리 레버)
       s.combo=0; s.comboStat=null;   // 휴식=콤보 끊김
       this.trainReveal(s.idol,"rest","ok",{cls:"s",label:dgT('run.restReveal'),emoji:"😌"},
-        dgT('run.restResult'), dgT('run.restSay'),()=>this.afterTurn());
+        dgT('run.restResult')+(route.active?` · ${dgT('run.routeResilienceEffect',{amount:route.mentalGain})}`:''), dgT('run.restSay'),()=>this.afterTurn());
       return;
     }
     if(c.kind==="buff"){   // 지속계: 몰입 모드(다음 3턴 레슨 +30%). 콤보는 유지.
+      const route=RunMemory.routeEffect(s,{kind:'buff',outcome:'ok'});
       s.buff={turns:3, mult:1.3};
+      if(route.mentalGain)s.mental=Math.min(100,(s.mental||60)+route.mentalGain);
       this.trainReveal(s.idol,"creative","great",{cls:"dg",label:dgT('run.focusLabel'),emoji:"🧘"},
-        `<b>${dgT('run.focusResult')}</b>`, dgT('run.focusSay'),()=>this.afterTurn());
+        `<b>${dgT('run.focusResult')}</b>${route.active?` · ${dgT('run.routeResilienceEffect',{amount:route.mentalGain})}`:''}`, dgT('run.focusSay'),()=>this.afterTurn());
       return;
     }
     if(c.kind==="live"){
@@ -2148,18 +2178,26 @@ const Game = {
     const trendMult = RunBalanceRules.trendMultiplier(stat,trendStat);
     // ⭐판정: rare=대성공 확정. 나머지는 컨디션·멘탈이 확률에 가중된 rollJudge(대실패/실패/성공/대성공/각성).
     // 각성(4.6배) 강제는 초반 한 장으로 성장 상한에 닿아 이후 선택을 무효화하므로 사용하지 않는다.
-    const jk = (c.kind==="rare") ? "great" : rollJudge(s.cond, s.mental);
+    const rolled=(c.kind==="rare") ? "great" : rollJudge(s.cond, s.mental);
+    const guided=BeginnerFlow.guidedOutcome({runNo:s.runNo,turn:s.week,recommended:spec,resolved:s.firstGuidedActionResolved,rolled});
+    const jk=guided.outcome;
+    if(guided.guided)s.firstGuidedActionResolved=true;
+    let firstMoment=BeginnerFlow.firstFavoriteMoment({guided:guided.guided,seen:s.firstFavoriteMomentSeen,bond:s.fanBond});
+    const firstMomentBondBefore=s.fanBond;
+    if(firstMoment.active){s.firstFavoriteMomentSeen=true;s.fanBond=firstMoment.bondAfter;}
     const J = JUDGE[jk]||JUDGE.ok;
+    const route=RunMemory.routeEffect(s,{stat,kind:c.kind,outcome:jk});
     // gain: 판정 배율 태움. 실패계열=급감, 대실패(mult<0)=스탯 하락 = 진짜 리스크.
     const oldV=Math.round(s[stat]), oldG=grade(oldV), oldL=levelOf(oldV);
-    const growth=RunBalanceRules.growthOutcome({base:c.base,judgeMult:J.mult,current:s[stat],growthMult:J.mult>0?growthMult(s[stat]):1,talentMult:J.mult>0?talent:1,trendMult:J.mult>0?trendMult:1,cardGrowth:J.mult>0?(s.cardGrowth||1):1,comboMult:J.mult>0?comboMult:1,buffMult:J.mult>0?buffMult:1,randomMult:J.mult>0?rndv:1});
+    const growth=RunBalanceRules.growthOutcome({base:c.base,judgeMult:J.mult,current:s[stat],growthMult:J.mult>0?growthMult(s[stat]):1,talentMult:J.mult>0?talent:1,trendMult:J.mult>0?trendMult:1,cardGrowth:J.mult>0?(s.cardGrowth||1)*route.growthMult:1,comboMult:J.mult>0?comboMult:1,buffMult:J.mult>0?buffMult:1,randomMult:J.mult>0?rndv:1});
     s[stat]=growth.next;
     let g=growth.applied;   // 상한/하한으로 잘린 양이 아니라 실제 반영된 성장량만 결과에 표시
     if(!s.trainCount)s.trainCount={}; s.trainCount[stat]=(s.trainCount[stat]||0)+1;
-    const fanGain=Math.max(0,Math.round((28+s[stat]*0.5)*(c.kind==="light"?0.6:1)*J.fanMult)); s.fans+=fanGain;
+    const fanGain=Math.max(0,Math.round((28+s[stat]*0.5)*(c.kind==="light"?0.6:1)*J.fanMult*route.fanMult)); s.fans+=fanGain;
+    if(route.bondGain)s.fanBond=Math.min(100,(s.fanBond||0)+route.bondGain);
     // 판정이 컨디션·멘탈에 피드백(대실패=급락→다음 판정 더 위험 = 긴장). rare만 好調 부여.
     if(c.kind==="rare"){ s.cond=Math.min(100,s.cond+28); s.mental=Math.min(100,(s.mental||60)+3); }
-    else { s.cond=Math.max(0, s.cond + J.cond + (c.kind==="burst"?-12:0)); s.mental=Math.max(0,Math.min(100,(s.mental||60)+(MENTAL_DELTA[jk]||0))); }
+    else { const mentalDelta=MENTAL_DELTA[jk]||0, routedMental=mentalDelta<0?Math.round(mentalDelta*route.mentalLossMult):mentalDelta; s.cond=Math.max(0, s.cond + J.cond + (c.kind==="burst"?-12:0)); s.mental=Math.max(0,Math.min(100,(s.mental||60)+routedMental)); }
     if(buffOn){ s.buff.turns--; if(s.buff.turns<=0) s.buff=null; }
     if(jk==='fail'||jk==='dbad'){ s.combo=0; s.comboStat=null; }        // 실패=콤보 끊김(리스크)
     const newV=Math.round(s[stat]), newG=grade(newV), newL=levelOf(newV);
@@ -2169,10 +2207,17 @@ const Game = {
     const comboTag = (g>0&&s.combo>=2) ? ` · 🔥${dgT('run.tagCombo',{count:s.combo})}` : "";
     const buffTag = (g>0&&buffOn) ? ` · 🧘${dgT('run.tagFocus')}` : "";
     const trendTag = (g>0&&onTrend) ? ` · 📈${dgT('run.tagTrend')}` : "";
+    const routeTag=route.active?` · ${dgT('run.routeEffect.'+route.type,{amount:route.bondGain})}`:'';
     const sign = g>=0?'+':'';
+    if(firstMoment.active){
+      s.pendingFavoriteTurnAdvance=true;
+      if(this.save()){try{ProductTelemetry.track('favorite_first_moment',{run_id:s.runId||'',direction:s.runDirection||'',bond_after:firstMoment.bondAfter});}catch(e){}}
+      else{s.fanBond=firstMomentBondBefore;delete s.firstFavoriteMomentSeen;delete s.pendingFavoriteTurnAdvance;firstMoment={active:false,gain:0,bondAfter:firstMomentBondBefore};}
+    }
+    const firstMomentLine=firstMoment.active?`<div class="first-fandom-moment">${dgT('run.firstFavoriteMoment',{fandom:esc(fandomOf(s.idol).name),idol:esc(idolName(s.idol)),amount:firstMoment.gain})}</div>`:'';
     this.trainReveal(s.idol, stat, jk, J,
-      bloomLine + `${sico} ${sname} <b>${sign}${g}</b> · ${dgT('run.fans')} +${fmt(fanGain)}${spec?' · 🎯'+dgT('run.tagDirection'):''}${trendTag}${comboTag}${buffTag}`,
-      t("say_"+jk),()=>{ this.afterTurn(); this.bumpStat(stat,oldV,newV,oldG,newG); });
+      firstMomentLine + bloomLine + `${sico} ${sname} <b>${sign}${g}</b> · ${dgT('run.fans')} +${fmt(fanGain)}${spec?' · 🎯'+dgT('run.tagDirection'):''}${trendTag}${comboTag}${buffTag}${routeTag}`,
+      t("say_"+jk),()=>{ delete s.pendingFavoriteTurnAdvance; this.afterTurn(); this.bumpStat(stat,oldV,newV,oldG,newG); });
   },
 
   // ⭐초상 생동감: 매 주 시작 시 연습생이 상태에 반응해 한마디(말풍선). Live2D 대체 감성.
@@ -2181,7 +2226,8 @@ const Game = {
     const s=this.st; if(!s) return;
     const cb=condBucket(s.cond);
     let pool;
-    if(s.combo>=3) pool=['run.reactCombo1','run.reactCombo2','run.reactCombo3'].map(dgT);
+    if((s.runNo||1)===1&&(s.week||1)===1&&!s.firstFavoriteLineSeen){s.firstFavoriteLineSeen=true;pool=[dgT('run.firstFavoriteLine',{fandom:fandomOf(s.idol).name})];}
+    else if(s.combo>=3) pool=['run.reactCombo1','run.reactCombo2','run.reactCombo3'].map(dgT);
     else if(cb==="bad") pool=['run.reactTired1','run.reactTired2','run.reactTired3'].map(dgT);
     else if(cb==="good") pool=['run.reactGood1','run.reactGood2','run.reactGood3'].map(dgT);
     else pool=['run.reactNormal1','run.reactNormal2','run.reactNormal3','run.reactNormal4'].map(dgT);
@@ -2401,7 +2447,7 @@ const Game = {
 
   // ===== 중간 저장(localStorage) =====
   save(){ try{ if(this.st) StorageJournal.write(localStorage,RUN_SAVE_KEY,RUN_BACKUP_KEY,this.st,validRunSave); this._saveError=false; return true; }
-    catch(e){ if(!this._saveError){ this._saveError=true; try{toast(dgT('save.noSpace'));}catch(_){} } return false; } },
+    catch(e){ if(!this._saveError){ this._saveError=true; try{toast(dgT('save.noSpace'));}catch(_){} try{ProductTelemetry.track('save_failure',{store:'run',operation:'write',recoverable:true});}catch(_){} } return false; } },
   clearSave(){ try{ StorageJournal.clear(localStorage,RUN_SAVE_KEY,RUN_BACKUP_KEY); }catch(e){} },
   hasSave(){ try{ return !!StorageJournal.read(localStorage,RUN_SAVE_KEY,RUN_BACKUP_KEY,validRunSave).value; }catch(e){ return false; } },
   continueGame(){
@@ -2420,6 +2466,7 @@ const Game = {
     if(this.st.fanBond==null) this.st.fanBond=8;
     if(this.st.fanBondMoments==null) this.st.fanBondMoments=0;
     if(this.st.runNo==null){ try{ DG.load(); this.st.runNo=Math.max(1,(DG.data.runs||0)+1); }catch(e){ this.st.runNo=1; } }
+    BeginnerFlow.consumeCommittedFavoriteTurn(this.st);
     this.save();   // 구세이브 팬덤 유대 마이그레이션을 즉시 영속화
     this._fansShown=this.st.fans;   // 이어하기: 저장된 팬 수부터(0→튐 방지)
     show("s-play"); this.startWeek(); this.armBackGuard();
@@ -3037,6 +3084,7 @@ const Game = {
         const legacyAgain=document.getElementById("againBtn"); if(legacyAgain)legacyAgain.style.display="none";
         try{ ProductTelemetry.track('promise_result',{run_id:s.runId||'',promise_id:s.runMemory&&s.runMemory.promiseId||'',status:s.runMemory&&s.runMemory.status||'',retry:!!(s.runMemory&&s.runMemory.retry)}); }catch(e){}
         try{ ProductTelemetry.track('run_finish',{run_id:s.runId||'',prev_run_id:s.prevRunId||'',run_no:s.runNo||1,completed:!!reachedWorld,final_rank:finalRank||0,direction:s.runDirection,season_edition_completed:!!(_dg&&_dg.seasonEdition),season_edition_new:!!(_dg&&_dg.seasonEdition&&_dg.seasonEdition.newCollection),season_edition_best_updated:!!(_dg&&_dg.seasonEdition&&_dg.seasonEdition.bestUpdated),season_edition_version_added:!!(_dg&&_dg.seasonEdition&&_dg.seasonEdition.versionAdded),season_no:_dg&&_dg.seasonEdition?_dg.seasonEdition.no:null,card_registered:true,mentor:!!s.mentor,mentor_rid:s.mentor?String(s.mentor.rid):'',mentor_choice:s.mentorChoice||'',promise_id:s.runMemory&&s.runMemory.promiseId||'',promise_status:s.runMemory&&s.runMemory.status||'',promise_retry:!!(s.runMemory&&s.runMemory.retry)}); }catch(e){}
+        if((s.runNo||1)===2)try{ProductTelemetry.track('second_run_finish',{run_id:s.runId||'',completed:!!reachedWorld,final_rank:finalRank||0,direction:s.runDirection||''});}catch(e){}
         try{ if(s.runId)localStorage.setItem('dg_last_finished_run_id',s.runId); }catch(e){}
       }
     }
@@ -3232,20 +3280,10 @@ const Game = {
     },"image/png");
   },
 
-  // ===== 리더보드 (Firestore REST — 서버 공유. 오프라인이면 로컬 폴백) =====
+  // ===== 개인 RUN 차트 — 스탠드얼론은 이 기기 기록만 사용 =====
   localBoard(){ try{return JSON.parse(localStorage.getItem("idol_lb")||"[]");}catch(e){return[];} },
-  // 서버에서 상위 20 가져와 캐시. 실패 시 로컬 폴백.
   async fetchBoard(){
-    try{
-      const body={structuredQuery:{from:[{collectionId:"leaderboard"}],
-        orderBy:[{field:{fieldPath:"fans"},direction:"DESCENDING"}], limit:20}};
-      const res=await fetch(`${FS_BASE}:runQuery?key=${FB_KEY}`,
-        {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
-      if(!res.ok) throw new Error("http "+res.status);
-      const arr=await res.json();
-      this._boardCache=(arr||[]).filter(x=>x.document).map(x=>fsParse(x.document)).filter(r=>!(r.ending&&String(r.ending).indexOf('GRP:')===0));   // 개인명전에서 그룹(GRP:) 문서 제외
-      this._boardServer=true;
-    }catch(e){ this._boardServer=false; this._boardCache=this.localBoard(); }
+    this._boardServer=false; this._boardCache=this.localBoard();
     return this._boardCache;
   },
   // 로딩 표시 → 서버 조회 → 렌더
@@ -3296,22 +3334,11 @@ const Game = {
     const player=raw.slice(0,10);
     const fans=Math.max(0,Math.min(5000000,Math.round(r.fans)));   // 서버 규칙 상한과 일치
     r._saved=true; this._markSaved();   // 중복 등록 방지 (낙관적)
-    let ok=false;
-    try{
-      const body={fields:{player:fsStr(player),name:fsStr(r.name),ending:fsStr(r.ending),
-        emoji:fsStr(r.emoji||"⭐"),fans:{integerValue:String(fans)},lang:fsStr(window.LANG||"ko"),title:fsStr(r.topTitle||"")}};
-      const res=await fetch(`${FS_BASE}/leaderboard?key=${FB_KEY}`,
-        {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
-      ok=res.ok;
-    }catch(e){ ok=false; }
-    if(ok){ toast(t("toast_hall_saved")); await this.fetchBoard(); this.renderBoard(r.fans); this._afterSaveModal(false); }
-    else {  // 오프라인/실패 → 이 기기에만 저장
-      const lb=this.localBoard(); lb.forEach(x=>x._me=false);
-      lb.push({player,name:r.name,ending:r.ending,emoji:r.emoji,fans,title:r.topTitle||"",_me:true});
-      localStorage.setItem("idol_lb", JSON.stringify(lb.slice(-200)));
-      this._boardServer=false; this._boardCache=lb;
-      toast(t("toast_hall_local")); this.renderBoard(r.fans); this._afterSaveModal(true);
-    }
+    const lb=this.localBoard(); lb.forEach(x=>x._me=false);
+    lb.push({player,name:r.name,ending:r.ending,emoji:r.emoji,fans,title:r.topTitle||"",_me:true});
+    localStorage.setItem("idol_lb", JSON.stringify(lb.slice(-200)));
+    this._boardServer=false; this._boardCache=lb;
+    toast(t("toast_hall_local")); this.renderBoard(r.fans); this._afterSaveModal(true);
   },
   showBoard(){
     document.getElementById("endStage").textContent=t("hall_title");
@@ -3348,6 +3375,39 @@ const Game = {
   toggleBgm(){ const on=bgmOn(); localStorage.setItem("idol_bgm", on?"off":"on");
     if(on) stopBgm(); else startBgm(); this.openMenu(); },
   openSettings(){ this.openMenu(true); },   // 홈(타이틀) 설정 진입점
+  openPrivacy(){
+    const telemetry=window.ProductTelemetry;
+    const consent=telemetry&&telemetry.getConsent?telemetry.getConsent():'pending';
+    const statusKey=consent==='granted'?'privacy.analyticsOn':consent==='denied'?'privacy.analyticsOff':'privacy.analyticsPending';
+    this.openSheet(`
+      <div class="sheet-title">${dgT('privacy.title')}</div>
+      <div class="sheet-sub" style="line-height:1.55">${dgT('privacy.summary')}</div>
+      <div style="padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--panel2);font-size:12.5px;line-height:1.55;margin:12px 0">
+        <b>${dgT('privacy.localTitle')}</b><br>${dgT('privacy.localCopy')}<br><br>
+        <b>${dgT('privacy.analyticsTitle')}</b><br>${dgT('privacy.analyticsCopy')}<br>
+        <span style="color:var(--accent)">${dgT(statusKey)}</span>
+      </div>
+      <div class="sheet-lang">
+        <button class="${consent==='granted'?'sel':''}" onclick="Game.setAnalyticsConsent('granted')">${dgT('privacy.allow')}</button>
+        <button class="${consent==='denied'?'sel':''}" onclick="Game.setAnalyticsConsent('denied')">${dgT('privacy.deny')}</button>
+      </div>
+      <button class="sheet-btn primary" onclick="Game.exportData()">${dgT('privacy.export')}</button>
+      <button class="sheet-btn plain" onclick="Game.closeSheet()">${dgT('common.close')}</button>`);
+  },
+  setAnalyticsConsent(state){
+    if(window.ProductTelemetry&&ProductTelemetry.setConsent) ProductTelemetry.setConsent(state);
+    this.openPrivacy();
+  },
+  exportData(){
+    try{
+      const data=DataLifecycle.exportSnapshot(localStorage);
+      const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+      const url=URL.createObjectURL(blob),a=document.createElement('a');
+      a.href=url;a.download=`dream-group-save-${new Date().toISOString().slice(0,10)}.json`;
+      document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+      toast(dgT('privacy.exported'));
+    }catch(_){ toast(dgT('privacy.exportFailed')); }
+  },
   // 결과화면 나가기 가드: 저장/공유 안 했는데 나가면 결과 유실 → 확인 시트
   confirmReset(){
     this.openSheet(`
@@ -4783,7 +4843,7 @@ window.addEventListener("popstate", ()=>{
   .hs3-spot.dorm{right:12px;top:24%}.hs3-spot.cards{left:12px;top:49%}.hs3-spot.stage{left:12px;top:61%}
   .hs3-primary{position:absolute;z-index:7;left:16px;right:16px;bottom:118px;width:auto;padding:14px;border-radius:11px;
     background:linear-gradient(90deg,#1255ff,#2746d7);border-color:#5d87ff;box-shadow:0 8px 26px -8px rgba(30,86,255,.75)}
-  .hs3-daily{position:absolute;z-index:6;left:16px;right:16px;bottom:72px;height:38px;border:1px solid #202c3e;border-radius:9px;
+  .hs3-daily{position:absolute;z-index:6;left:16px;right:16px;bottom:72px;height:44px;min-height:44px;border:1px solid #202c3e;border-radius:9px;
     display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;padding:0 10px;text-align:left;color:#dbe5f4;background:rgba(7,12,20,.88)}
   .hs3-daily span{font-size:9px;color:#7f8ca1}.hs3-daily b{font:700 10px inherit}.hs3-daily em{font:800 10px inherit;color:#6f8fff}
 
@@ -4804,10 +4864,10 @@ window.addEventListener("popstate", ()=>{
   .daily-streak{display:flex;align-items:center;gap:6px;margin-top:15px}.daily-streak b{font-size:12px}.daily-streak span{font-size:10px;color:#91a0b7}
   .daily-dots{display:flex;gap:4px;margin-left:auto}.daily-dots i{width:10px;height:4px;border-radius:9px;background:#27344a}.daily-dots i.on{background:#ff5f92;box-shadow:0 0 7px rgba(255,95,146,.7)}
   .daily-section-title{display:flex;align-items:end;justify-content:space-between;margin:15px 2px 8px}.daily-section-title b{font-size:13px}.daily-section-title span{font-size:10px;color:#7f8ca1}
-  .daily-options{display:grid;gap:8px}.daily-option{display:grid;grid-template-columns:45px 1fr auto;align-items:center;gap:10px;width:100%;padding:12px;border-radius:14px;text-align:left;
+  .daily-options{display:grid;gap:8px}.daily-option{display:grid;grid-template-columns:45px minmax(0,1fr);align-items:center;gap:8px 10px;width:100%;padding:12px;border-radius:14px;text-align:left;
     border:1px solid #273650;background:linear-gradient(135deg,#101a29,#0b111c);color:#eef3fb;cursor:pointer}
   .daily-option:active{transform:scale(.985)}.daily-option img{width:45px;height:45px;border-radius:11px;object-fit:cover;background:#182338}
-  .daily-option b{display:block;font-size:13px}.daily-option small{display:block;margin-top:3px;font-size:10px;line-height:1.4;color:#91a0b6}.daily-option em{font-style:normal;font-size:10px;font-weight:900;color:#ff83ad;white-space:nowrap}
+  .daily-option>span{min-width:0}.daily-option b{display:block;font-size:13px}.daily-option small{display:block;margin-top:3px;font-size:10px;line-height:1.4;color:#91a0b6}.daily-option em{grid-column:2;font-style:normal;font-size:10px;line-height:1.35;font-weight:900;color:#ff83ad;white-space:normal;overflow-wrap:anywhere}
   .daily-done{margin-top:13px;padding:14px;border:1px solid rgba(255,95,146,.4);border-radius:15px;background:linear-gradient(135deg,rgba(255,95,146,.13),rgba(69,101,255,.1))}
   .daily-done b{font-size:14px}.daily-done p{margin:5px 0 0;font-size:11px;line-height:1.55;color:#aab6c8}
   .daily-reply{position:relative;overflow:hidden;margin-top:13px;padding:15px;border:1px solid rgba(255,211,92,.48);border-radius:17px;
@@ -4878,7 +4938,7 @@ window.addEventListener("popstate", ()=>{
     .hero-stage3.has-extra .hs3-next{bottom:204px}
     .hs3-extra{bottom:157px}
     .hs3-primary{bottom:104px;padding:11px}
-    .hs3-daily{bottom:63px;height:34px}
+    .hs3-daily{bottom:59px;height:44px;min-height:44px}
     .hs3-spot{padding:6px 8px;font-size:10px}
     #s-play .top{height:62px}.avatar{width:60px!important;height:60px!important}
     #s-play .practice{display:flex;min-height:34px;margin:4px 0;padding:5px 8px;gap:6px}
@@ -5197,7 +5257,9 @@ window.addEventListener("popstate", ()=>{
       return d;
     },
     persist(){ try{ StorageJournal.write(localStorage,KEY(),KEY()+'_backup_v1',this.data,validDgSave); this._persistError=false; return true; }
-      catch(e){ if(!this._persistError){ this._persistError=true; try{toast('저장 공간이 부족해. 오래된 기록을 정리해줘');}catch(_){} } return false; } },
+      catch(e){ if(!this._persistError){ this._persistError=true; try{toast('저장 공간이 부족해. 오래된 기록을 정리해줘');}catch(_){} try{ProductTelemetry.track('save_failure',{store:'agency',operation:'write',recoverable:true});}catch(_){} } return false; } },
+    snapshotRunStart(){ this.load(); try{return {data:JSON.stringify(this.data),primary:localStorage.getItem(KEY()),backup:localStorage.getItem(KEY()+'_backup_v1'),equipped:(this.equipped||[]).slice()};}catch(e){return {data:JSON.stringify(this.data),primary:null,backup:null,equipped:(this.equipped||[]).slice()};} },
+    restoreRunStart(snapshot){ if(!snapshot)return false; try{this.data=JSON.parse(snapshot.data);this.equipped=(snapshot.equipped||[]).slice();[[KEY(),snapshot.primary],[KEY()+'_backup_v1',snapshot.backup]].forEach(([key,value])=>{if(value==null)localStorage.removeItem(key);else localStorage.setItem(key,value);});this._persistError=false;return true;}catch(e){return false;} },
     // ===== ⑥ 마이크 재화(랭킹전 스태미나) — 캔디크러시식. 최대 5, 6분당 1개 충전, 패배 시만 소모. 애돌 하트/다이아와 무관 =====
     MIC_MAX: 5, MIC_REFILL_MS: 6*60*1000,
     mics(){ this._regenMic(); return this.data.mic!=null ? this.data.mic : this.MIC_MAX; },
@@ -5878,7 +5940,7 @@ window.addEventListener("popstate", ()=>{
       if(debuted && fansV>prevBest){ try{localStorage.setItem('dg_best_fans',String(fansV));}catch(e){} }
       if(newRid) (this.data.groups||[]).filter(g=>Object.values(g.lineup||{}).includes(newRid)).forEach(g=>this.submitGroup(g));
       const editionResult=editionRegistration?Object.assign({},seasonEdition,{newCollection:editionRegistration.created,bestUpdated:editionRegistration.bestChanged,versionAdded:editionRegistration.versionAdded,versionCount:editionRegistration.row.runIds.length}):null;
-      return {persisted:true,drops:dropInfo, joinMsg, completionView, debuted, adopted:!!adoptedCurrent, newRid, titles, newRecord, fans:fansV, tier:(end&&end.tier)||'',runMemory:st&&st.runMemory||null,seasonEdition:editionResult,
+      return {persisted:true,drops:dropInfo, joinMsg, completionView, debuted, adopted:!!adoptedCurrent, newRid, titles, newRecord, fans:fansV, tier:(end&&end.tier)||'',runId:String(st&&st.runId||''),runMemory:st&&st.runMemory||null,seasonEdition:editionResult,
         runAverage:Math.round(STATS.reduce((sum,x)=>sum+(stats[x.k]||0),0)/STATS.length), runGradeScore:Math.round(top.score||0),
         fandom:fandomOf(st&&st.idol).name, fanBond:Math.round((st&&st.fanBond)||0), mentorName:st&&st.mentor&&st.mentor.name||'', mentorChoice:st&&st.mentorChoice||''};
     },
@@ -6413,10 +6475,11 @@ window.addEventListener("popstate", ()=>{
     dailyState(){ return DailyRetention.state((this.data&&this.data.daily)||{},this.kstDay()); },
     dailyFavorite(){ const rs=(this.data&&this.data.roster)||[]; return this.rosterById(this.data&&this.data.favRid)||rs.slice().sort((a,b)=>(b.joinedAt||0)-(a.joinedAt||0))[0]||null; },
     dailyEchoState(rid){ return DailyRetention.echoState((this.data&&this.data.dailyEchoes)||[],this.kstDay(),rid); },
+    dailyPromiseTitle(echo,fav){ const rawType=String(echo&&(echo.promiseType||echo.promiseId)||'').replace(/^retry:/,''), promiseType=['signature','fandom','resilience'].includes(rawType)?rawType:'', fandomName=echo&&echo.fandomName||fandomOf(fav||{}).name;
+      return promiseType?dgT(`promise.${promiseType}Title`,{idol:echo&&echo.idolName||(fav&&fav.name)||'IDOL',fandom:fandomName,direction:t('st_'+(echo&&echo.promiseDirection||(fav&&fav.runDirection)||'vocal'))}):echo&&echo.promiseTitle||dgT('daily.promiseDefault'); },
     dailyEchoCopy(kind,fav,archived,echo){ const fd=fav&&fav._fandomName?{name:fav._fandomName}:fandomOf(fav||{}), fandomName=fd.name||dgT('daily.genericFandom');
       if(archived) return {img:'assets/emo/buddy.png',kicker:'MEMORY ARCHIVE',title:dgT('daily.archivedTitle',{name:(fav&&fav.name)||dgT('daily.previousIdol')}),text:dgT('daily.archivedText'),reward:dgT('daily.planReward')};
-      if(String(kind||'').startsWith('promise:')){ const success=echo&&echo.promiseStatus==='success', rawType=String(echo&&(echo.promiseType||echo.promiseId)||'').replace(/^retry:/,''), promiseType=['signature','fandom','resilience'].includes(rawType)?rawType:'',
-        title=promiseType?dgT(`promise.${promiseType}Title`,{idol:echo&&echo.idolName||(fav&&fav.name)||'IDOL',fandom:echo&&echo.fandomName||fandomName,direction:t('st_'+(echo&&echo.promiseDirection||(fav&&fav.runDirection)||'vocal'))}):echo&&echo.promiseTitle||dgT('daily.promiseDefault');
+      if(String(kind||'').startsWith('promise:')){ const success=echo&&echo.promiseStatus==='success', title=this.dailyPromiseTitle(echo,fav);
         return {img:success?'assets/emo/buddy.png':'assets/emo/act-charm.png',kicker:success?'OUR SCENE REPLY':'UNFINISHED SCENE',title:dgT(success?'daily.promiseSuccessTitle':'daily.promiseFailedTitle',{title}),
           text:dgT(success?'daily.promiseSuccessText':'daily.promiseFailedText',{fandom:fandomName}),
           reward:dgT(success?'daily.promiseSuccessReward':'daily.promiseFailedReward'),boost:success?{bond:4}:{start:6}}; }
@@ -6430,14 +6493,14 @@ window.addEventListener("popstate", ()=>{
       {id:'chant',img:'assets/mascot.png',nm:dgT('daily.chantName'),copy:dgT('daily.chantCopy',{rally:fd.rally}),effect:dgT('daily.chantEffect'),bond:5,boost:{climax:8}},
       {id:'idea',img:'assets/emo/act-charm.png',nm:dgT('daily.ideaName'),copy:dgT('daily.ideaCopy'),effect:dgT('daily.ideaEffect'),bond:5,boost:{start:12}},
     ]; },
-    goDaily(){ this.load(); this.renderDaily(); show('s-daily'); },
+    goDaily(encodedEchoId){ this._dailyFocusEchoId=encodedEchoId?decodeURIComponent(encodedEchoId):''; this.load(); this.renderDaily(); show('s-daily'); },
     renderDaily(){ const box=document.getElementById('dailyBody'), head=document.getElementById('dailyHead'); if(!box)return;
-      const state=this.dailyState(), fav=this.dailyFavorite(), echoState=this.dailyEchoState(), ready=echoState.ready, revealed=echoState.revealed;
+      const state=this.dailyState(), fav=this.dailyFavorite(), echoState=DailyRetention.focusedEchoState((this.data&&this.data.dailyEchoes)||[],state.today,this._dailyFocusEchoId), ready=echoState.ready, revealed=echoState.revealed;
       if(ready&&this._dailyReplyImpressionId!==ready.id){ this._dailyReplyImpressionId=ready.id; try{ProductTelemetry.track('reply_impression',{kind:ready.kind,wait_days:this.dayDiff(state.today,ready.fromDay)});}catch(e){} }
       if(head) head.textContent=ready?dgT('daily.headReply'):(state.done?dgT('daily.headDone'):dgT('daily.headStreak',{streak:state.streak}));
       if(!fav){ box.innerHTML=`<div class="daily-locked"><img src="assets/mascot.png" alt="CHOEAEDOL"><h3>${dgT('daily.lockedTitle')}</h3>
           <p>${dgT('daily.lockedCopy')}</p><button class="btn" style="margin-top:13px" onclick="Game.goSelect()">${dgT('daily.lockedCta')}</button></div>`; return; }
-      const fd=fandomOf(fav), choices=this.dailyChoices(fav), hist=(this.data.bondHistory||[]).filter(x=>x.rid===fav.rid).slice(-4).reverse();
+      const fd=fandomOf(fav), choices=this.dailyChoices(fav), hist=(this.data.bondHistory||[]).filter(x=>x.rid===fav.rid).slice(-4).reverse(), pendingReturn=echoState.pending||DailyRetention.pendingReturn((this.data&&this.data.dailyEchoes)||[],state.today,{rid:fav.rid});
       const weekDots=Array.from({length:7},(_,i)=>`<i class="${i<Math.min(7,state.streak)?'on':''}"></i>`).join('');
       const hero=`<div class="daily-hero"><div class="daily-kicker">DAILY FANDOM PROJECT</div><div class="daily-title">${dgT('daily.heroTitle',{fandom:esc(fd.name),name:esc(fav.name)})}</div>
         <div class="daily-copy">${dgT('daily.heroCopy')}</div>
@@ -6445,9 +6508,11 @@ window.addEventListener("popstate", ()=>{
         <div class="daily-streak"><b>${dgT('daily.streak',{streak:state.streak})}</b><span>${dgT('daily.streakReward')}</span><div class="daily-dots">${weekDots}</div></div></div>`;
       let replyOpen='';
       if(revealed){ const rf=this.rosterById(revealed.rid)||{rid:revealed.rid,name:revealed.idolName||dgT('daily.previousIdol'),_fandomName:revealed.fandomName||dgT('daily.genericFandom')}, rm=this.dailyEchoCopy(revealed.kind,rf,!!revealed.archivedReward,revealed), promiseReply=String(revealed.kind||'').startsWith('promise:'), bridge=this.data.firstGroupBridge&&!this.data.firstGroupBridge.usedAt; if(rm) replyOpen=`<div class="daily-reply open"><div class="daily-reply-row"><img src="${rm.img}" alt=""><div><div class="daily-reply-kicker">${esc(rm.kicker)} · OPENED</div><h3>${esc(rm.title)}</h3></div></div><p>${esc(rm.text)}${promiseReply?'':esc(dgT('daily.openedExtra'))}</p><div class="daily-reply-reward"><span>${dgT(promiseReply?'daily.openedPromiseReward':'daily.openedChoiceReward')}</span><b>${esc(rm.reward)}</b></div>${bridge?`<div class="daily-reply-reward"><span>FIRST GROUP</span><b>${dgT('daily.firstGroupBridge')}</b></div>`:''}</div>${bridge?`<button class="btn" style="margin:10px 0 2px;width:100%" onclick="Game.goSelect()">${dgT('daily.firstGroupBridgeCta')}</button>`:promiseReply&&this.rosterById(revealed.rid)?`<button class="btn" style="margin:10px 0 2px;width:100%" onclick="DG.retrainFromPromiseReply(${revealed.rid},'${encodeURIComponent(revealed.runId||'')}','${encodeURIComponent(revealed.promiseId||'')}')">${dgT(revealed.promiseStatus==='failed'?'daily.promiseRetry':'daily.promiseContinue')}</button>`:''}`; }
+      const pendingCard=pendingReturn&&!ready&&!revealed&&String(pendingReturn.kind||'').startsWith('promise:')
+        ? `<div class="daily-reply"><div class="daily-reply-row"><img src="assets/emo/buddy.png" alt=""><div><div class="daily-reply-kicker">NEXT REPLY · RESERVED</div><h3>${dgT('daily.pendingTitle',{fandom:esc(pendingReturn.fandomName||fd.name),idol:esc(pendingReturn.idolName||fav.name)})}</h3></div></div><p>${dgT('daily.pendingCopy',{scene:esc(this.dailyPromiseTitle(pendingReturn,fav)),time:esc(this.replyUnlockLabel())})}</p><div class="daily-reply-reward"><span>${dgT('daily.pendingReward')}</span><b>${dgT(pendingReturn.promiseStatus==='failed'?'daily.promiseFailedReward':'daily.promiseSuccessReward')}</b></div></div>`:'';
       let action='';
       if(ready){ const rf=this.rosterById(ready.rid)||{rid:ready.rid,name:ready.idolName||dgT('daily.previousIdol'),_fandomName:ready.fandomName||dgT('daily.genericFandom')}, rm=this.dailyEchoCopy(ready.kind,rf,false,ready), replySource=dgT(String(ready.kind).startsWith('promise:')?'daily.replyScene':'daily.replyChoice');
-        action=rm?`<div class="daily-reply"><div class="daily-reply-row"><img src="${rm.img}" alt=""><div><div class="daily-reply-kicker">${esc(rm.kicker)} · ARRIVED</div><h3>${dgT('daily.replyArrivedTitle',{name:esc(rf.name),source:replySource})}</h3></div></div><p>${dgT('daily.replyReadyCopy')}</p><div class="daily-reply-reward"><span>${dgT('daily.receivedAt',{date:esc(ready.revealDay)})}</span><b>${dgT('daily.combinedReward')}</b></div></div><button class="btn" style="margin-top:10px;width:100%" onclick="DG.claimDailyEcho()">${dgT('daily.openReply')}</button>`:'';
+        action=rm?`<div class="daily-reply"><div class="daily-reply-row"><img src="${rm.img}" alt=""><div><div class="daily-reply-kicker">${esc(rm.kicker)} · ARRIVED</div><h3>${dgT('daily.replyArrivedTitle',{name:esc(rf.name),source:replySource})}</h3></div></div><p>${dgT('daily.replyReadyCopy')}</p><div class="daily-reply-reward"><span>${dgT('daily.receivedAt',{date:esc(ready.revealDay)})}</span><b>${dgT('daily.combinedReward')}</b></div></div><button class="btn" style="margin-top:10px;width:100%" onclick="DG.claimDailyEcho('${encodeURIComponent(ready.id)}')">${dgT('daily.openReply')}</button>`:'';
       } else if(state.done){ const picked=choices.find(x=>x.id===state.choice)||choices[0], allPending=(this.data.dailyBoosts||[]).filter(x=>x.rid===fav.rid&&!x.usedAt), pending=allPending.filter(x=>!x.awaitingReply).length, awaiting=allPending.filter(x=>x.awaitingReply).length;
         const next=this.progressAction(fav);
         const banked=next.kind==='scout'||next.kind==='lineup'||next.kind==='debut'
@@ -6459,7 +6524,7 @@ window.addEventListener("popstate", ()=>{
           `<button class="daily-option" onclick="DG.completeDaily('${c.id}')"><img src="${c.img}" alt=""><span><b>${esc(c.nm)}</b><small>${esc(c.copy)}</small></span><em>${esc(c.effect)}</em></button>`).join('')}</div>`; }
       const memory=hist.length?`<div class="daily-section-title"><b>${dgT('daily.sharedRecords',{name:esc(fav.name)})}</b><span>${dgT('daily.recordsShown',{count:hist.length})}</span></div><div class="daily-done" style="padding:3px 10px">${hist.map(x=>
         `<div class="daily-memory"><time>${esc(x.day)}</time><span>${esc(x.text)}</span></div>`).join('')}</div>`:'';
-      box.innerHTML=hero+replyOpen+action+memory+`<button class="btn ghost" style="margin-top:11px;width:100%" onclick="DG.goAchv()">${dgT('daily.allAchievements')}</button><div style="height:14px"></div>`;
+      box.innerHTML=hero+replyOpen+pendingCard+action+memory+`<button class="btn ghost" style="margin-top:11px;width:100%" onclick="DG.goAchv()">${dgT('daily.allAchievements')}</button><div style="height:14px"></div>`;
     },
     completeDaily(kind){ this.load(); const state=this.dailyState(), fav=this.dailyFavorite(); if(!fav||state.done){ this.renderDaily(); return; }
       const choice=this.dailyChoices(fav).find(x=>x.id===kind); if(!choice)return;
@@ -6479,7 +6544,7 @@ window.addEventListener("popstate", ()=>{
       try{ sfx('fanfare'); if(Game.confetti)Game.confetti(70,false); toast(`${dgT('daily.completeToast',{fandom:fd.name})}${window.LANG==='ko'?milestone:''}`); }catch(e){}
       this.renderDaily();
     },
-    claimDailyEcho(id){ this.load(); const state=this.dailyState(); id=id||(this.dailyEchoState().ready||{}).id; const claimed=DailyRetention.claimEcho(this.data.dailyEchoes,id,state.today); if(!claimed.accepted){ this.renderDaily(); return; }
+    claimDailyEcho(id){ this.load(); const state=this.dailyState(); id=id?decodeURIComponent(id):(this.dailyEchoState().ready||{}).id; const claimed=DailyRetention.claimEcho(this.data.dailyEchoes,id,state.today); if(!claimed.accepted){ this.renderDaily(); return; }
       const echo=claimed.echo, fav=this.rosterById(echo.rid); if(!fav){ echo.archivedReward=true; this.add('charmC',1,1); this.data.dailyEchoes=claimed.echoes; this.persist();
         try{ ProductTelemetry.track('daily_reply_open',{kind:echo.kind,wait_days:this.dayDiff(state.today,echo.fromDay),archived:true}); toast(dgT('daily.archivedToast')); }catch(e){} this.renderDaily(); return; }
       const meta=this.dailyEchoCopy(echo.kind,fav,false,echo); if(!meta)return;
@@ -6548,13 +6613,13 @@ window.addEventListener("popstate", ()=>{
       const enrolled=allR.length-list.length;
       // ④ 필터: 등급 + 최적 포지션 (연습생 많아지면 고르기 힘듦 해소)
       const F=this._rosFilter||{g:'all',p:'all'};
-      const gDefs=[['all','전체'],['S','S급+'],['A','A급'],['B','B급'],['C','C급↓']];
-      const pDefs=[['all','전 포지션']].concat(Object.keys(POSTYPES).map(k=>[k,`${POSICO[k]}${POSTYPES[k].nm}`]));
+      const gDefs=[['all',dgT('roster.all')],['S',dgT('roster.gradePlus',{grade:'S'})],['A',dgT('roster.grade',{grade:'A'})],['B',dgT('roster.grade',{grade:'B'})],['C',dgT('roster.gradeDown',{grade:'C'})]];
+      const pDefs=[['all',dgT('roster.allPositions')]].concat(Object.keys(POSTYPES).map(k=>[k,`${POSICO[k]}${dgT('role.'+k)}`]));
       const chip=(k,v,nm,on)=>`<button class="cf-chip ${on?'on':''}" style="flex:0 0 auto" onclick="DG.setRosFilter('${k}','${v}')">${nm}</button>`;
-      const sDefs=[['grade','등급순'],['fans','💗팬순'],['new','최신순']];
+      const sDefs=[['grade',dgT('roster.sortGrade')],['fans',dgT('roster.sortFans')],['new',dgT('roster.sortNew')]];
       // #17 편성여부 필터
       const lu=new Set(this.lineupRids());
-      const eDefs=[['all','전체'],['in','📋 편성됨'],['out','무소속']];
+      const eDefs=[['all',dgT('roster.all')],['in',dgT('roster.assigned')],['out',dgT('roster.free')]];
       // 필터 간소화(4행→2행): 포지션은 칩(주 사용), 등급·상태·정렬은 컴팩트 드롭다운 한 줄
       const selCss="flex:1;min-width:0;background:var(--panel);color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:7px 8px;font-size:12.5px;font-weight:600;-webkit-appearance:none;appearance:none";
       const sel=(onch,defs,cur)=>`<select onchange="${onch}" style="${selCss}">${defs.map(d=>`<option value="${d[0]}"${cur===d[0]?' selected':''}>${d[1]}</option>`).join('')}</select>`;
@@ -6569,12 +6634,12 @@ window.addEventListener("popstate", ()=>{
       if(F.p!=='all') list=list.filter(r=>this.idolTop(r.stats).type===F.p);
       if(F.e==='in') list=list.filter(r=>lu.has(r.rid));
       else if(F.e==='out') list=list.filter(r=>!lu.has(r.rid));
-      const note = enrolled? `<p class="muted" style="font-size:12px;margin:0 0 8px;text-align:center;color:#c3b6dd">🏆 전속 ${enrolled}명은 데뷔조 카드에서 관리 · 여긴 무소속만</p>` : '';
+      const note = enrolled? `<p class="muted" style="font-size:12px;margin:0 0 8px;text-align:center;color:#c3b6dd">${dgT('roster.exclusiveNote',{count:enrolled})}</p>` : '';
       const filtered=(F.g!=='all'||F.p!=='all'||(F.e&&F.e!=='all'));
-      if(!list.length){ box.innerHTML=note+(filtered?fbar:'')+`<p class="muted" style="text-align:center;padding:24px;color:#c3b6dd">${filtered?'이 조건에 맞는 연습생이 없어':(enrolled?`전속 ${enrolled}명은 데뷔조에 있어.<br>무소속 연습생이 없어 — 「새 연습생 육성」!`:'아직 육성한 연습생이 없어.<br>「새 연습생 육성」으로 시작!')}</p>`; return; }
+      if(!list.length){ box.innerHTML=note+(filtered?fbar:'')+`<p class="muted" style="text-align:center;padding:24px;color:#c3b6dd">${filtered?dgT('roster.emptyFiltered'):(enrolled?dgT('roster.emptyFree',{count:enrolled}):dgT('roster.empty'))}</p>`; return; }
       box.innerHTML=note+fbar+`<div class="rgrid">`+list.map(r=>{
         const inup=this.lineupRids().indexOf(r.rid)>=0, commit=commitSet.has(r.rid), cg=commit?this.groupOfRid(r.rid):null;
-        const tag = commit?`🏆 ${esc((cg&&cg.name)||'전속')}`:(inup?'편성됨':(r.locked?'🔒':''));
+        const tag = commit?`🏆 ${esc((cg&&cg.name)||dgT('roster.exclusive'))}`:(inup?dgT('roster.assignedShort'):(r.locked?'🔒':''));
         return this.idolCardHTML(r,{onclick:`DG.showRosterDetail(${r.rid})`,tag,favorite:this.data.favRid===r.rid});
       }).join('')+`</div>`;
     },
@@ -6962,11 +7027,13 @@ window.addEventListener("popstate", ()=>{
           ? `<div class="first-group-journey"><div class="fgj-head">FIRST GROUP <b>3/3</b></div><div class="fgj-cast"><span>🎬</span><div><strong>${dgT('result.firstGroupReadyTitle')}</strong><small>${dgT('result.firstGroupReadyCopy')}</small></div></div><button onclick="DG.go();DG.editLineup('result_first_group')">${dgT('result.firstGroupReadyCta')}</button></div>`:'';
       let returnHook='', returnPriority=false;
       try{
-        const reply=this.dailyEchoState().ready, daily=this.dailyState();
+        const reply=this.dailyEchoState().ready, daily=this.dailyState(), exactReturn=DailyRetention.pendingReturn((this.data&&this.data.dailyEchoes)||[],daily.today,{rid:res.newRid,runId:res.runId});
         returnPriority=(!!reply||!daily.done)&&!firstGroupJourney;
         const unlockTime=this.replyUnlockLabel();
-        returnHook=reply
-          ? `<div class="res-return-hook"><b>💌 ${dgT('result.returnReplyTitle')}</b><span>${dgT('result.returnReplyCopy')}</span><button type="button" onclick="DG.goDaily()">${dgT('result.returnReplyButton')}</button></div>`
+        returnHook=exactReturn
+          ? `<div class="res-return-hook"><b>💌 ${dgT('result.returnExactTitle',{time:esc(unlockTime),fandom:esc(exactReturn.fandomName||res.fandom),idol:esc(exactReturn.idolName||idolR&&idolR.name||'IDOL')})}</b><span>${dgT('result.returnExactCopy',{scene:esc(this.dailyPromiseTitle(exactReturn,idolR))})}</span><button type="button" onclick="DG.goDaily('${encodeURIComponent(exactReturn.id)}')">${dgT('result.returnExactButton')}</button></div>`
+          : reply
+            ? `<div class="res-return-hook"><b>💌 ${dgT('result.returnReplyTitle')}</b><span>${dgT('result.returnReplyCopy')}</span><button type="button" onclick="DG.goDaily()">${dgT('result.returnReplyButton')}</button></div>`
           : daily.done
             ? `<div class="res-return-hook"><b>🌙 ${dgT('result.returnTomorrowTitle',{time:esc(unlockTime)})}</b><span>${dgT('result.returnTomorrowCopy')}</span><button type="button" onclick="DG.goDaily()">${dgT('result.returnTomorrowButton')}</button></div>`
             : `<div class="res-return-hook"><b>💞 ${dgT('result.returnStartTitle')}</b><span>${dgT('result.returnStartCopy')}</span><button type="button" onclick="DG.goDaily()">${dgT('result.returnStartButton')}</button></div>`;
@@ -6977,6 +7044,8 @@ window.addEventListener("popstate", ()=>{
         : cv.kind==='passed'?`🎊 <b>${dgT('result.joinPassed',{name:esc(cv.name||'')})}</b><br><span class="muted">${cvMeta} · ${dgT('result.groupCandidate')}</span>`
         : /^fail/.test(cv.kind||'')?`💤 <b>${dgT(cv.kind==='failKept'?'result.joinFailKept':'result.joinFailNew',{name:esc(cv.name||'')})}</b><br><span class="muted">${dgT(cv.kind==='failKept'?'result.joinFailAlbum':'result.joinFailCopy')}</span>`:res.joinMsg;
       const gradeExplain=res.debuted&&idolR?`<small class="res-grade-explain">${dgT('result.rankGradeExplain',{grade:cv.grade||'F',score:Math.round(res.runGradeScore||0),average:Math.round(res.runAverage||0),goal:this.idolNextGoal(this.idolCardMeta(idolR))})}</small>`:'';
+      const rewardIds=[...new Set((res.drops||[]).map(d=>d.id).filter(id=>CARDS[id]&&this.owned(id)))], rewardNames=rewardIds.map(id=>this.nmOf(id)).join(' + '), rewardDirection=cv.direction||idolR&&idolR.runDirection||'vocal';
+      const supportResult=`<div class="dg-res-cards"><b>${dgT('result.supportTitle')}</b><div class="dg-chips" style="margin-top:6px">${chips}</div>${idolR&&rewardIds.length?`<div class="res-return-hook" style="margin-bottom:0"><b>🎴 ${dgT('result.supportUseTitle',{cards:esc(rewardNames)})}</b><span>${dgT('result.supportUseCopy',{direction:esc(t('st_'+rewardDirection))})}</span><button type="button" onclick="DG.retrainWithRewards(${idolR.rid},'${rewardDirection}','${rewardIds.map(encodeURIComponent).join(',')}')">${dgT('result.supportUseButton',{name:esc(idolR.name)})}</button></div>`:''}</div>`;
       const idolReveal=idolR?`<div class="res-idol-reveal">
         <div class="res-card-kicker">${dgT(idolR.incomplete?'result.kickerRetry':keptAfterFail||!res.adopted?'result.kickerRecorded':(idolR.runs||1)>1?'result.kickerUpdated':'result.kickerNew')}</div>
         ${this.idolCardHTML(idolR,{cls:'result-idol-card',state:idolR.incomplete?'incomplete':(keptAfterFail||!res.adopted?'complete':'new'),onclick:`DG.showRosterDetail(${idolR.rid})`})}
@@ -6990,7 +7059,7 @@ window.addEventListener("popstate", ()=>{
         ${firstGroupJourney}${returnHook}
         ${idolReveal}
         ${memoryResult}${bondResult}
-        <div class="dg-res-cards"><b>${dgT('result.supportTitle')}</b><div class="dg-chips" style="margin-top:6px">${chips}</div></div>
+        ${supportResult}
         ${seasonResult}
         ${titleChips}
         ${goalPull}
@@ -7025,7 +7094,7 @@ window.addEventListener("popstate", ()=>{
       else if(Game.replyPromiseSource&&!Game.replyPromiseSelectionTracked){ Game.replyPromiseSelectionTracked=true; const source=Game.replyPromiseSource.source||'promise_reply';
         try{ ProductTelemetry.track('promise_offer',{run_id:Game.pendingRunId||'',option_count:list.length,retry:!!selected.retryOf,source}); ProductTelemetry.track('promise_selected',{run_id:Game.pendingRunId||'',promise_id:selected.id,source,retry:!!selected.retryOf,...RunMemory.replyLink(Game.replyPromiseSource)}); }catch(e){} }
       const linkedFromRecord=Game.replyPromiseSource&&Game.replyPromiseSource.source==='run_record';
-      const firstRun=BeginnerFlow.isFirstRun(this.data,Game._retrainRid), optionHtml=p=>{ const v=this.runPromiseView(p); return `<button type="button" class="promise-option ${selected&&selected.id===p.id?'on':''}" onclick="DG.selectRunPromise('${esc(p.id)}')"><span class="po-ic">${p.icon}</span><span><b>${esc(v.title)}</b><small>${esc(v.copy)}</small><em>${dgT('setup.promiseGoal',{goal:esc(v.goal)})} / ${esc(v.tradeoff)}</em></span></button>`; };
+      const firstRun=BeginnerFlow.isFirstRun(this.data,Game._retrainRid), optionHtml=p=>{ const v=this.runPromiseView(p), route=firstRun?'':dgT('run.routeEffect.'+(p.baseType||p.id),{amount:2}); return `<button type="button" class="promise-option ${selected&&selected.id===p.id?'on':''}" onclick="DG.selectRunPromise('${esc(p.id)}')"><span class="po-ic">${p.icon}</span><span><b>${esc(v.title)}</b><small>${esc(v.copy)}</small><em>${dgT('setup.promiseGoal',{goal:esc(v.goal)})} / ${esc(v.tradeoff)}${route?' · '+esc(route):''}</em></span></button>`; };
       const promiseOptions=firstRun?`${optionHtml(selected)}${list.length>1?`<details class="advanced-pick"><summary>${dgT('setup.otherPromises')}</summary><div class="promise-options">${list.filter(p=>p.id!==selected.id).map(optionHtml).join('')}</div></details>`:''}`:`<div class="promise-options">${list.map(optionHtml).join('')}</div>`;
       const selectedView=this.runPromiseView(selected);
       box.innerHTML=`<div class="promise-pick"><div class="promise-head"><b>${dgT('setup.promiseTitle')}</b><span>${linkedFromRecord?dgT('setup.recordPromiseSource'):dgT('setup.promiseCopy')}</span></div>${promiseOptions}
@@ -7102,6 +7171,15 @@ window.addEventListener("popstate", ()=>{
       try{ ProductTelemetry.track('mentor_select',{run_id:Game.pendingRunId||'',selected:rid!=null,source:rid==null?'none':'manual',mentor_rid:selected?String(selected.rid):''}); }catch(e){}
     },
     // 캐릭터 선택 → 육성카드 선택 단계로 (없으면 바로 시작)
+    beginRunFromSelection(){
+      this.load();
+      const firstRun=BeginnerFlow.isFirstRun(this.data,Game._retrainRid);
+      this.toCardPick();
+      if(firstRun){
+        try{ ProductTelemetry.track('first_run_setup_skipped',{run_id:Game.pendingRunId||'',mode:Game.trainMode==='quick'?'quick':'full',direction:Game.runDirection||''}); }catch(e){}
+        Game.start();
+      }
+    },
     toCardPick(){
       this.load(); this.equipped=[];
       Game.runPromiseId=Game.replyPromiseSource&&window.RunMemory?RunMemory.replySelection(Game.replyPromiseSource.memory):null;
@@ -7147,6 +7225,16 @@ window.addEventListener("popstate", ()=>{
       const link=window.RunMemory?RunMemory.replyLink(Game.replyPromiseSource):{};
       try{ ProductTelemetry.track('retrain_started',{rid:String(rid),run_id:Game.pendingRunId,source:link.source||opts.source||(r.unresolvedPromise?'unresolved_promise':'card_detail'),direction:Game.pendingRunDirection||'',promise_id:linkedMemory?linkedMemory.promiseId:(r.unresolvedPromise&&r.unresolvedPromise.promiseId||''),...link}); }catch(e){}
       this.toCardPick();
+    },
+    retrainWithRewards(rid,direction,encodedIds){
+      const requested=String(encodedIds||'').split(',').map(x=>decodeURIComponent(x)).filter(Boolean);
+      this.retrain(rid,{direction,source:'result_support'});
+      if(String(Game._retrainRid)!==String(rid))return;
+      const candidates=[...requested,...this.recommendedSupportIds(Game.runDirection||direction)];
+      this.equipped=[...new Set(candidates)].filter(id=>CARDS[id]&&this.owned(id)&&this.consumeTarget(id)).slice(0,2);
+      this.renderCardPick();
+      try{ ProductTelemetry.track('support_reward_reuse',{rid:String(rid),direction:Game.runDirection||direction||'',reward_count:requested.length,equipped_count:this.equipped.length}); }catch(e){}
+      try{ if(this.equipped.length)toast(dgT('support.rewardEquippedToast',{cards:this.equipped.map(id=>this.nmOf(id)).join(' + ')})); }catch(e){}
     },
     renderCardPick(){
       const box=document.getElementById('cardPickList'), hero=document.getElementById('cardPickHero'), directionBox=document.getElementById('runDirectionPick'); if(!box) return;
@@ -7470,23 +7558,23 @@ window.addEventListener("popstate", ()=>{
     renderCards(){ this.load(); return (this._cardTab||'own')==='dex' ? this.renderCardsDex() : this.renderCardsOwned(); },
     renderCardsOwned(){
       const box=document.getElementById('cardsList'), fbox=document.getElementById('cardsFilter'), hint=document.getElementById('cardsHint');
-      if(hint) hint.innerHTML='카드를 모아 <b style="color:#a855f7">⚗️ 조합소</b>에서 강화(별↑)·합성(레어도↑)해봐.';
+      if(hint) hint.innerHTML=dgT('cards.hint');
       let all=this.ownedTypes(); const f=this._cardFilter||'all', srt=this._cardSort||'rr';
       if(srt==='star') all=all.slice().sort((a,b)=>this.bestStar(b)-this.bestStar(a) || (CARDS[b].rr-CARDS[a].rr));   // #6 별 우선 정렬
       const stack=!!this._cardStack;   // 기본 false=낱장 전량 표시(재율애비: 성취감+내구도 착시해결), 토글로 같은카드 겹치기
       if(fbox) fbox.innerHTML=`<div class="cfilter">${['all','N','R','SR','SSR','UR'].map(x=>
-        `<button class="cf-chip ${f===x?'on':''}" onclick="DG.setCardFilter('${x}')">${x==='all'?'전체':x}</button>`).join('')}</div>
-        <div class="cfilter" style="margin-top:6px">${[['rr','레어도순'],['star','★별순']].map(d=>
+        `<button class="cf-chip ${f===x?'on':''}" onclick="DG.setCardFilter('${x}')">${x==='all'?dgT('cards.all'):x}</button>`).join('')}</div>
+        <div class="cfilter" style="margin-top:6px">${[['rr',dgT('cards.sortRarity')],['star',dgT('cards.sortStar')]].map(d=>
         `<button class="cf-chip ${srt===d[0]?'on':''}" onclick="DG._cardSort='${d[0]}';DG.renderCardsOwned()">${d[1]}</button>`).join('')}
-        <button class="cf-chip ${stack?'on':''}" onclick="DG._cardStack=!DG._cardStack;DG.renderCardsOwned()" title="같은 카드를 겹쳐서 볼지">🂠 겹치기</button></div>`;
+        <button class="cf-chip ${stack?'on':''}" onclick="DG._cardStack=!DG._cardStack;DG.renderCardsOwned()" title="${esc(dgT('cards.stackTitle'))}">${dgT('cards.stack')}</button></div>`;
       const types = f==='all'? all : all.filter(id=>RARITY[CARDS[id].rr]===f);
-      if(!types.length){ box.innerHTML=`<p class="muted" style="text-align:center;padding:24px">${all.length?'이 레어도 카드가 없어':'아직 보유한 육성카드가 없어.<br>육성을 마치면 생겨!'}</p>`; return; }
+      if(!types.length){ box.innerHTML=`<p class="muted" style="text-align:center;padding:24px">${dgT(all.length?'cards.emptyRarity':'cards.emptyOwned')}</p>`; return; }
       if(stack){
         // 겹치기: 타입당 대표 1장(총 N장 표기)
         box.innerHTML=`<div class="tgrid">`+types.map(id=>{ const bs=this.bestStar(id);
           let tot=0; for(let s=1;s<=MAXSTAR;s++) tot+=this.countAt(id,s);
           return this.tcardHTML(id,{star:bs, attr:`onclick="DG.showCardDetail('${id}')"`,
-            foot:`<div class="tc-meta" style="margin-top:2px">${tot}장 보유${bs>=MAXSTAR?' · 👑풀강':''}</div>`});
+            foot:`<div class="tc-meta" style="margin-top:2px">${dgT('cards.ownedCount',{count:tot})}${bs>=MAXSTAR?` · ${dgT('cards.maxed')}`:''}</div>`});
         }).join('')+`</div>`;
       } else {
         // 낱장: 모든 물리 카드를 개별로. 같은 (타입·별) 스택 중 '쓰던 1장'만 내구도 감소, 나머지는 만충(착시 해소)
@@ -7506,11 +7594,11 @@ window.addEventListener("popstate", ()=>{
       if(fbox) fbox.innerHTML='';
       const all=Object.keys(CARDS).sort((a,b)=>CARDS[a].rr-CARDS[b].rr);
       const ownedN=all.filter(id=>this.owned(id)).length;
-      if(hint) hint.innerHTML=`<span class="cdex-prog">카드 도감 · 수집 <b>${ownedN}</b> / ${all.length}</span>`;
+      if(hint) hint.innerHTML=`<span class="cdex-prog">${dgT('cards.dexProgress',{owned:`<b>${ownedN}</b>`,total:all.length})}</span>`;
       // ③ 도감도 카드 그리드 — 미보유는 흑백 잠금(❔·???)
       box.innerHTML=`<div class="tgrid">`+all.map(id=>{ const c=CARDS[id], owned=this.owned(id), bs=this.bestStar(id);
         // 미보유 카드에 '얻는 법' 요약(하이브리드=재료·SSR/UR=합성·N/R=육성). 탭하면 상세에서 풀 안내.
-        const brief = c.hyb? '⚗️ 합성' : (c.rr>=4?'⚗️ SSR+SSR':(c.rr>=3?'⚗️ SR+SR':(id==='genius'?'🎯 SR 드랍':'🎯 육성')));
+        const brief = c.hyb? dgT('cards.sourceCombine') : (c.rr>=4?'⚗️ SSR+SSR':(c.rr>=3?'⚗️ SR+SR':(id==='genius'?dgT('cards.sourceSrDrop'):dgT('cards.sourceRun'))));
         return this.tcardHTML(id,{star:bs, locked:!owned, attr:`onclick="DG.showCardDetail('${id}')"`,
           meta: owned? undefined : brief});
       }).join('')+`</div>`;
@@ -7533,8 +7621,7 @@ window.addEventListener("popstate", ()=>{
     logoHtml(logo, px){ px=px||26; return (logo&&logo.indexOf('data:')===0)
       ? `<img src="${logo}" style="width:${px}px;height:${px}px;border-radius:50%;object-fit:cover;vertical-align:middle">` : (logo||'🏢'); },
 
-    // ===== 데뷔조 순위전 (그룹 리더보드) — 서버(group_board) 우선 + 로컬 시드 폴백 =====
-    // ⚠️ 서버 공유는 Firestore 규칙에 group_board 쓰기 허용 추가해야 켜짐(현재 403 → 자동 로컬 폴백).
+    // ===== 데뷔조 순위전 — 스탠드얼론 로컬 고스트 전용 =====
     LEAGUE_TIERS: [
       {min:0,    ic:'🥉', nm:'브론즈'},
       {min:1200, ic:'🥈', nm:'실버'},
@@ -7559,22 +7646,6 @@ window.addEventListener("popstate", ()=>{
       return obj.list;
     },
     async fetchGroupBoard(){
-      // 서버 공유: leaderboard 컬렉션 재활용(쓰기 허용). 그룹은 ending='GRP:n' 마커 + fans=점수. 개인명전과 필터로 분리.
-      try{
-        const q={structuredQuery:{from:[{collectionId:"leaderboard"}],
-          orderBy:[{field:{fieldPath:"fans"},direction:"DESCENDING"}], limit:200}};
-        const res=await fetch(`${FS_BASE}:runQuery?key=${FB_KEY}`,
-          {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(q)});
-        if(res.ok){ const arr=await res.json();
-          const list=(arr||[]).filter(x=>x.document).map(x=>{ const f=x.document.fields||{};
-            const g=k=>{ const c=f[k]; if(!c)return ""; return c.stringValue!=null?c.stringValue:(c.integerValue!=null?+c.integerValue:0); };
-            const end=String(g("ending")||"");
-            const parts=end.split(':');   // 'GRP:n[:pts]' — pts=시즌 승점(구버전 문서는 없음→0)
-            return {name:g("name"), logo:g("emoji")||"🎤", score:+g("fans")||0, n:+parts[1]||0, pts:+parts[2]||0, agency:g("player"), _grp:parts[0]==='GRP', server:true}; })
-            .filter(r=>r._grp);   // GRP: 마커 문서(그룹)만 — 개인명전·잔존 테스트문서 자동 제외
-          this._leagueServer=true; this._tierCuts=this.computeTierCuts(list); return list;   // 티어컷 상대 백분위 갱신
-        }
-      }catch(e){}
       this._leagueServer=false; return null;
     },
     // 고정 문서ID = 기획사명+그룹명 해시 → 재제출/재데뷔 때 같은 문서를 덮어써 중복 누적 방지(옛 create POST는 매번 새 문서라 무한 누적됐음)
@@ -7583,19 +7654,7 @@ window.addEventListener("popstate", ()=>{
       for(let i=0;i<s.length;i++){ h=((h<<5)+h+s.charCodeAt(i))>>>0; }
       return 'grp_'+h.toString(36);
     },
-    submitGroup(g){   // 서버 공유(fire&forget): leaderboard에 ending='GRP:n:pts' 마커 + fans=점수. 고정ID PATCH(upsert)로 중복 누적 방지.
-      if(!g) return;
-      try{
-        const sc=Math.max(0,Math.min(5000000,this.groupScore(g)));
-        const player=(this.agency&&this.agency().name)||'';
-        const body={fields:{player:fsStr(player), name:fsStr(g.name),
-          ending:fsStr('GRP:'+(g.n||0)+':'+(this.battleSeasonOf(g.gid).pts||0)), emoji:fsStr(g.logo||'🎤'),
-          fans:{integerValue:String(sc)}, lang:fsStr(window.LANG||'ko')}};
-        const id=this.grpDocId(player, g.name);
-        fetch(`${FS_BASE}/leaderboard/${id}?key=${FB_KEY}`,
-          {method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}).catch(()=>{});
-      }catch(e){}
-    },
+    submitGroup(){ this._leagueServer=false; return false; },
     showLeague(){ this.load(); if(!this._rankTab)this._rankTab='group'; if(!this._leagueSub)this._leagueSub='season';
       const g=document.getElementById('rseg-group'), tr=document.getElementById('rseg-trainee');
       if(g)g.classList.toggle('on',this._rankTab==='group'); if(tr)tr.classList.toggle('on',this._rankTab==='trainee');
@@ -7901,9 +7960,7 @@ window.addEventListener("popstate", ()=>{
           this.confirmModal({title:'마지막 확인', danger:true, ok:'초기화 실행', cancel:'역시 그만',
             body:`이 기기의 진행이 <b style="color:#e5555f">영구 삭제</b>돼.<br>계속할까?`,
             onOk:()=>{
-              try{ StorageJournal.clear(localStorage,KEY(),KEY()+'_backup_v1'); StorageJournal.clear(localStorage,RUN_SAVE_KEY,RUN_BACKUP_KEY);
-                localStorage.removeItem('dg_fav_greet'); localStorage.removeItem('dg_best_fans');
-                localStorage.removeItem('idol_seen_intro'); localStorage.removeItem('dg_tut_v2'); }catch(e){}
+              try{ DataLifecycle.clearProgress(localStorage); }catch(e){}
               try{ Game.st=null; Game._finished=false; }catch(e){}
               this.data=blank(); this.load();
               try{ toast('🗑️ 초기화 완료 — 처음부터 시작!'); }catch(e){}
@@ -8061,10 +8118,10 @@ window.addEventListener("popstate", ()=>{
     on(){ this.load(); return !!this.s.active && !this.s.off; },
     did(id){ this.load(); return !!this.s.done[id]; },
     mark(id){ this.load(); this.s.done[id]=1; this.save(); },
-    begin(){ this.load(); if(this.s.off || this.s.done.welcome) return; this.s.active=true; this.save(); this.welcome(); },
+    begin(){ this.load(); if(this.s.off || this.s.done.welcome) return; this.s.active=true; this.mark('welcome'); this.save(); },
     quit(){ this.load(); this.s.active=false; this.s.off=true; this.save(); this.clear(); try{ toast(dgT('tutorial.quit')); }catch(e){} },
-    replay(){ try{ localStorage.removeItem(this.KEY); }catch(e){} this.s={active:true, off:false, done:{}}; this.save(); this.clear();
-      if(document.querySelector('#s-office.on')) this.welcome(); else { try{ DG.go(); }catch(e){} setTimeout(()=>this.welcome(),350); } },
+    replay(){ try{ localStorage.removeItem(this.KEY); }catch(e){} this.s={active:true, off:false, done:{welcome:1}}; this.save(); this.clear();
+      try{ DG.go(); }catch(e){} setTimeout(()=>this.onHome(),350); },
     clear(){ const r=document.getElementById('tutRoot'); if(r) r.remove(); if(this._place2) window.removeEventListener('resize',this._place2); this._el=null; },
 
     // ── 스텝1: 환영 모달 ──
@@ -8144,8 +8201,9 @@ window.addEventListener("popstate", ()=>{
     onHome(){
       this.load();
       if(this.s.off) return;
-      // 환영 모달은 홈(기획사 설정 완료 후)에 처음 도착했을 때만 — 그 전엔 begin이 조용히 대기
-      if(!this.s.done.welcome){ if(!document.getElementById('tutRoot')) this.begin(); return; }
+      // 첫 90초에는 설명 모달로 입구를 막지 않는다. 홈과 선택 UI 자체가 다음 행동을 말하고,
+      // 실제 첫 추천 카드 한 번만 코치마크로 가르친다.
+      if(!this.s.done.welcome) this.begin();
       if(!this.on()) return;
       let d={}; try{ DG.load(); d=DG.data||{}; }catch(e){}
       // 육성을 이미 시작한 사용자의 홈에는 첫 CTA 튜토리얼을 다시 덮지 않는다.
@@ -8154,10 +8212,8 @@ window.addEventListener("popstate", ()=>{
       let gi={n:0}; try{ gi=DG.groupInfo(); }catch(e){}
       // 스텝2 시작: 첫 육성 유도
       if(roster.length===0 && groups.length===0 && !this.did('s2_cta')){
-        return this.spot({ id:'s2_cta', mascot:'🐤', place:'auto',
-          get:()=>document.querySelector('#s-office.on .hs3-primary'),
-          body:dgT('tutorial.home'),
-          tap:dgT('entry.firstChoice'), step:'1/5' });
+        this.mark('s2_cta');
+        return false;
       }
       // 아직 3명이 안 모였으면 현재 홈에 없는 포지션 칸 대신 다음 스카우트를 안내한다.
       if(roster.length>0 && roster.filter(r=>!r.incomplete).length<3 && groups.length===0 && gi.n<3 && !this.did('s3_lineup')){
@@ -8190,18 +8246,12 @@ window.addEventListener("popstate", ()=>{
     },
     onSelect(){
       if(!this.on() || !this.did('s2_cta') || this.did('s2_pick')) return;
-      this.spot({ id:'s2_pick', mascot:'🐤', place:'below',
-        get:()=>document.getElementById('idolSearch'),
-        body:dgT('tutorial.pick'),
-        cta:dgT('tutorial.confirm'), step:'2/5' });
+      this.mark('s2_pick');
     },
     onSelectReady(){
       if(!this.on() || !this.did('s2_pick') || this.did('s2_start')) return;
       if(!document.querySelector('#s-select.on')) return;
-      this.spot({ id:'s2_start', mascot:'🐤', place:'above',
-        get:()=>document.getElementById('startBtn'),
-        body:dgT('tutorial.setup'),
-        tap:dgT('select.start'), step:'2/5' });
+      this.mark('s2_start');
     },
     onPlay(w){
       if(!this.on() || !this.did('s2_start')) return;
@@ -8209,13 +8259,7 @@ window.addEventListener("popstate", ()=>{
         return this.spot({ id:'s2_train1', mascot:'🐰', place:'above',
           get:()=>document.querySelector('#actionBox .act.spec')||document.querySelector('#actionBox .act'),
           body:dgT('tutorial.train1'),
-          tap:dgT('tutorial.continue'), step:'2/5' });
-      }
-      if(w===2 && !this.did('s2_train2')){
-        return this.spot({ id:'s2_train2', mascot:'🐰', place:'above',
-          get:()=>document.querySelector('#actionBox .act.spec')||document.querySelector('#actionBox .act'),
-          body:dgT('tutorial.train2'),
-          tap:dgT('tutorial.continue'), step:'2/5' });
+          tap:dgT('tutorial.continue'), step:'1/1' });
       }
     },
     onResult(){
@@ -8227,14 +8271,14 @@ window.addEventListener("popstate", ()=>{
     },
     onTab(tab){
       if(!this.on()) return;
-      const M={ roster:{m:'🐤', b:`📋 <b>숙소</b>예요. 완주한 연습생이 모이는 곳! 여기서 포지션에 배치해 데뷔조를 짜요.`},
-        cards:{m:'🐰', b:`🎴 <b>지원 카드</b>예요. 다음 RUN 덱에 최대 2장을 <b>장착</b>해 시작 준비도를 높여요. 같은 카드가 더 모이면 조합소에서 강화할 수 있어요.`},
-        ranking:{m:'🐤', b:`🏆 <b>차트</b>예요. 내 그룹의 시즌 승점과 다른 그룹 기록을 봐요. 대결은 <b>고스트 리그</b>에서 진행해요.`},
-        menu:{m:'🐰', b:`☰ <b>메뉴</b>예요. 업적·도감·설정이 여기 있어요. 튜토리얼도 여기서 다시 볼 수 있어요.`} };
+      const M={ roster:{m:'🐤', b:dgT('tutorial.tabRoster')},
+        cards:{m:'🐰', b:dgT('tutorial.tabCards')},
+        ranking:{m:'🐤', b:dgT('tutorial.tabRanking')},
+        menu:{m:'🐰', b:dgT('tutorial.tabMenu')} };
       const info=M[tab]; if(!info) return; const id='tab_'+tab; if(this.did(id)) return;
       setTimeout(()=>this.spot({ id, mascot:info.m, place:'above',
         get:()=>document.querySelector(`#tabbar .tab[data-tab="${tab}"]`),
-        body:info.b, cta:'확인', step:'5/5' }), 280);
+        body:info.b, cta:dgT('tutorial.confirm'), step:'5/5' }), 280);
     },
     // 상세화: 조합소·고스트 리그 첫 진입 설명
     onForge(){

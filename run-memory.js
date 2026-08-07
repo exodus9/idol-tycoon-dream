@@ -94,6 +94,19 @@
     return result;
   }
 
+  function routeEffect(state,action){
+    const type=baseType(state&&state.runPromise), input=action||{}, stat=String(input.stat||''), kind=String(input.kind||''), outcome=String(input.outcome||'');
+    const effect={type,growthMult:1,fanMult:1,bondGain:0,mentalLossMult:1,mentalGain:0,active:false};
+    if(!state||!state.runPromise||Math.max(1,Math.round(Number(state.runNo)||1))<2)return effect;
+    if(type==='signature'&&stat&&stat===state.runDirection){effect.growthMult=1.05;effect.active=true;}
+    else if(type==='fandom'&&stat==='charm'){effect.fanMult=1.1;effect.bondGain=2;effect.active=true;}
+    else if(type==='resilience'){
+      if(outcome==='fail'||outcome==='dbad'){effect.mentalLossMult=.5;effect.active=true;}
+      if(kind==='rest'||kind==='buff'){effect.mentalGain=4;effect.active=true;}
+    }
+    return effect;
+  }
+
   function nextUnresolved(previous,result){
     const prev=previous&&previous.status==='failed'?previous:null;
     if(result&&result.status==='failed')return result;
@@ -123,5 +136,5 @@
     return memory.status==='failed'?`retry:${type}`:type;
   }
 
-  return {TYPES,options,applyStart,progress,resolveCheckpoint,evaluate,applyReward,nextUnresolved,recordSource,replyLink,replySelection};
+  return {TYPES,options,applyStart,progress,resolveCheckpoint,evaluate,applyReward,routeEffect,nextUnresolved,recordSource,replyLink,replySelection};
 });

@@ -143,3 +143,55 @@ test('only the first RUN receives one gate safety pass',()=>{
   assert.equal(BeginnerFlow.protectsFirstGate(1,false,false),false);
   assert.equal(BeginnerFlow.protectsFirstGate(1,true,true),false);
 });
+
+test('only the recommended action on turn one of the first RUN is guaranteed',()=>{
+  assert.deepEqual(BeginnerFlow.guidedOutcome({runNo:1,turn:1,recommended:true,resolved:false,rolled:'fail'}),{outcome:'ok',guided:true});
+  assert.deepEqual(BeginnerFlow.guidedOutcome({runNo:1,turn:1,recommended:false,resolved:false,rolled:'fail'}),{outcome:'fail',guided:false});
+  assert.deepEqual(BeginnerFlow.guidedOutcome({runNo:1,turn:1,recommended:true,resolved:true,rolled:'great'}),{outcome:'great',guided:false});
+  assert.deepEqual(BeginnerFlow.guidedOutcome({runNo:2,turn:1,recommended:true,resolved:false,rolled:'dbad'}),{outcome:'dbad',guided:false});
+});
+
+test('the first guided success creates one bounded fandom bond moment',()=>{
+  assert.deepEqual(BeginnerFlow.firstFavoriteMoment({guided:true,seen:false,bond:8}),{active:true,gain:4,bondAfter:12});
+  assert.deepEqual(BeginnerFlow.firstFavoriteMoment({guided:true,seen:true,bond:12}),{active:false,gain:0,bondAfter:12});
+  assert.deepEqual(BeginnerFlow.firstFavoriteMoment({guided:false,seen:false,bond:8}),{active:false,gain:0,bondAfter:8});
+  assert.deepEqual(BeginnerFlow.firstFavoriteMoment({guided:true,seen:false,bond:99}),{active:true,gain:1,bondAfter:100});
+});
+
+test('reloading during the first result consumes the committed turn exactly once',()=>{
+  const saved={week:1,busy:true,fanBond:12,firstFavoriteMomentSeen:true,pendingFavoriteTurnAdvance:true};
+  const reloaded=JSON.parse(JSON.stringify(saved));
+  assert.equal(BeginnerFlow.consumeCommittedFavoriteTurn(reloaded),true);
+  assert.deepEqual(reloaded,{week:2,busy:false,fanBond:12,firstFavoriteMomentSeen:true});
+  assert.equal(BeginnerFlow.consumeCommittedFavoriteTurn(reloaded),false);
+  assert.equal(reloaded.week,2);
+});
+
+test('the first fandom event is emitted only after the committed result save',()=>{
+  const html=require('node:fs').readFileSync(require('node:path').join(__dirname,'..','index.html'),'utf8');
+  const block=html.slice(html.indexOf('    if(firstMoment.active){\n      s.pendingFavoriteTurnAdvance=true;'),html.indexOf('    const firstMomentLine='));
+  assert.ok(block.indexOf('if(this.save())')>=0);
+  assert.ok(block.indexOf("ProductTelemetry.track('favorite_first_moment'")>block.indexOf('if(this.save())'));
+  assert.ok(html.includes('BeginnerFlow.consumeCommittedFavoriteTurn(this.st)'));
+});
+
+test('first 90 seconds use one learning prompt instead of stacked setup overlays',()=>{
+  const html=require('node:fs').readFileSync(require('node:path').join(__dirname,'..','index.html'),'utf8');
+  const tutorial=html.slice(html.indexOf('  const Tut = {'),html.indexOf('  window.Tut = Tut;'));
+  assert.match(tutorial,/begin\(\).*this\.mark\('welcome'\)/);
+  assert.match(tutorial,/onSelect\(\).*this\.mark\('s2_pick'\)/s);
+  assert.match(tutorial,/onSelectReady\(\).*this\.mark\('s2_start'\)/s);
+  assert.equal(tutorial.includes("id:'s2_train2'"),false);
+  assert.equal(tutorial.includes("step:'2/5'"),false);
+  assert.ok(tutorial.includes("step:'1/1'"));
+});
+
+test('the first RUN starts from the favorite picker without a second setup decision',()=>{
+  const html=require('node:fs').readFileSync(require('node:path').join(__dirname,'..','index.html'),'utf8');
+  assert.ok(html.includes('id="startBtn" disabled onclick="DG.beginRunFromSelection()"'));
+  const bridge=html.slice(html.indexOf('    beginRunFromSelection(){'),html.indexOf('    toCardPick(){'));
+  assert.ok(bridge.includes('const firstRun=BeginnerFlow.isFirstRun'));
+  assert.ok(bridge.includes('this.toCardPick();'));
+  assert.ok(bridge.includes('if(firstRun)'));
+  assert.ok(bridge.includes('Game.start();'));
+});

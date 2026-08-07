@@ -17,6 +17,7 @@ import StageCriteria from '../stage-criteria.js';
 const require=createRequire(import.meta.url);
 const RunBalanceRules=require('../run-balance-rules.js');
 const BeginnerFlow=require('../beginner-flow.js');
+const RunMemory=require('../run-memory.js');
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const source = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
@@ -33,6 +34,7 @@ const REQUIRED_SOURCE = [
   'RunBalanceRules.protectsFirstGate(s.runNo,c.gate,win)',
   'const FIRST_RUN_RIVAL_MULT = 0.88',
   'BeginnerFlow.productiveHand(s.hand,TRAIN_CARDS.concat([RARE_CARD])',
+  'RunMemory.routeEffect(s,{stat,kind:c.kind,outcome:jk})',
 ];
 for (const needle of REQUIRED_SOURCE) {
   if (!source.includes(needle)) throw new Error(`index.html 수치가 바뀌었습니다. 시뮬레이터 동기화 필요: ${needle}`);
@@ -231,12 +233,13 @@ function playCard(card, state, random) {
   const condMult = state.cond >= 66 ? 1.4 : state.cond >= 34 ? 1 : 0.6;
   state.stam = Math.max(0, Math.min(100, state.stam - card.cost));
   if (card.kind === 'rest') {
+    const route=RunMemory.routeEffect(state,{kind:'rest',outcome:'ok'});
     state.cond = Math.min(100, state.cond + 30);
-    state.mental = Math.min(100, state.mental + 14);
+    state.mental = Math.min(100, state.mental + 14 + route.mentalGain);
     state.combo = 0; state.comboStat = null;
     return;
   }
-  if (card.kind === 'buff') { state.buff = {turns: 3, mult: 1.3}; return; }
+  if (card.kind === 'buff') { const route=RunMemory.routeEffect(state,{kind:'buff',outcome:'ok'}); state.buff = {turns: 3, mult: 1.3}; state.mental=Math.min(100,state.mental+route.mentalGain); return; }
   if (card.kind === 'live') {
     state.fans += 140 + Math.round(random() * 140);
     const stat = STATS[Math.floor(random() * STATS.length)];
@@ -253,6 +256,7 @@ function playCard(card, state, random) {
   const buffOn = Boolean(state.buff?.turns > 0);
   const judgeKey = card.kind === 'rare' ? 'great' : rollJudge(state, random);
   const judge = JUDGE[judgeKey];
+  const route=RunMemory.routeEffect(state,{stat,kind:card.kind,outcome:judgeKey});
   const growth = RunBalanceRules.growthOutcome({
     base: card.base,
     judgeMult: judge.mult,
@@ -260,19 +264,20 @@ function playCard(card, state, random) {
     growthMult: judge.mult > 0 ? growthMult(state[stat]) : 1,
     talentMult: judge.mult > 0 && stat === state.spec ? 1.25 : 1,
     trendMult: judge.mult > 0 ? trendMult : 1,
-    cardGrowth: judge.mult > 0 ? state.cardGrowth : 1,
+    cardGrowth: judge.mult > 0 ? state.cardGrowth * route.growthMult : 1,
     comboMult: judge.mult > 0 ? comboMult : 1,
     buffMult: judge.mult > 0 && buffOn ? state.buff.mult : 1,
     randomMult: judge.mult > 0 ? 0.9 + random() * 0.2 : 1,
   });
   state[stat] = growth.next;
-  state.fans += Math.max(0, Math.round((28 + state[stat] * 0.5) * (card.kind === 'light' ? 0.6 : 1) * judge.fanMult));
+  state.fans += Math.max(0, Math.round((28 + state[stat] * 0.5) * (card.kind === 'light' ? 0.6 : 1) * judge.fanMult * route.fanMult));
+  state.bond=Math.min(100,state.bond+route.bondGain);
   if (card.kind === 'rare') {
     state.cond = Math.min(100, state.cond + 28);
     state.mental = Math.min(100, state.mental + 3);
   } else {
     state.cond = Math.max(0, state.cond + judge.cond + (card.kind === 'burst' ? -12 : 0));
-    state.mental = Math.max(0, Math.min(100, state.mental + judge.mental));
+    state.mental = Math.max(0, Math.min(100, state.mental + (judge.mental<0?Math.round(judge.mental*route.mentalLossMult):judge.mental)));
   }
   if (buffOn && --state.buff.turns <= 0) state.buff = null;
   if (judgeKey === 'fail' || judgeKey === 'dbad') { state.combo = 0; state.comboStat = null; }
@@ -311,13 +316,13 @@ function resolveRankGate(state, gate, random, strategy, difficulty, runNo) {
   return {rank, margin: mine - top, mine, top};
 }
 
-function simulateOne(mode, supportKey, strategy, runNo, random) {
+function simulateOne(mode, supportKey, strategy, runNo, random, routeType='signature') {
   const schedule = SCHEDULES[mode];
   const support = SUPPORTS[supportKey];
   const difficulty = modeDifficulty(mode, runNo);
   const spec = STATS[Math.floor(random() * STATS.length)];
   const mentorStat = runNo > 1 ? STATS[Math.floor(random() * STATS.length)] : null;
-  const state = {spec, trendStat:RunBalanceRules.trendStatAt(), cond: 100, mental: 60, stam: 100, fans: 0, bond: 8, combo: 0, comboStat: null,
+  const state = {spec,runNo,runDirection:spec,runPromise:{baseType:routeType}, trendStat:RunBalanceRules.trendStatAt(), cond: 100, mental: 60, stam: 100, fans: 0, bond: 8, combo: 0, comboStat: null,
     buff: null, cardGrowth: support.growth, cardGate: support.gate, week: 1};
   for (const stat of STATS) state[stat] = 12 + support.all;
   state[spec] += 18 + support.spec;
@@ -327,9 +332,10 @@ function simulateOne(mode, supportKey, strategy, runNo, random) {
 
   while (state.week <= schedule.total) {
     if (state.week === (mode === 'quick' ? 5 : 9)) {
-      // 대표 약속 경로: 시그니처 장면을 끝까지 밀어붙임(실게임 promise checkpoint와 동일).
       state.stam = Math.max(0, state.stam - 8);
-      state[spec] += 8;
+      if(routeType==='signature')state[spec] += 8;
+      else if(routeType==='fandom')state.bond=Math.min(100,state.bond+5);
+      else state.mental=Math.min(100,state.mental+5);
     }
     if (mentorStat && state.week === (mode === 'quick' ? 4 : 7)) {
       state[mentorStat] += 10; // 보장 멘토콜에서 노하우 계승 선택
@@ -410,6 +416,13 @@ const rows = scenarios.map((scenario, index) => {
   };
 });
 
+const routeRows=['signature','fandom','resilience'].flatMap((route,routeIndex)=>['quick','full'].map((mode,modeIndex)=>{
+  const random=rng(SEED+800000+routeIndex*20000+modeIndex*5000);
+  const results=Array.from({length:RUNS},()=>simulateOne(mode,'effort','balanced',2,random,route));
+  const finals=results.map(result=>result.final).filter(Boolean);
+  return {mode,route,runNo:2,finalReach:finals.length/RUNS,finalWin:finals.filter(result=>result.rank===1).length/RUNS,finalWinGivenReach:finals.length?finals.filter(result=>result.rank===1).length/finals.length:0};
+}));
+
 if (args.acceptance === 'true') {
   const row=(mode,support,strategy='balanced')=>rows.find(r=>r.mode===mode&&r.support===support&&r.strategy===strategy);
   const checks=[
@@ -434,7 +447,7 @@ if (args.acceptance === 'true') {
 }
 
 if (args.json === 'true') {
-  console.log(JSON.stringify({runsPerScenario: RUNS, seed: SEED, rows}, null, 2));
+  console.log(JSON.stringify({runsPerScenario: RUNS, seed: SEED, rows,routeRows}, null, 2));
   process.exit(0);
 }
 
@@ -450,6 +463,11 @@ console.log('- 마진 = 내 파이널 점수 − 가장 강한 라이벌 점수.
 console.log('- 이벤트 효과는 제외했다. 무작위 이벤트 운이 아닌 카드 선택·컨디션·멘탈·지원 카드·무대 선택의 힘을 분리하기 위해서다.');
 console.log('- 2회차부터 자동 선택되는 평균 ★2 멘토의 시작 +10과 보장 멘토콜 +10·멘탈 +3은 포함했다.');
 console.log('- RUN 약속은 대표 경로인 시그니처 장면 고수(점검 시 기력 -8·핵심 방향 +8)를 포함했다.');
+console.log('');
+console.log('| 2회차 모드 | 약속 ROUTE | 파이널 도달 | 파이널 1위 | 도달 시 1위 |');
+console.log('|---|---|---:|---:|---:|');
+for(const row of routeRows)console.log(`| ${row.mode} | ${row.route} | ${pct(row.finalReach)} | ${pct(row.finalWin)} | ${pct(row.finalWinGivenReach)} |`);
+console.log('- ROUTE 표는 동일한 노력파 N★1·멘토 ★2·균형 전략에서 약속 효과만 바꾼 1만 판 비교다.');
 console.log(`- 실게임과 같은 첫 RUN 관문 보호와 현재 시즌 트렌드(${RunBalanceRules.trendStatAt()} 훈련 ×1.25)를 포함했다.`);
 console.log('- 현재 index.html 핵심 상수와 공용 RUN 규칙이 불일치하면 실행을 중단한다.');
 if(args.acceptance==='true') console.log('- 밸런스 acceptance: 대표 회차별 목표 구간 통과.');

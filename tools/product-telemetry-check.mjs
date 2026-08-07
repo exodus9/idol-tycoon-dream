@@ -6,7 +6,7 @@ const fail=[];
 const need=(ok,msg)=>{if(!ok)fail.push(msg);};
 
 need(html.includes('product-telemetry.js?v='),'telemetry bridge must load before the game');
-for(const event of ['run_start','run_finish','daily_complete','daily_reply_open','mentor_offer','mentor_select','mentor_home_start','mentor_moment','promise_offer','promise_selected','promise_checkpoint','promise_result','run_album_open','run_record_open','retrain_started','promise_reply_open','promise_reply_to_retrain','season_brief_open','season_retrain_click','favorite_context_applied','favorite_context_change','favorite_context_unmatched','fandom_first_contact','group_debut','stage_strategy','result_share']) need(html.includes(`'${event}'`),`missing funnel event: ${event}`);
+for(const event of ['idol_select','run_start','first_action','run_finish','second_run_start','second_run_finish','daily_complete','daily_reply_open','mentor_offer','mentor_select','mentor_home_start','mentor_moment','promise_offer','promise_selected','promise_checkpoint','promise_result','run_album_open','run_record_open','retrain_started','promise_reply_open','promise_reply_to_retrain','season_brief_open','season_retrain_click','favorite_context_applied','favorite_context_change','favorite_context_unmatched','fandom_first_contact','group_debut','stage_strategy','result_share','save_failure']) need(html.includes(`'${event}'`)||bridge.includes(`${event}:`),`missing funnel event: ${event}`);
 need(html.includes('ProductTelemetry.screen(id)'),'screen transitions must be measurable');
 need(html.includes("ProductTelemetry.track('run_start'")&&html.includes('...replyLink')&&html.includes("ProductTelemetry.track('retrain_started'")&&html.includes('...link}'),'reply origin must join retrain_started to run_start');
 need(html.includes("window.addEventListener('dream-group-context'"),'app-provided favorite UX hint must reach the first-RUN selection flow');
@@ -17,6 +17,13 @@ need(bridge.includes("type:'DREAM_GROUP_READY'"),'native app readiness handshake
 need(bridge.includes("new CustomEvent('dream-group-context'"),'received app context must notify the game runtime');
 need(bridge.includes("raw.source!==root"),'cross-frame context messages must be rejected');
 need(bridge.includes('const EVENT_FIELDS={')&&bridge.includes('const allowed=EVENT_FIELDS[name]'),'native events must use per-event prop allowlists');
+need(bridge.includes("CONSENT_KEY='dg_analytics_consent_v1'")&&bridge.includes("if(consentState()!=='granted')return null"),'analytics creation and delivery must require explicit consent');
+need(bridge.includes("OUTBOX_KEY='dg_telemetry_outbox_v1'")&&bridge.includes("addEventListener('online',flush)"),'offline events must retry through a bounded outbox');
+need(bridge.includes('const BUILD_VERSION=')&&bridge.includes('function buildVersion(){ return BUILD_VERSION; }'),'candidate version must be captured while the telemetry script evaluates');
+need(bridge.includes("if(consentState()!=='granted')return null"),'analytics events must not be created or retained before consent');
+need(!bridge.includes('pendingConsentEvents')&&!bridge.includes('holdUntilConsent'),'pre-consent analytics must not have a hidden memory queue');
+need(bridge.includes("type==='DREAM_GROUP_EVENT_ACK'")&&bridge.includes('function ack(eventId)'),'outbox entries must remain until explicit acknowledgement');
+need(bridge.includes('schema_version:SCHEMA_VERSION')&&bridge.includes('event_id:makeId'),'event envelopes must be versioned and deduplicable');
 need(bridge.includes('SAFE_EVENT_TEXT')&&bridge.includes('SAFE_SLOT'),'allowed event fields and URL slot must reject free-form identifiers');
 need(bridge.includes('if(!raw.origin)return false'),'origin-less app context must be rejected');
 need(bridge.includes('key===lastContextKey'),'duplicate normalized app context must be ignored');

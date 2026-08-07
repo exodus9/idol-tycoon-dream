@@ -75,6 +75,16 @@
     return {ready,revealed};
   }
 
+  function focusedEchoState(echoes,today,focusId,rid){
+    const list=(Array.isArray(echoes)?echoes:[]).filter(x=>x&&typeof x==='object'), day=today||kstDay();
+    const focus=focusId?list.find(x=>String(x.id)===String(focusId)):null;
+    if(!focus)return {...echoState(list,day,rid),pending:null,focused:false};
+    const ready=!focus.claimedAt&&focus.revealDay&&dayDiff(day,focus.revealDay)>=0?focus:null;
+    const revealed=focus.claimedDay===day?focus:null;
+    const pending=!focus.claimedAt&&focus.revealDay&&dayDiff(day,focus.revealDay)<0?focus:null;
+    return {ready,revealed,pending,focused:true};
+  }
+
   function claimEcho(echoes,id,today,now){
     const list=(Array.isArray(echoes)?echoes:[]).filter(x=>x&&typeof x==='object'), day=today||kstDay(), echo=list.find(x=>x.id===id);
     if(!echo||echo.claimedAt||!echo.revealDay||dayDiff(day,echo.revealDay)<0) return {accepted:false,echo:null,echoes:list};
@@ -84,6 +94,17 @@
 
   function pendingEcho(echoes,rid){
     return (Array.isArray(echoes)?echoes:[]).find(x=>x&&typeof x==='object'&&!x.claimedAt&&String(x.rid)===String(rid))||null;
+  }
+
+  // A concrete next-day contract is stronger than a generic "come back tomorrow".
+  // Match the exact RUN first so another queued fandom reply cannot replace it.
+  function pendingReturn(echoes,today,input){
+    const p=input&&typeof input==='object'?input:{}, day=today||kstDay();
+    return (Array.isArray(echoes)?echoes:[])
+      .filter(x=>x&&typeof x==='object'&&!x.claimedAt&&x.revealDay&&dayDiff(day,x.revealDay)<0)
+      .filter(x=>p.rid==null||String(x.rid)===String(p.rid))
+      .filter(x=>!p.runId||String(x.runId)===String(p.runId))
+      .sort((a,b)=>String(a.revealDay).localeCompare(String(b.revealDay))||String(a.fromDay).localeCompare(String(b.fromDay)))[0]||null;
   }
 
   function mergeReplyBoost(boosts,echo,boost,today){
@@ -117,7 +138,7 @@
     return {boost:{start:Math.max(0,Number(bridge.start)||0),sourceRid:bridge.sourceRid,sourceEchoId:bridge.sourceEchoId},bridge:{...bridge,usedAt:Number(now)||Date.now()}};
   }
 
-  const api={kstDay,dayDiff,addDays,nextKstResetAt,state,complete,queueEcho,echoState,claimEcho,pendingEcho,mergeReplyBoost,consume,firstGroupBridge,consumeFirstGroupBridge};
+  const api={kstDay,dayDiff,addDays,nextKstResetAt,state,complete,queueEcho,echoState,focusedEchoState,claimEcho,pendingEcho,pendingReturn,mergeReplyBoost,consume,firstGroupBridge,consumeFirstGroupBridge};
   root.DailyRetention=api;
   if(typeof module!=='undefined'&&module.exports) module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

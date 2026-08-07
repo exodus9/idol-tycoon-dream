@@ -133,5 +133,29 @@
     return !!isGate&&!won&&Math.max(1,Math.round(Number(runNo)||1))===1;
   }
 
-  return Object.freeze({isFirstRun,recommendedDirection,recoveryState,recoveryHand,firstRunHand,actionableStats,recommendedTrainableStat,productiveHand,nextTurnLabel,debutProgress,protectsFirstGate});
+  function guidedOutcome(input){
+    input=input||{};
+    const guided=Math.max(1,Math.round(Number(input.runNo)||1))===1
+      &&Math.max(1,Math.round(Number(input.turn)||1))===1
+      &&!!input.recommended&&!input.resolved;
+    return {outcome:guided?'ok':input.rolled,guided};
+  }
+
+  function firstFavoriteMoment(input){
+    input=input||{};
+    const active=!!input.guided&&!input.seen;
+    const before=Math.max(0,Math.min(100,Math.round(Number(input.bond)||0)));
+    const gain=active?Math.min(4,100-before):0;
+    return {active,gain,bondAfter:before+gain};
+  }
+
+  function consumeCommittedFavoriteTurn(state){
+    if(!state||!state.pendingFavoriteTurnAdvance)return false;
+    delete state.pendingFavoriteTurnAdvance;
+    state.week=Math.max(1,Math.round(Number(state.week)||1))+1;
+    state.busy=false;
+    return true;
+  }
+
+  return Object.freeze({isFirstRun,recommendedDirection,recoveryState,recoveryHand,firstRunHand,actionableStats,recommendedTrainableStat,productiveHand,nextTurnLabel,debutProgress,protectsFirstGate,guidedOutcome,firstFavoriteMoment,consumeCommittedFavoriteTurn});
 });
