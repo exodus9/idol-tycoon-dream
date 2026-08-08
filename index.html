@@ -2,6 +2,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>프로젝트 최애돌</title>
 <link rel="icon" href="assets/logo.png" type="image/png">
+<link rel="preload" as="image" href="assets/agency-lounge-dark-mobile-v1.jpg" fetchpriority="high">
+<link rel="preload" as="font" href="assets/Jua-400-subset.ttf?v=0d6015c4dd" type="font/ttf" crossorigin>
 <style>
   :root{
     /* 다크 게임 테마 (프리미엄 수집형 게임 톤) */
@@ -16,7 +18,7 @@
     --hi:inset 0 1px 0 rgba(255,255,255,.14);
     --btn-glow:0 8px 22px -6px rgba(255,77,114,.5);
   }
-  @font-face{font-family:'Jua';src:url('assets/Jua-400.ttf') format('truetype');font-display:swap}
+  @font-face{font-family:'Jua';src:url('assets/Jua-400-subset.ttf?v=0d6015c4dd') format('truetype');font-display:swap}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0;background:#0b0815;color:var(--txt);
     font-family:'Jua',-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard",sans-serif}
@@ -100,6 +102,7 @@
   .seg.on{background:var(--panel2);color:var(--txt);border-color:var(--accent)}
   .app-favorite-hint{display:flex;align-items:center;gap:9px;margin:8px 0 10px;padding:9px 10px;border-radius:12px;background:linear-gradient(90deg,rgba(255,77,114,.13),rgba(108,86,255,.1));border:1px solid rgba(255,107,143,.3)}
   .app-favorite-hint span{display:flex;flex:1;min-width:0;align-items:center;gap:7px}.app-favorite-hint small{font-size:9px;font-weight:900;color:#ff89a5;letter-spacing:.3px}.app-favorite-hint b{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.app-favorite-hint button{flex:0 0 auto;border:0;background:transparent;color:var(--accent);font:800 10px/1.2 inherit;padding:5px;cursor:pointer}
+  .idol-browse{text-align:center;padding:10px 0 92px}.idol-browse button{min-height:44px;padding:9px 16px;border:1px solid rgba(95,201,255,.35);border-radius:12px;background:#101827;color:#dceaff;font:900 12px/1.3 inherit}.idol-browse small{display:block;margin-top:6px;color:#8290a5;font-size:10px}
   .modebox{flex:1;display:flex;flex-direction:column;min-height:0;padding-bottom:150px}
   /* 플로팅 시작 버튼 */
   .startfab{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);
@@ -163,6 +166,11 @@
   #s-cardpick.first-run-setup .promise-option em{font-size:10px}
   #s-cardpick.first-run-setup .promise-effect{display:none}
   .result-more-actions{margin-top:10px}.result-more-actions summary{cursor:pointer;list-style:none;padding:10px;border:1px solid rgba(255,255,255,.14);border-radius:11px;color:#aeb9ca;font-size:11px;font-weight:900;text-align:center}.result-more-actions summary::-webkit-details-marker{display:none}
+  .result-primary{margin:10px 0 12px;padding:12px 13px;border-radius:15px;border:1px solid rgba(95,201,255,.48);background:linear-gradient(135deg,rgba(40,93,255,.24),rgba(122,58,196,.2));text-align:left}
+  .result-primary small,.result-primary b{display:block}.result-primary small{font-size:12px;font-weight:900;color:#8ddcff;letter-spacing:.5px}.result-primary b{margin-top:4px;font-size:14px;line-height:1.35;color:#fff}.result-primary .btn{margin-top:10px;min-height:48px;font-size:15px}
+  .result-detail-stack{margin-top:9px}.result-detail-stack>summary{cursor:pointer;list-style:none;min-height:44px;padding:12px;border:1px solid rgba(255,255,255,.15);border-radius:12px;color:#bdc7d7;font-size:12px;font-weight:900;text-align:center}.result-detail-stack>summary::-webkit-details-marker{display:none}
+  .rerun-preview{margin:9px 0 0;padding:11px 12px;border-radius:13px;border:1px solid rgba(95,201,255,.36);background:linear-gradient(135deg,rgba(40,93,255,.16),rgba(255,77,146,.1));text-align:left}
+  .rerun-preview>b{display:block;font-size:13px;color:#dce8ff}.rerun-preview>span{display:block;margin-top:4px;font-size:12px;line-height:1.45;color:#aebbd0}.rerun-preview>small{display:block;margin-top:6px;font-size:12px;font-weight:900;color:#8ddcff}
   @media(max-height:780px){#s-cardpick.first-run-setup .first-run-kit{display:none}}
   .advanced-pick{margin-top:8px}.advanced-pick summary{cursor:pointer;list-style:none;padding:7px 9px;border-radius:10px;border:1px solid rgba(255,255,255,.12);color:#b9aeca;font-size:10px;font-weight:800;text-align:center}
   .advanced-pick summary::-webkit-details-marker{display:none}.advanced-pick[open] summary{margin-bottom:8px;color:#fff;border-color:rgba(255,95,162,.45)}
@@ -204,7 +212,8 @@
   .card:active{transform:scale(.97)}
   .card .ph{position:relative;width:100%;aspect-ratio:.82;background:#322748;overflow:hidden;display:block}
   .card .ph img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 22%}
-  .card .ph::after{content:"";position:absolute;left:0;right:0;top:0;height:56%;background:linear-gradient(180deg,transparent,rgba(20,10,36,.66));pointer-events:none}
+  /* 아이돌 사진은 원본 그대로 노출한다. 이름·그룹 정보는 아래 독립 패널에 있어 이미지 오버레이가 필요 없다. */
+  .card .ph::after{content:none}
   .card .nm{position:relative;padding:7px 10px 3px;font-weight:800;font-size:14.5px;line-height:1.15}
   .card .gp{padding:0 10px 9px;color:var(--sub);font-size:11px}
   /* ⭐선택 순간 = 골드 스포트라이트 + 찜 뱃지 (첫 훅) */
@@ -750,8 +759,8 @@
   <section class="screen on" id="s-title">
     <select id="langSel" class="langsel" onchange="Game.changeLang(this.value)" aria-label="language"></select>
     <div class="splash">
-      <img id="titleMascot" class="splash-mascot" src="assets/mascot.png" alt="">
-      <img id="logo" class="splash-logo" src="assets/logo.png" alt="최애돌">
+      <img id="titleMascot" class="splash-mascot" src="assets/mascot.png" alt="" fetchpriority="low">
+      <img id="logo" class="splash-logo" src="assets/logo.png" alt="최애돌" fetchpriority="low">
       <div class="splash-title" data-i18n="t_title">프로젝트 최애돌</div>
       <div class="splash-dots"><i></i><i></i><i></i></div>
     </div>
@@ -783,6 +792,7 @@
       <input class="srch" id="idolSearch" aria-label="아이돌 이름 또는 그룹 검색" placeholder="이름·그룹 검색 (예: 리사, BTS)" data-i18n-ph="sel_search_ph" oninput="Game.search(true)" autocomplete="off">
       <div class="app-favorite-hint" id="appFavoriteHint" style="display:none"></div>
       <div class="grid" id="idolGrid"></div>
+      <div class="idol-browse" id="idolBrowse"></div>
     </div>
 
     <div id="mode-custom" class="modebox" style="display:none">
@@ -1094,11 +1104,12 @@
 <script src="run-balance-rules.js?v=7e1af59983"></script>
 <script src="stage-criteria.js?v=6d23aaaa14"></script>
 <script src="completion-transaction.js?v=a40787a406"></script>
-<script src="product-telemetry.js?v=f64d1a41ab"></script>
+<script src="telemetry-config.js?v=13ca998694"></script>
+<script src="product-telemetry.js?v=2622ffa27f"></script>
 <script src="run-adoption.js?v=f5ce39d47f"></script>
-<script src="dg-i18n.js?v=813a4d2545"></script>
+<script src="dg-i18n.js?v=2050869211"></script>
 <script src="i18n.js?v=b295633ad5"></script>
-<script src="idols.js?v=sync202608080520"></script>
+<script src="idols.js?v=sync202608090520"></script>
 <script>
 try{if(window.DataLifecycle)DataLifecycle.recoverImport(localStorage);}catch(_){}
 // 검색용 아이돌: idols.js의 window.IDOL_DB (최애돌 실데이터 = 활성 아이돌만, 전일 하트투표 순위로 정렬됨). 로드 실패 시 빈 배열.
@@ -1708,6 +1719,7 @@ const Game = {
     document.getElementById("customName").value="";
     document.getElementById("uploader").style.backgroundImage="none";
     document.getElementById("upPh").style.display="";
+    this.idolBrowseLimit=12;
     this.mode("search");
     this.search();
     // ⭐첫 사용자 감성 훅: 첫 아이돌이면 "네 최애를 찾아봐" 프레이밍 + 검색창 자동 포커스
@@ -1739,17 +1751,23 @@ const Game = {
   search(userTyped){
     if(userTyped){ const had=this.appFavoriteId!=null&&!this.appFavoriteDismissed; this.userIdolOverride=true; this.appFavoriteDismissed=this.appFavoriteId!=null; this.selIdol=null; this.runDirection=null; this.renderAppFavoriteHint(null); this.updateStartFab(); const h=document.querySelector('#s-select .sub-head h2'); if(h)h.textContent='✨ '+dgT('entry.firstChoice'); try{if(had)ProductTelemetry.track('favorite_context_change',{source:'search'});}catch(e){} }
     const q=(document.getElementById("idolSearch").value||"").trim().toLowerCase();
-    let list = q ? IDOLS.filter(i=> (i.name||"").toLowerCase().includes(q) || (i.grp||"").toLowerCase().includes(q) || (i.en||"").includes(q)) : IDOLS;
-    list = list.slice(0,60);
+    if(userTyped)this.idolBrowseLimit=q?60:12;
+    const favorite=IDOLS.find(i=>String(i.id)===String(this.appFavoriteId));
+    const all=q?IDOLS.filter(i=> (i.name||"").toLowerCase().includes(q) || (i.grp||"").toLowerCase().includes(q) || (i.en||"").includes(q))
+      :[...(favorite?[favorite]:[]),...IDOLS.filter(i=>!favorite||String(i.id)!==String(favorite.id))];
+    const limit=Math.max(q?60:12,this.idolBrowseLimit||0), list=all.slice(0,limit);
     const grid=document.getElementById("idolGrid");
-    if(!list.length){ grid.innerHTML=`<p class="muted" style="grid-column:1/-1;text-align:center;padding:24px">${t("sel_no_result")}</p>`; return; }
+    const browse=document.getElementById('idolBrowse');
+    if(!list.length){ grid.innerHTML=`<p class="muted" style="grid-column:1/-1;text-align:center;padding:24px">${t("sel_no_result")}</p>`; if(browse)browse.innerHTML=''; return; }
     grid.innerHTML = list.map(i=>{
       return `<button type="button" class="card" data-id="${i.id}" data-picked="${esc(dgT('entry.selected'))}" onclick="Game.pick(${i.id},'user')">
         <span class="ph"><img src="${i.img}" alt="" loading="lazy" decoding="async"></span>
         <div class="nm">${esc(idolName(i))}</div>
         <div class="gp">${esc(idolGrp(i))}</div>
       </button>`;}).join("");
+    if(browse)browse.innerHTML=all.length>list.length?`<button type="button" onclick="Game.showMoreIdols()">${dgT(q||list.length>12?'select.showMore':'select.browseAll')}</button><small>${dgT('select.catalogCount',{shown:list.length,total:all.length})}</small>`:`<small>${dgT('select.catalogCount',{shown:list.length,total:all.length})}</small>`;
   },
+  showMoreIdols(){ this.idolBrowseLimit=Math.min(IDOLS.length,(this.idolBrowseLimit||12)+48); this.search(false); },
   pick(id,source){
     if(source==='user')this.userIdolOverride=true;
     const changedFavorite=this.appFavoriteId!=null&&String(id)!==String(this.appFavoriteId)&&!this.appFavoriteDismissed;
@@ -4788,7 +4806,7 @@ window.addEventListener("popstate", ()=>{
   #s-office.formation-mode #homeHero,#s-office.formation-mode #homeWidgets,#s-office.formation-mode #homeCta{display:none}
   #s-office.formation-mode #dgGroup,#s-office.formation-mode #dgGroups{display:block}
   #s-office.formation-mode #homeProfile{position:sticky;top:0;z-index:5}
-  #s-office.formation-mode ~ .tabbar{display:none!important}
+  #s-office.formation-mode ~ .tabbar,#s-end.on ~ .tabbar{display:none!important}
   /* 이름 확정 플로우에서는 하단 탭이 CTA를 덮거나 오탭을 만들면 안 된다. */
   #s-agency.on ~ .tabbar,#s-debut.on ~ .tabbar{display:none!important}
 
@@ -4814,7 +4832,7 @@ window.addEventListener("popstate", ()=>{
   #s-office #homeHero{height:100%;min-height:0}
   .hero-stage3{position:relative;height:100%;min-height:0;overflow:hidden;background:
     linear-gradient(180deg,rgba(4,8,15,.04),rgba(3,7,13,.18) 54%,rgba(3,7,13,.96) 88%),
-    url('assets/agency-lounge-dark-v1.jpg') center/cover no-repeat;color:#fff}
+    url('assets/agency-lounge-dark-mobile-v1.jpg') center/cover no-repeat;color:#fff}
   .hs3-shade{position:absolute;inset:0;background:
     radial-gradient(circle at 50% 42%,transparent 0 24%,rgba(4,8,15,.22) 54%,rgba(4,8,15,.55) 100%);
     pointer-events:none}
@@ -4936,7 +4954,11 @@ window.addEventListener("popstate", ()=>{
   #s-play .hcard .hc-ic{width:38px;height:38px}
   #s-play .hcard .hc-nm{font-size:14px}
   #s-play .hand-cap{margin:0 2px 5px}
-  .beginner-prompt{margin:0 0 6px;padding:8px 10px;border:1px solid rgba(95,201,255,.4);border-radius:10px;background:rgba(35,79,151,.18);color:#dceaff;font-size:10.5px;font-weight:850;line-height:1.4}
+  .beginner-prompt{margin:0 0 6px;padding:8px 10px;border:1px solid rgba(95,201,255,.4);border-radius:10px;background:rgba(35,79,151,.18);color:#dceaff;font-size:12px;font-weight:850;line-height:1.4}
+  #s-play .vital .vlbl{font-size:12px}
+  #s-play .pr-advice{font-size:12px;line-height:1.35}
+  #s-play .pr-advice .pa-label{font-size:10px}
+  #s-play .hcard .hc-impact{font-size:12px;line-height:1.25}
   #s-play.hud-stage-1 #vitalsBox .vital:not(:first-child),#s-play.hud-stage-1 #vitalsBox .cond-face{display:none}
   #s-play.hud-stage-1 #statBox{display:none}
   #s-play.hud-stage-2 #vitalsBox .fandom-vital,#s-play.hud-stage-2 #vitalsBox .cond-face{display:none}
@@ -5285,7 +5307,7 @@ window.addEventListener("popstate", ()=>{
     },
     persist(){ try{ StorageJournal.write(localStorage,KEY(),KEY()+'_backup_v1',this.data,validDgSave); this._persistError=false; return true; }
       catch(e){ if(!this._persistError){ this._persistError=true; try{toast('저장 공간이 부족해. 오래된 기록을 정리해줘');}catch(_){} try{ProductTelemetry.track('save_failure',{store:'agency',operation:'write',recoverable:true});}catch(_){} } return false; } },
-    snapshotRunStart(){ this.load(); try{return {data:JSON.stringify(this.data),primary:localStorage.getItem(KEY()),backup:localStorage.getItem(KEY()+'_backup_v1'),equipped:(this.equipped||[]).slice()};}catch(e){return {data:JSON.stringify(this.data),primary:null,backup:null,equipped:(this.equipped||[]).slice()};} },
+    snapshotRunStart(){ try{return {data:JSON.stringify(this.data),primary:localStorage.getItem(KEY()),backup:localStorage.getItem(KEY()+'_backup_v1'),equipped:(this.equipped||[]).slice()};}catch(e){return {data:JSON.stringify(this.data),primary:null,backup:null,equipped:(this.equipped||[]).slice()};} },
     restoreRunStart(snapshot){ if(!snapshot)return false; try{this.data=JSON.parse(snapshot.data);this.equipped=(snapshot.equipped||[]).slice();[[KEY(),snapshot.primary],[KEY()+'_backup_v1',snapshot.backup]].forEach(([key,value])=>{if(value==null)localStorage.removeItem(key);else localStorage.setItem(key,value);});this._persistError=false;return true;}catch(e){return false;} },
     // ===== ⑥ 마이크 재화(랭킹전 스태미나) — 캔디크러시식. 최대 5, 6분당 1개 충전, 패배 시만 소모. 애돌 하트/다이아와 무관 =====
     MIC_MAX: 5, MIC_REFILL_MS: 6*60*1000,
@@ -6560,7 +6582,7 @@ window.addEventListener("popstate", ()=>{
         `<div class="daily-memory"><time>${esc(x.day)}</time><span>${esc(x.text)}</span></div>`).join('')}</div>`:'';
       box.innerHTML=hero+replyOpen+pendingCard+action+memory+`<button class="btn ghost" style="margin-top:11px;width:100%" onclick="DG.goAchv()">${dgT('daily.allAchievements')}</button><div style="height:14px"></div>`;
     },
-    completeDaily(kind){ this.load(); const state=this.dailyState(), fav=this.dailyFavorite(); if(!fav||state.done){ this.renderDaily(); return; }
+    completeDaily(kind){ this.load(); const transaction=this.snapshotRunStart(); const state=this.dailyState(), fav=this.dailyFavorite(); if(!fav||state.done){ this.renderDaily(); return; }
       const choice=this.dailyChoices(fav).find(x=>x.id===kind); if(!choice)return;
       const fd=fandomOf(fav), fdWith=koWith(fd.name,'과','와');
       fav.fanBond=Math.max(8,Math.min(100,Math.round((fav.fanBond||8)+choice.bond)));
@@ -6573,13 +6595,17 @@ window.addEventListener("popstate", ()=>{
       let milestone='';
       if(streak%7===0){ this.add('charmC',1,1); milestone=' · 7일 보상 팬 소통 플랜 +1'; }
       else if(streak%3===0){ this._regenMic(); if(this.data.mic<this.MIC_MAX){this.data.mic++;this.data.micAt=Date.now();} milestone=' · 3일 보상 마이크 +1'; }
-      this.data.daily=done.daily; this.persist();
+      this.data.daily=done.daily;
+      const committed=CompletionTransaction.commit({snapshot:transaction,persist:()=>this.persist(),restore:snapshot=>this.restoreRunStart(snapshot)});
+      if(!committed){ this.renderDaily(); return; }
       try{ ProductTelemetry.track('daily_complete',{choice:kind,streak,total:this.data.daily.total,milestone:streak%7===0?'7d':streak%3===0?'3d':'none'}); }catch(e){}
       try{ sfx('fanfare'); if(Game.confetti)Game.confetti(70,false); toast(`${dgT('daily.completeToast',{fandom:fd.name})}${window.LANG==='ko'?milestone:''}`); }catch(e){}
       this.renderDaily();
     },
-    claimDailyEcho(id){ this.load(); const state=this.dailyState(); id=id?decodeURIComponent(id):(this.dailyEchoState().ready||{}).id; const claimed=DailyRetention.claimEcho(this.data.dailyEchoes,id,state.today); if(!claimed.accepted){ this.renderDaily(); return; }
-      const echo=claimed.echo, fav=this.rosterById(echo.rid); if(!fav){ echo.archivedReward=true; this.add('charmC',1,1); this.data.dailyEchoes=claimed.echoes; this.persist();
+    claimDailyEcho(id){ this.load(); const transaction=this.snapshotRunStart(); const state=this.dailyState(); id=id?decodeURIComponent(id):(this.dailyEchoState().ready||{}).id; const claimed=DailyRetention.claimEcho(this.data.dailyEchoes,id,state.today); if(!claimed.accepted){ this.renderDaily(); return; }
+      const echo=claimed.echo, fav=this.rosterById(echo.rid); if(!fav){ echo.archivedReward=true; this.add('charmC',1,1); this.data.dailyEchoes=claimed.echoes;
+        const committed=CompletionTransaction.commit({snapshot:transaction,persist:()=>this.persist(),restore:snapshot=>this.restoreRunStart(snapshot)});
+        if(!committed){ this.renderDaily(); return; }
         try{ ProductTelemetry.track('daily_reply_open',{kind:echo.kind,wait_days:this.dayDiff(state.today,echo.fromDay),archived:true}); toast(dgT('daily.archivedToast')); }catch(e){} this.renderDaily(); return; }
       const meta=this.dailyEchoCopy(echo.kind,fav,false,echo); if(!meta)return;
       this.data.dailyBoosts=DailyRetention.mergeReplyBoost(this.data.dailyBoosts,echo,meta.boost,state.today);
@@ -6589,7 +6615,9 @@ window.addEventListener("popstate", ()=>{
       fav.fanBond=Math.min(100,Math.max(8,Math.round((fav.fanBond||8)+3)));
       if(!Array.isArray(this.data.bondHistory))this.data.bondHistory=[];
       this.data.bondHistory.push({rid:fav.rid,day:state.today,kind:`reply-${echo.kind}`,text:dgT('daily.replyHistory',{fandom:fandomOf(fav).name,bond:fav.fanBond})});
-      this.data.bondHistory=this.data.bondHistory.slice(-40); this.data.dailyEchoes=claimed.echoes; this.persist();
+      this.data.bondHistory=this.data.bondHistory.slice(-40); this.data.dailyEchoes=claimed.echoes;
+      const committed=CompletionTransaction.commit({snapshot:transaction,persist:()=>this.persist(),restore:snapshot=>this.restoreRunStart(snapshot)});
+      if(!committed){ this.renderDaily(); return; }
       try{ ProductTelemetry.track('daily_reply_open',{kind:echo.kind,wait_days:this.dayDiff(state.today,echo.fromDay),first_group_bridge:!!bridge}); }catch(e){}
       if(String(echo.kind||'').startsWith('promise:'))try{ ProductTelemetry.track('promise_reply_open',{run_id:echo.runId||'',promise_id:echo.promiseId||'',status:echo.promiseStatus||'',wait_days:this.dayDiff(state.today,echo.fromDay)}); }catch(e){}
       try{ sfx('fanfare'); if(Game.confetti)Game.confetti(54,false); toast(dgT('daily.revealToast',{reward:meta.reward})); }catch(e){}
@@ -7013,6 +7041,9 @@ window.addEventListener("popstate", ()=>{
       this.groupFlipCard(g);   // ①㉔ 그룹 통합 플립카드(앞뒷면). 저장은 카드 하단 버튼.
     },
 
+    trackResultPrimary(runId,destination,dailyDone,readyCount){
+      try{ ProductTelemetry.track('result_primary_click',{run_id:decodeURIComponent(runId||''),destination,daily_done:!!dailyDone,ready_count:+readyCount||0}); }catch(e){}
+    },
     renderResult(box, res){
       if(!box) return;
       const chips=res.drops.length? `<div class="tgrid" style="grid-template-columns:repeat(${Math.min(3,res.drops.length)},minmax(0,110px));justify-content:center">${res.drops.map((d,i)=>{
@@ -7060,21 +7091,22 @@ window.addEventListener("popstate", ()=>{
       const firstGroupCtaLabel=firstGroupNeedsPromise?dgT('result.firstGroupPromiseCta'):firstGroupOffer?dgT('result.firstGroupNextCta',{target:esc(idolName(firstGroupOffer.target)),count:readyCount+1}):dgT('result.actionScout',{count:readyCount});
       const firstGroupMembers=(this.data.roster||[]).filter(r=>this.isEligibleRosterMember(r)).slice(-3), firstGroupSlots=[0,1,2].map(i=>{const member=firstGroupMembers[i];if(member)return `<div class="fgj-slot ready">${member.img?`<img src="${esc(member.img)}" alt="">`:'<span>🎤</span>'}<small>${esc(member.name||dgT('result.firstGroupMember'))}</small></div>`;if(i===firstGroupMembers.length&&firstGroupOffer&&firstGroupOffer.target)return `<div class="fgj-slot next">${firstGroupOffer.target.img?`<img src="${esc(firstGroupOffer.target.img)}" alt="">`:'<span>＋</span>'}<small>${esc(idolName(firstGroupOffer.target))}</small></div>`;return `<div class="fgj-slot locked"><span>＋</span><small>${dgT('result.firstGroupOpenSlot')}</small></div>`;}).join('');
       const firstGroupJourney=firstGroupStep==='nextMember'
-        ? `<div class="first-group-journey"><div class="fgj-head">FIRST GROUP <b>${readyCount}/3</b></div><div class="fgj-slots">${firstGroupSlots}</div><div class="fgj-cast">${firstGroupOffer&&firstGroupOffer.target.img?`<img src="${esc(firstGroupOffer.target.img)}" alt="">`:'<span>🎤</span>'}<div><strong>${dgT('result.firstGroupNextTitle',{count:readyCount+1})}</strong><small>${firstGroupOffer?dgT('result.firstGroupNextCopy',{mentor:esc(firstGroupOffer.mentor.name),target:esc(idolName(firstGroupOffer.target)),role:esc(this.roleName(firstGroupOffer.role)),direction:esc(t('st_'+firstGroupOffer.direction))}):dgT('result.firstGroupScoutCopy')}</small></div></div><button onclick="${firstGroupCtaOn}">${firstGroupCtaLabel}</button></div>`
+        ? `<div class="first-group-journey"><div class="fgj-head">FIRST GROUP <b>${readyCount}/3</b></div><div class="fgj-slots">${firstGroupSlots}</div><div class="fgj-cast">${firstGroupOffer&&firstGroupOffer.target.img?`<img src="${esc(firstGroupOffer.target.img)}" alt="">`:'<span>🎤</span>'}<div><strong>${dgT('result.firstGroupNextTitle',{count:readyCount+1})}</strong><small>${firstGroupOffer?dgT('result.firstGroupNextCopy',{mentor:esc(firstGroupOffer.mentor.name),target:esc(idolName(firstGroupOffer.target)),role:esc(this.roleName(firstGroupOffer.role)),direction:esc(t('st_'+firstGroupOffer.direction))}):dgT('result.firstGroupScoutCopy')}</small></div></div></div>`
         : firstGroupStep==='firstLineup'
-          ? `<div class="first-group-journey"><div class="fgj-head">FIRST GROUP <b>3/3</b></div><div class="fgj-slots">${firstGroupSlots}</div><div class="fgj-cast"><span>🎬</span><div><strong>${dgT('result.firstGroupReadyTitle')}</strong><small>${dgT('result.firstGroupReadyCopy')}</small></div></div><button onclick="DG.go();DG.editLineup('result_first_group')">${dgT('result.firstGroupReadyCta')}</button></div>`:'';
-      let returnHook='', returnPriority=false;
+          ? `<div class="first-group-journey"><div class="fgj-head">FIRST GROUP <b>3/3</b></div><div class="fgj-slots">${firstGroupSlots}</div><div class="fgj-cast"><span>🎬</span><div><strong>${dgT('result.firstGroupReadyTitle')}</strong><small>${dgT('result.firstGroupReadyCopy')}</small></div></div></div>`:'';
+      let returnHook='', returnPriority=false, dailyDone=false, replyReady=false;
       try{
         const reply=this.dailyEchoState().ready, daily=this.dailyState(), exactReturn=DailyRetention.pendingReturn((this.data&&this.data.dailyEchoes)||[],daily.today,{rid:res.newRid,runId:res.runId});
+        dailyDone=!!daily.done; replyReady=!!reply;
         returnPriority=firstGroupNeedsPromise||((!!reply||!daily.done)&&!firstGroupJourney);
         const unlockTime=this.replyUnlockLabel();
         returnHook=firstGroupNeedsPromise?'':exactReturn
-          ? `<div class="res-return-hook"><b>💌 ${dgT('result.returnExactTitle',{time:esc(unlockTime),fandom:esc(exactReturn.fandomName||res.fandom),idol:esc(exactReturn.idolName||idolR&&idolR.name||'IDOL')})}</b><span>${dgT('result.returnExactCopy',{scene:esc(this.dailyPromiseTitle(exactReturn,idolR))})}</span><button type="button" onclick="DG.goDaily('${encodeURIComponent(exactReturn.id)}')">${dgT('result.returnExactButton')}</button></div>`
+          ? `<div class="res-return-hook"><b>💌 ${dgT('result.returnExactTitle',{time:esc(unlockTime),fandom:esc(exactReturn.fandomName||res.fandom),idol:esc(exactReturn.idolName||idolR&&idolR.name||'IDOL')})}</b><span>${dgT('result.returnExactCopy',{scene:esc(this.dailyPromiseTitle(exactReturn,idolR))})}</span></div>`
           : reply
-            ? `<div class="res-return-hook"><b>💌 ${dgT('result.returnReplyTitle')}</b><span>${dgT('result.returnReplyCopy')}</span><button type="button" onclick="DG.goDaily()">${dgT('result.returnReplyButton')}</button></div>`
+            ? `<div class="res-return-hook"><b>💌 ${dgT('result.returnReplyTitle')}</b><span>${dgT('result.returnReplyCopy')}</span></div>`
           : daily.done
-            ? `<div class="res-return-hook"><b>🌙 ${dgT('result.returnTomorrowTitle',{time:esc(unlockTime)})}</b><span>${dgT('result.returnTomorrowCopy')}</span><button type="button" onclick="DG.goDaily()">${dgT('result.returnTomorrowButton')}</button></div>`
-            : `<div class="res-return-hook"><b>💞 ${dgT('result.returnStartTitle')}</b><span>${dgT('result.returnStartCopy')}</span><button type="button" onclick="DG.goDaily()">${dgT('result.returnStartButton')}</button></div>`;
+            ? `<div class="res-return-hook"><b>🌙 ${dgT('result.returnTomorrowTitle',{time:esc(unlockTime)})}</b><span>${dgT('result.returnTomorrowCopy')}</span></div>`
+            : `<div class="res-return-hook"><b>💞 ${dgT('result.returnStartTitle')}</b><span>${dgT('result.returnStartCopy')}</span></div>`;
       }catch(e){}
       const cv=res.completionView||{}, cvMeta=dgT('result.joinCardMeta',{grade:cv.grade||'F',direction:t('st_'+(cv.direction||'vocal'))}), completionSummary=cv.kind==='rerun'
         ? `✨ <b>${dgT('result.joinRerun',{name:esc(cv.name||''),run:cv.run||1})}</b><br><span class="muted">${dgT(cv.adopt?'result.joinBest':'result.joinKept')} · ${cvMeta}</span>`
@@ -7093,15 +7125,19 @@ window.addEventListener("popstate", ()=>{
         ${idolR&&!['promiseRetry','retry','retrain'].includes(nextAction.kind)?`<button class="btn ghost" onclick="DG.retrain(${idolR.rid})" style="margin-top:9px">🔥 ${dgT('result.retrainCta',{name:esc(idolR.name)})}</button>`:''}
         ${res.debuted?`<button class="btn ghost" onclick="${idolGroup?'DG.showBattleLobby()':'DG.goRoster()'}" style="margin-top:9px">${idolGroup?dgT('result.groupCheck',{name:esc(idolGroup.name)}):dgT('result.archive')}</button>`:''}
         ${nextAction.kind!=='scout'?`<button class="btn ghost" onclick="Game.goSelect()" style="margin-top:9px">${dgT('result.newIdol')}</button>`:''}`;
-      box.innerHTML=`<div class="dg-res">${rec}<div class="dg-res-slot">${completionSummary}${gradeExplain}</div>${thanks}
-        ${firstGroupJourney}${returnHook}
-        ${idolReveal}
-        ${memoryResult}${bondResult}
-        ${supportResult}
-        ${seasonResult}
-        ${titleChips}
-        ${goalPull}
-        ${returnPriority||firstGroupJourney?`<details class="result-more-actions"><summary>${dgT('result.otherActions')}</summary>${progressButtons}</details>`:progressButtons}</div>`;
+      let primaryOn=nextAction.on, primaryLabel=actionLabel, primaryDestination=nextAction.kind, primaryMeta=dgT('result.primaryNext');
+      if(firstGroupStep==='nextMember'){primaryOn=firstGroupCtaOn;primaryLabel=firstGroupCtaLabel;primaryDestination=firstGroupNeedsPromise?'daily':'next_member';primaryMeta=`FIRST GROUP · ${readyCount}/3`;}
+      else if(firstGroupStep==='firstLineup'){primaryOn="DG.go();DG.editLineup('result_first_group')";primaryLabel=dgT('result.firstGroupReadyCta');primaryDestination='first_lineup';primaryMeta='FIRST GROUP · 3/3';}
+      else if(replyReady){primaryOn='DG.goDaily()';primaryLabel=dgT('result.returnReplyButton');primaryDestination='daily_reply';primaryMeta=dgT('result.primaryReply');}
+      else if(!dailyDone){primaryOn='DG.goDaily()';primaryLabel=dgT('result.returnStartButton');primaryDestination='daily_start';primaryMeta=dgT('result.primaryBond');}
+      const primary=`<div class="result-primary"><small>${primaryMeta}</small><b>${dgT('result.primaryCopy')}</b><button class="btn" type="button" onclick="DG.trackResultPrimary('${encodeURIComponent(res.runId||'')}','${primaryDestination}',${dailyDone?1:0},${readyCount});${primaryOn}">${primaryLabel}</button></div>`;
+      box.innerHTML=`<div class="dg-res">${idolReveal}${primary}
+        <details class="result-detail-stack"><summary>${dgT('result.details')}</summary>${rec}<div class="dg-res-slot">${completionSummary}${gradeExplain}</div>${thanks}
+          ${firstGroupJourney}${returnHook}${memoryResult}${bondResult}${supportResult}${seasonResult}${titleChips}${goalPull}
+          <details class="result-more-actions"><summary>${dgT('result.otherActions')}</summary>${progressButtons}</details>
+        </details></div>`;
+      const impressionKey=`${res.runId||''}:${primaryDestination}`; this._resultImpressions=this._resultImpressions||new Set();
+      if(!this._resultImpressions.has(impressionKey)){this._resultImpressions.add(impressionKey);try{ProductTelemetry.track('result_primary_impression',{run_id:res.runId||'',destination:primaryDestination,daily_done:dailyDone,ready_count:readyCount});}catch(e){}}
       if(res.debuted) setTimeout(()=>{ try{toast(dgT('result.rosterToast'));}catch(e){} }, 450);
       setTimeout(()=>{ try{ this.checkAchv(); }catch(e){} }, 1400);   // #7 완주 직후 업적 토스트
     },
@@ -7289,15 +7325,18 @@ window.addEventListener("popstate", ()=>{
         const trend=this.currentTrend()||{}, trendKey=TREND_STAT[trend.pos]||'vocal', seasonLabel=`S${this.seasonNo()+1}`;
         const ownedEdition=rr?this.seasonEditionOf(rr.rid,this.seasonNo()):null;
         const editionPreview=!firstRun&&Game.runDirection===trendKey?`<div class="season-edition-preview"><b>${esc(trend.ic||'🎬')} ${dgT('setup.seasonEdition',{season:seasonLabel})}</b><span>${dgT(ownedEdition?'setup.editionOwned':'setup.editionUnowned')}</span></div>`:'';
+        const nextStar=im?Math.min(5,im.star+1):1, groupReady=(this.data.roster||[]).filter(r=>this.isEligibleRosterMember(r)).length, mentorName=Game.mentorRid&&this.rosterById(Game.mentorRid)?this.rosterById(Game.mentorRid).name:'';
+        const rerunPreview=rr?`<div class="rerun-preview"><b>${dgT('setup.rerunTitle',{run:runs+1,name:esc(rr.name)})}</b><span>${dgT('setup.rerunCopy',{star:nextStar,group:Math.min(3,groupReady),mentor:esc(mentorName||dgT('setup.mentorNone'))})}</span><small>${dgT(Game.runDirection===trendKey?'setup.rerunSeason':'setup.rerunGoal',{season:seasonLabel})}</small></div>`:'';
         const directionButtons=`<div class="specpick">${STATS.map(s=>`<button type="button" class="sp ${Game.runDirection===s.k?'on':''}" onclick="DG.setRunDirection('${s.k}')"><span class="spico">${s.ico}</span>${esc(t('st_'+s.k))}${s.k===trendKey?`<small>${dgT('setup.seasonEdition',{season:seasonLabel})}</small>`:'<small>&nbsp;</small>'}</button>`).join('')}</div>`;
         const firstPlan=firstRun&&Game.runDirection?`<div class="first-run-plan"><span>✨</span><div><b>${dgT('setup.firstPlan')} · ${esc(t('st_'+Game.runDirection))}</b><small>${dgT('run.firstProtection')}</small></div></div>`:'';
         const directionEffect=Game.runDirection?`<div class="run-direction-effect"><b>${firstRun?dgT('setup.firstDirectionEffect'):dgT('setup.directionEffect',{direction:esc(t('st_'+Game.runDirection)),bonus:18})}</b>${firstRun?'':` · ×1.22 · 18%${Game.runDirection===trendKey?' · ×1.25':''}`}</div>`:'';
-        const directionPick=`<div class="run-direction"><div class="run-direction-head"><b>${dgT('setup.directionTitle')}</b><span>${dgT('setup.directionCopy')}</span></div>${firstPlan}${firstRun?`<details class="advanced-pick"><summary>${dgT('setup.changeDirection')}</summary>${directionButtons}</details>`:directionButtons}${directionEffect}${editionPreview}</div>`;
+        const directionPick=`${rerunPreview}<div class="run-direction"><div class="run-direction-head"><b>${dgT('setup.directionTitle')}</b><span>${dgT('setup.directionCopy')}</span></div>${firstPlan}${firstRun?`<details class="advanced-pick"><summary>${dgT('setup.changeDirection')}</summary>${directionButtons}</details>`:directionButtons}${directionEffect}${editionPreview}</div>`;
         hero.innerHTML=`${photo}<div class="cph-copy"><div class="cph-kicker">${Game._retrainRid?'IDOL CARD UPGRADE':'NEW IDOL CARD'}</div>
           <div class="cph-name">${esc(idolName(idol)||'IDOL')}</div>
           <div class="cph-run">${Game._retrainRid?`RUN ${runs+1} · MENTOR +${4+(im?im.star:1)*3} · ${im&&im.star>=5?'MAX RUN':this.idolNextGoal(im)}`:dgT('setup.cardPending')}</div>
           <div class="cph-goal">${dgT('result.nextGoal')} · ${rr?dgT('result.bestUpdated'):dgT('entry.welcome')} <span>+ ${dgT('result.newCard')}</span></div></div>`;
         if(directionBox) directionBox.innerHTML=directionPick;
+        if(rr){const offerKey=Game.pendingRunId||`${rr.rid}:${runs+1}`;this._secondRunOffers=this._secondRunOffers||new Set();if(!this._secondRunOffers.has(offerKey)){this._secondRunOffers.add(offerKey);try{ProductTelemetry.track('second_run_offer',{run_id:Game.pendingRunId||'',rid:String(rr.rid),next_star:nextStar,group_ready:groupReady,season_upgrade:Game.runDirection===trendKey,mentor:!!mentorName});}catch(e){}}}
       }
       const start=document.getElementById('cardPickStart'); if(start){ start.disabled=!Game.runDirection; start.textContent=Game.runDirection?`${idolName(idol)||'IDOL'} · ${dgT('select.start')} (${total})`:dgT('setup.startDisabled'); }
       this.renderRunPromisePick();
